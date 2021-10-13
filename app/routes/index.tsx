@@ -7,6 +7,7 @@ import { Menu } from '@headlessui/react';
 import { ReactNode, useState, useCallback } from 'react';
 import { isHotkey } from 'is-hotkey';
 import { usePopper } from 'react-popper';
+import clsx from 'clsx';
 
 import {
   query,
@@ -16,7 +17,6 @@ import {
   CreateGraphDocument,
   DeleteGraphDocument,
 } from '~/api.server';
-import { classNames } from '~/components/utils';
 import { Header, Main } from '~/components/DefaultLayout';
 import { bgColor } from '~/components/utils';
 
@@ -113,7 +113,7 @@ function GraphCard({ graph }: { graph: Graph }) {
   return (
     <li className="col-span-1 flex shadow-sm rounded-md">
       <div
-        className={classNames(
+        className={clsx(
           bgColor(graph.color),
           'flex-shrink-0 flex items-center justify-center w-16 text-white text-sm font-medium rounded-l-md'
         )}
@@ -184,7 +184,7 @@ function MenuItem({
     <Menu.Item onClick={onClick} disabled={disabled}>
       {({ active }) => (
         <span
-          className={classNames(
+          className={clsx(
             active ? 'bg-gray-100' : '',
             'px-4 py-2 text-sm text-gray-700 flex items-center'
           )}

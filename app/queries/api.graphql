@@ -18,11 +18,22 @@ query findGraph($graphId: ID!) {
       id
       name
     }
+    views {
+      id
+      name
+    }
+    view {
+      id
+      name
+      edges {
+        id
+      }
+    }
     version {
       id
       lockedAt
       edges {
-        position
+        id
         left {
           id
         }
@@ -54,6 +65,12 @@ mutation deleteNode($input: DeleteNodeInput!) {
   }
 }
 
+mutation updateNodeName($input: UpdateNodeNameInput!) {
+  updateNodeName(input: $input) {
+    id
+  }
+}
+
 mutation createGraph($input: CreateGraphInput!) {
   createGraph(input: $input) {
     id
@@ -62,6 +79,12 @@ mutation createGraph($input: CreateGraphInput!) {
 
 mutation deleteGraph($input: DeleteGraphInput!) {
   deleteGraph(input: $input) {
+    id
+  }
+}
+
+mutation deleteView($input: DeleteViewInput!) {
+  deleteView(input: $input) {
     id
   }
 }

@@ -12,10 +12,6 @@ export function bgColor(color: string) {
   return BgColor[color];
 }
 
-export function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(' ');
-}
-
 export function defaultInitials(name: string) {
   return name
     .split(/\s/)

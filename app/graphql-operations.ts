@@ -60,6 +60,11 @@ export type CreateVersionInput = {
   readonly versionId: Scalars['ID'];
 };
 
+export type CreateViewInput = {
+  readonly graphId: Scalars['ID'];
+  readonly name: Scalars['String'];
+};
+
 export type DateNode = Node & {
   readonly description?: Maybe<Scalars['String']>;
   readonly id: Scalars['ID'];
@@ -93,6 +98,10 @@ export type DeleteVersionInput = {
   readonly versionId: Scalars['ID'];
 };
 
+export type DeleteViewInput = {
+  readonly viewId: Scalars['ID'];
+};
+
 export type Edge = {
   readonly id: Scalars['ID'];
   readonly left: Node;
@@ -116,6 +125,15 @@ export type Graph = {
   readonly root: RootNode;
   readonly version: Version;
   readonly versions: ReadonlyArray<VersionMeta>;
+  readonly view: View;
+  readonly views: ReadonlyArray<ViewMeta>;
+};
+
+export type GraphMeta = {
+  readonly color: Scalars['String'];
+  readonly createdAt: Scalars['DateTime'];
+  readonly id: Scalars['ID'];
+  readonly root: RootNode;
 };
 
 export type LockVersionInput = {
@@ -128,13 +146,15 @@ export type Mutation = {
   readonly createDateNode: Edge;
   readonly createDateTimeNode: Edge;
   readonly createFileNode: Edge;
-  readonly createGraph: Graph;
+  readonly createGraph: GraphMeta;
   readonly createNumberNode: Edge;
   readonly createTextNode: Edge;
   readonly createVersion: VersionMeta;
-  readonly deleteGraph: Graph;
+  readonly createView: ViewMeta;
+  readonly deleteGraph: GraphMeta;
   readonly deleteNode: Node;
   readonly deleteVersion: VersionMeta;
+  readonly deleteView: ViewMeta;
   readonly lockVersion: VersionMeta;
   readonly unlockVersion: VersionMeta;
   readonly updateNodeDescription: Node;
@@ -189,6 +209,11 @@ export type MutationCreateVersionArgs = {
 };
 
 
+export type MutationCreateViewArgs = {
+  input: CreateViewInput;
+};
+
+
 export type MutationDeleteGraphArgs = {
   input: DeleteGraphInput;
 };
@@ -201,6 +226,11 @@ export type MutationDeleteNodeArgs = {
 
 export type MutationDeleteVersionArgs = {
   input: DeleteVersionInput;
+};
+
+
+export type MutationDeleteViewArgs = {
+  input: DeleteViewInput;
 };
 
 
@@ -280,8 +310,9 @@ export type NumberNode = Node & {
 
 export type Query = {
   readonly graph?: Maybe<Graph>;
-  readonly graphs: ReadonlyArray<Graph>;
+  readonly graphs: ReadonlyArray<GraphMeta>;
   readonly version?: Maybe<Version>;
+  readonly view?: Maybe<View>;
 };
 
 
@@ -292,6 +323,11 @@ export type QueryGraphArgs = {
 
 export type QueryVersionArgs = {
   versionId: Scalars['ID'];
+};
+
+
+export type QueryViewArgs = {
+  viewId: Scalars['ID'];
 };
 
 export type RootNode = Node & {
@@ -357,6 +393,23 @@ export type VersionMeta = {
   readonly lockedAt?: Maybe<Scalars['DateTime']>;
 };
 
+export type View = {
+  readonly createdAt: Scalars['DateTime'];
+  readonly description?: Maybe<Scalars['String']>;
+  readonly edges: ReadonlyArray<Edge>;
+  readonly id: Scalars['ID'];
+  readonly name: Scalars['String'];
+  readonly updatedAt: Scalars['DateTime'];
+};
+
+export type ViewMeta = {
+  readonly createdAt: Scalars['DateTime'];
+  readonly description?: Maybe<Scalars['String']>;
+  readonly id: Scalars['ID'];
+  readonly name: Scalars['String'];
+  readonly updatedAt: Scalars['DateTime'];
+};
+
 export type FindGraphsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -367,7 +420,7 @@ export type FindGraphQueryVariables = Exact<{
 }>;
 
 
-export type FindGraphQuery = { readonly graph?: { readonly id: string, readonly createdAt: any, readonly color: string, readonly root: { readonly id: string, readonly name: string }, readonly version: { readonly id: string, readonly lockedAt?: any | null | undefined, readonly edges: ReadonlyArray<{ readonly position: number, readonly left: { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string }, readonly right: { readonly __typename: 'BlocNode', readonly id: string, readonly name: string } | { readonly __typename: 'BooleanNode', readonly id: string, readonly name: string } | { readonly __typename: 'DateNode', readonly id: string, readonly name: string } | { readonly __typename: 'DateTimeNode', readonly id: string, readonly name: string } | { readonly __typename: 'FileNode', readonly id: string, readonly name: string } | { readonly __typename: 'NumberNode', readonly id: string, readonly name: string } | { readonly __typename: 'RootNode', readonly id: string, readonly name: string } | { readonly __typename: 'TextNode', readonly id: string, readonly name: string } }> } } | null | undefined };
+export type FindGraphQuery = { readonly graph?: { readonly id: string, readonly createdAt: any, readonly color: string, readonly root: { readonly id: string, readonly name: string }, readonly views: ReadonlyArray<{ readonly id: string, readonly name: string }>, readonly view: { readonly id: string, readonly name: string, readonly edges: ReadonlyArray<{ readonly id: string }> }, readonly version: { readonly id: string, readonly lockedAt?: any | null | undefined, readonly edges: ReadonlyArray<{ readonly id: string, readonly left: { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string }, readonly right: { readonly __typename: 'BlocNode', readonly id: string, readonly name: string } | { readonly __typename: 'BooleanNode', readonly id: string, readonly name: string } | { readonly __typename: 'DateNode', readonly id: string, readonly name: string } | { readonly __typename: 'DateTimeNode', readonly id: string, readonly name: string } | { readonly __typename: 'FileNode', readonly id: string, readonly name: string } | { readonly __typename: 'NumberNode', readonly id: string, readonly name: string } | { readonly __typename: 'RootNode', readonly id: string, readonly name: string } | { readonly __typename: 'TextNode', readonly id: string, readonly name: string } }> } } | null | undefined };
 
 export type CreateTextNodeMutationVariables = Exact<{
   input: CreateNodeInput;
@@ -390,6 +443,13 @@ export type DeleteNodeMutationVariables = Exact<{
 
 export type DeleteNodeMutation = { readonly deleteNode: { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } };
 
+export type UpdateNodeNameMutationVariables = Exact<{
+  input: UpdateNodeNameInput;
+}>;
+
+
+export type UpdateNodeNameMutation = { readonly updateNodeName: { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } };
+
 export type CreateGraphMutationVariables = Exact<{
   input: CreateGraphInput;
 }>;
@@ -404,11 +464,20 @@ export type DeleteGraphMutationVariables = Exact<{
 
 export type DeleteGraphMutation = { readonly deleteGraph: { readonly id: string } };
 
+export type DeleteViewMutationVariables = Exact<{
+  input: DeleteViewInput;
+}>;
+
+
+export type DeleteViewMutation = { readonly deleteView: { readonly id: string } };
+
 
 export const FindGraphsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"findGraphs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"graphs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"root"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"color"}}]}}]}}]} as unknown as DocumentNode<FindGraphsQuery, FindGraphsQueryVariables>;
-export const FindGraphDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"findGraph"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"graphId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"graph"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"graphId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"graphId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"color"}},{"kind":"Field","name":{"kind":"Name","value":"root"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"version"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"lockedAt"}},{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"position"}},{"kind":"Field","name":{"kind":"Name","value":"left"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"right"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"__typename"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<FindGraphQuery, FindGraphQueryVariables>;
+export const FindGraphDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"findGraph"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"graphId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"graph"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"graphId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"graphId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"color"}},{"kind":"Field","name":{"kind":"Name","value":"root"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"views"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"view"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"version"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"lockedAt"}},{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"left"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"right"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"__typename"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<FindGraphQuery, FindGraphQueryVariables>;
 export const CreateTextNodeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createTextNode"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateNodeInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createTextNode"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<CreateTextNodeMutation, CreateTextNodeMutationVariables>;
 export const CreateBlocNodeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createBlocNode"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateNodeInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createBlocNode"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<CreateBlocNodeMutation, CreateBlocNodeMutationVariables>;
 export const DeleteNodeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"deleteNode"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"DeleteNodeInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteNode"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<DeleteNodeMutation, DeleteNodeMutationVariables>;
+export const UpdateNodeNameDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"updateNodeName"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdateNodeNameInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateNodeName"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<UpdateNodeNameMutation, UpdateNodeNameMutationVariables>;
 export const CreateGraphDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createGraph"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateGraphInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createGraph"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<CreateGraphMutation, CreateGraphMutationVariables>;
 export const DeleteGraphDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"deleteGraph"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"DeleteGraphInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteGraph"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<DeleteGraphMutation, DeleteGraphMutationVariables>;
+export const DeleteViewDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"deleteView"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"DeleteViewInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteView"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<DeleteViewMutation, DeleteViewMutationVariables>;

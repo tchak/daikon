@@ -3,8 +3,9 @@ import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { BellIcon, MenuIcon, XIcon } from '@heroicons/react/outline';
 import { DatabaseIcon } from '@heroicons/react/solid';
 import { NavLink, Link } from 'react-router-dom';
+import clsx from 'clsx';
 
-import { classNames, defaultInitials } from './utils';
+import { defaultInitials } from './utils';
 
 export function Header({ children }: { children: ReactNode }) {
   return (
@@ -172,7 +173,7 @@ function ProfileDropdown({ profile }: { profile: Profile }) {
                   {({ active }) => (
                     <Link
                       to={to}
-                      className={classNames(
+                      className={clsx(
                         active ? 'bg-gray-100' : '',
                         'block px-4 py-2 text-sm text-gray-700'
                       )}

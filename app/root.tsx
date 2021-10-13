@@ -1,4 +1,4 @@
-import type { LinksFunction, LoaderFunction } from 'remix';
+import type { LinksFunction } from 'remix';
 import {
   Meta,
   Links,
@@ -6,7 +6,9 @@ import {
   useTransition,
   useMatches,
   LiveReload,
+  useCatch,
 } from 'remix';
+import { ReactNode } from 'react';
 import { Outlet } from 'react-router-dom';
 
 import stylesUrl from './styles/index.css';
@@ -17,18 +19,14 @@ export const links: LinksFunction = () => {
   return [{ rel: 'stylesheet', href: stylesUrl }];
 };
 
-export const loader: LoaderFunction = async () => {
-  return { date: new Date() };
-};
-
 export const unstable_shouldReload = () => false;
 
 function Document({
   children,
-  pendingLocation,
+  pendingLocation = false,
 }: {
-  children: React.ReactNode;
-  pendingLocation: boolean;
+  children: ReactNode;
+  pendingLocation?: boolean;
 }) {
   return (
     <html lang="en">
@@ -49,7 +47,7 @@ function Document({
 }
 
 export default function App() {
-  const pendingLocation = useTransition().location;
+  const pendingLocation = useTransition().state == 'loading';
   const noLayout = useMatches().some(({ handle }) => handle?.layout == false);
   return (
     <Document pendingLocation={!!pendingLocation}>
@@ -66,7 +64,7 @@ export default function App() {
 
 export function ErrorBoundary({ error }: { error: Error }) {
   return (
-    <Document pendingLocation={false}>
+    <Document>
       <h1>App Error</h1>
       <pre>{error.message}</pre>
       <p>
@@ -75,4 +73,26 @@ export function ErrorBoundary({ error }: { error: Error }) {
       </p>
     </Document>
   );
+}
+
+export function CatchBoundary() {
+  const caught = useCatch();
+
+  switch (caught.status) {
+    case 401:
+    case 404:
+      return (
+        <Document>
+          <h1>
+            {caught.status} {caught.statusText}
+          </h1>
+          <p>Page not found</p>
+        </Document>
+      );
+
+    default:
+      throw new Error(
+        `Unexpected caught response with status: ${caught.status}`
+      );
+  }
 }
