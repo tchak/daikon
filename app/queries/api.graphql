@@ -47,6 +47,18 @@ query findGraph($graphId: ID!) {
   }
 }
 
+mutation createGraph($input: CreateGraphInput!) {
+  createGraph(input: $input) {
+    id
+  }
+}
+
+mutation createView($input: CreateViewInput!) {
+  createView(input: $input) {
+    id
+  }
+}
+
 mutation createTextNode($input: CreateNodeInput!) {
   createTextNode(input: $input) {
     id
@@ -59,20 +71,8 @@ mutation createBlocNode($input: CreateNodeInput!) {
   }
 }
 
-mutation deleteNode($input: DeleteNodeInput!) {
-  deleteNode(input: $input) {
-    id
-  }
-}
-
 mutation updateNodeName($input: UpdateNodeNameInput!) {
   updateNodeName(input: $input) {
-    id
-  }
-}
-
-mutation createGraph($input: CreateGraphInput!) {
-  createGraph(input: $input) {
     id
   }
 }
@@ -85,6 +85,12 @@ mutation deleteGraph($input: DeleteGraphInput!) {
 
 mutation deleteView($input: DeleteViewInput!) {
   deleteView(input: $input) {
+    id
+  }
+}
+
+mutation deleteNode($input: DeleteNodeInput!) {
+  deleteNode(input: $input) {
     id
   }
 }
