@@ -1,22 +1,28 @@
 import 'dotenv/config';
-import { createClient, fetchExchange } from '@urql/core';
+import { createClient, Client } from '@urql/core';
+import { executeExchange } from '@urql/exchange-execute';
 import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
 
-export * from '~/graphql-operations';
+import { schema } from '~/graphql.server';
+export * from '~/graphql/queries';
 
-const API_URL = process.env['API_URL']!;
-const API_TOKEN = process.env['API_TOKEN'];
+// add urql to the NodeJS global type
+interface CustomNodeJsGlobal extends NodeJS.Global {
+  __client: Client;
+}
 
-export const client = createClient({
-  url: API_URL,
-  exchanges: [fetchExchange],
-  preferGetMethod: true,
-  fetchOptions: {
-    // headers: {
-    //   authorization: `Bearer ${API_TOKEN}`,
-    // },
-  },
-});
+// Prevent multiple instances of URQL Client in development
+declare const global: CustomNodeJsGlobal;
+export const client =
+  global.__client ??
+  createClient({
+    url: '/__graphql__',
+    exchanges: [executeExchange({ schema })],
+  });
+
+if (process.env.NODE_ENV === 'development') {
+  global.__client = client;
+}
 
 export async function query<Result, Variables>(
   document: DocumentNode<Result, Variables>,

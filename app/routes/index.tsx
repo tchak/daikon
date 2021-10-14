@@ -16,7 +16,7 @@ import {
   FindGraphsQuery,
   CreateGraphDocument,
   DeleteGraphDocument,
-} from '~/api.server';
+} from '~/urql.server';
 import { Header, Main } from '~/components/DefaultLayout';
 import { bgColor } from '~/components/utils';
 

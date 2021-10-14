@@ -32,12 +32,12 @@ import {
   mutation,
   FindGraphDocument,
   FindGraphQuery,
-  CreateTextNodeDocument,
-  CreateBlocNodeDocument,
-  DeleteNodeDocument,
-  UpdateNodeNameDocument,
+  CreateTextFieldDocument,
+  CreateBlocFieldDocument,
+  DeleteFieldDocument,
+  SetFieldNameDocument,
   DeleteViewDocument,
-} from '~/api.server';
+} from '~/urql.server';
 
 const isEscKey = isHotkey('esc');
 
@@ -70,7 +70,7 @@ export const action: ActionFunction = async ({ request }) => {
 
   switch (params.get('_action')) {
     case Action.RenameNode:
-      return mutation(UpdateNodeNameDocument, {
+      return mutation(SetFieldNameDocument, {
         input: {
           versionId: params.get('versionId')!,
           nodeId: params.get('nodeId')!,
@@ -78,7 +78,7 @@ export const action: ActionFunction = async ({ request }) => {
         },
       });
     case Action.DeleteNode:
-      return mutation(DeleteNodeDocument, {
+      return mutation(DeleteFieldDocument, {
         input: {
           versionId: params.get('versionId')!,
           nodeId: params.get('nodeId')!,
@@ -93,7 +93,7 @@ export const action: ActionFunction = async ({ request }) => {
     case Action.CreateNode:
       switch (params.get('type')) {
         case 'bloc':
-          return mutation(CreateBlocNodeDocument, {
+          return mutation(CreateBlocFieldDocument, {
             input: {
               versionId: params.get('versionId')!,
               leftId: params.get('leftId')!,
@@ -101,7 +101,7 @@ export const action: ActionFunction = async ({ request }) => {
             },
           });
         default:
-          return mutation(CreateTextNodeDocument, {
+          return mutation(CreateTextFieldDocument, {
             input: {
               versionId: params.get('versionId')!,
               leftId: params.get('leftId')!,

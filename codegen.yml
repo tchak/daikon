@@ -1,8 +1,8 @@
 overwrite: true
-schema: ${API_URL}
-documents: "app/queries/**/*.graphql"
+schema: "app/graphql/schema.graphql"
+documents: "app/graphql/queries.graphql"
 generates:
-  app/graphql-operations.ts:
+  app/graphql/queries.ts:
     plugins:
       - typescript
       - typescript-operations
