@@ -111,5 +111,18 @@ function parseInput<T, G>(
 
 async function parseBody(request: Request) {
   const params = new URLSearchParams(await request.text());
-  return Object.fromEntries(params);
+  const body = new Map<string, string | string[]>();
+  for (const [key, value] of params) {
+    if (key.endsWith('[]')) {
+      const arrayKey = key.slice(0, -2);
+      if (body.has(arrayKey)) {
+        (body.get(arrayKey) as string[]).push(value);
+      } else {
+        body.set(arrayKey, [value]);
+      }
+    } else {
+      body.set(key, value);
+    }
+  }
+  return Object.fromEntries(body);
 }
