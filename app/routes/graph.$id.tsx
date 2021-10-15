@@ -105,7 +105,7 @@ export function useGridViewColumns<T extends DataRow = DataRow>(
       },
       ...nodes.map((node) => ({
         Header: () => (
-          <FieldTab node={node} versionId={versionId} viewId={viewId} />
+          <FieldTab field={node} versionId={versionId} viewId={viewId} />
         ),
         id: node.id,
         accessor: (row: T) => row[node.id],
