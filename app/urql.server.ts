@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import { createClient, Client } from '@urql/core';
 import { executeExchange } from '@urql/exchange-execute';
 import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
