@@ -34,6 +34,7 @@
     "graphql": "^15.6.1",
     "graphql-helix": "^1.8.3",
     "io-ts": "^2.2.16",
+    "io-ts-types-experimental": "^0.3.0",
     "is-hotkey": "^0.2.0",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",

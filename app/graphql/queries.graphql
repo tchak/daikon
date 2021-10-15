@@ -73,6 +73,12 @@ mutation setFieldName($input: SetFieldNameInput!) {
   }
 }
 
+mutation setFieldHidden($input: SetFieldHiddenInput!) {
+  setFieldHidden(input: $input) {
+    id
+  }
+}
+
 mutation deleteGraph($input: DeleteGraphInput!) {
   deleteGraph(input: $input) {
     id

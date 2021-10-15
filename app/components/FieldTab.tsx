@@ -20,8 +20,7 @@ export function FieldTab({
   const fetcher = useFetcher();
   const updateName = (event: FormEvent<HTMLFormElement>) =>
     fetcher.submit(event.currentTarget, {
-      action: '/controllers/columns',
-      method: 'put',
+      method: 'post',
       replace: true,
     });
   const name = useMemo(() => {
@@ -42,7 +41,7 @@ export function FieldTab({
               setEditing(false);
             }}
             onCancel={() => setEditing(false)}
-            data={{ versionId, nodeId: node.id }}
+            data={{ _action: Action.RenameField, versionId, nodeId: node.id }}
           />
         ) : (
           <div>{name}</div>

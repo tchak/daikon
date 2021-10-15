@@ -32,7 +32,7 @@ export function ViewTab({ view }: { view: View }) {
             setEditing(false);
           }}
           onCancel={() => setEditing(false)}
-          data={{ viewId: view.id }}
+          data={{ _action: Action.RenameView, viewId: view.id }}
         />
       ) : (
         <div>{name}</div>
