@@ -5,28 +5,15 @@ import { TrashIcon, PlusCircleIcon } from '@heroicons/react/outline';
 import { DotsVerticalIcon } from '@heroicons/react/solid';
 import { Menu } from '@headlessui/react';
 import { ReactNode, useState, useCallback } from 'react';
-import { isHotkey } from 'is-hotkey';
 import { usePopper } from 'react-popper';
 import clsx from 'clsx';
 
-import {
-  query,
-  mutation,
-  FindGraphsDocument,
-  FindGraphsQuery,
-  CreateGraphDocument,
-  DeleteGraphDocument,
-} from '~/urql.server';
+import { query, FindGraphsDocument, FindGraphsQuery } from '~/urql.server';
 import { Header, Main } from '~/components/DefaultLayout';
 import { bgColor } from '~/components/utils';
+import { Action, processAction } from '~/actions';
 
 type Graph = FindGraphsQuery['graphs'][0];
-enum Action {
-  DeleteGraph = 'DeleteGraph',
-  CreateGraph = 'CreateGraph',
-}
-
-const isEscKey = isHotkey('esc');
 
 export const meta: MetaFunction = () => {
   return { title: 'Graphs' };
@@ -35,24 +22,7 @@ export const loader: LoaderFunction = async () => {
   const { graphs } = await query(FindGraphsDocument);
   return graphs;
 };
-export const action: ActionFunction = async ({ request }) => {
-  const params = new URLSearchParams(await request.text());
-
-  switch (params.get('_action')) {
-    case Action.DeleteGraph:
-      return mutation(DeleteGraphDocument, {
-        input: {
-          graphId: params.get('id')!,
-        },
-      });
-    case Action.CreateGraph:
-      return mutation(CreateGraphDocument, {
-        input: {
-          name: params.get('name')!,
-        },
-      });
-  }
-};
+export const action: ActionFunction = ({ request }) => processAction(request);
 
 export default function IndexRoute() {
   const data = useLoaderData<Graph[]>();
