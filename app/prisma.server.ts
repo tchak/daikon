@@ -16,10 +16,6 @@ if (process.env.NODE_ENV === 'development') {
   global.__prisma = prisma;
 }
 
-type TransactionParameters = Parameters<typeof prisma.$transaction>;
-type PrismaQueryClient = Parameters<TransactionParameters[0]>[0];
-type PrismaQueryOptions = { transaction: boolean };
-
 export const PrismaError = 'PrismaError' as const;
 export type PrismaError = typeof PrismaError;
 export const NotFoundError = 'NotFoundError' as const;
@@ -28,12 +24,11 @@ export type NotFoundError = typeof NotFoundError;
 export type PrismaTask<Data> = TaskEither<PrismaError | NotFoundError, Data>;
 
 export const prismaQuery = <Data>(
-  tx: (prisma: PrismaQueryClient) => Promise<Data>,
-  options?: PrismaQueryOptions
+  tx: (prisma: PrismaClient) => Promise<Data>
 ): PrismaTask<Data> =>
   pipe(
     TE.tryCatch(
-      () => (options?.transaction ? prisma.$transaction(tx) : tx(prisma)),
+      () => tx(prisma),
       (e) => {
         if ((e as { name: string }).name == 'NotFoundError') {
           return NotFoundError;

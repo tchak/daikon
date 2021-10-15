@@ -41,8 +41,8 @@ export function findViewEdges({
   leftId?: string;
 }): PrismaTask<EdgeData[]> {
   return pipe(
-    prismaQuery(
-      async (prisma) => {
+    prismaQuery((prisma) =>
+      prisma.$transaction(async (prisma) => {
         const view = await prisma.graphView.findUnique({
           rejectOnNotFound: true,
           where: { id: viewId },
@@ -71,8 +71,7 @@ export function findViewEdges({
             },
           },
         });
-      },
-      { transaction: true }
+      })
     ),
     TE.map(({ edges }) => edges)
   );
@@ -106,8 +105,8 @@ export function updateViewField({
   hidden: boolean;
 }): PrismaTask<ViewData> {
   return pipe(
-    prismaQuery(
-      async (prisma) => {
+    prismaQuery((prisma) =>
+      prisma.$transaction(async (prisma) => {
         const view = await prisma.graphView.findUnique({
           rejectOnNotFound: true,
           where: { id: viewId },
@@ -124,8 +123,7 @@ export function updateViewField({
           data: { hidden: [...hiddenSet] },
           select: VIEW_ATTRIBUTES,
         });
-      },
-      { transaction: true }
+      })
     )
   );
 }

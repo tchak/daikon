@@ -137,8 +137,8 @@ export function lockVersion({
 }: {
   versionId: string;
 }): PrismaTask<VersionData> {
-  return prismaQuery(
-    async (prisma) => {
+  return prismaQuery((prisma) =>
+    prisma.$transaction(async (prisma) => {
       const version = await prisma.graphVersion.findFirst({
         rejectOnNotFound: true,
         where: { id: versionId, lockedAt: null },
@@ -149,8 +149,7 @@ export function lockVersion({
         data: { lockedAt: new Date() },
       });
       return version;
-    },
-    { transaction: true }
+    })
   );
 }
 
@@ -159,8 +158,8 @@ export function unlockVersion({
 }: {
   versionId: string;
 }): PrismaTask<VersionData> {
-  return prismaQuery(
-    async (prisma) => {
+  return prismaQuery((prisma) =>
+    prisma.$transaction(async (prisma) => {
       const version = await prisma.graphVersion.findFirst({
         rejectOnNotFound: true,
         where: { id: versionId, lockedAt: { not: null } },
@@ -171,8 +170,7 @@ export function unlockVersion({
         data: { lockedAt: null },
       });
       return version;
-    },
-    { transaction: true }
+    })
   );
 }
 
@@ -181,8 +179,8 @@ export function deleteVersion({
 }: {
   versionId: string;
 }): PrismaTask<VersionData> {
-  return prismaQuery(
-    async (prisma) => {
+  return prismaQuery((prisma) =>
+    prisma.$transaction(async (prisma) => {
       const version = await prisma.graphVersion.findFirst({
         rejectOnNotFound: true,
         where: { id: versionId, lockedAt: null },
@@ -190,8 +188,7 @@ export function deleteVersion({
       });
       await prisma.graphVersion.delete({ where: { id: versionId } });
       return version;
-    },
-    { transaction: true }
+    })
   );
 }
 
