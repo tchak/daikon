@@ -52,24 +52,24 @@ export function AddFieldButton({
             className="flex flex-col"
             disabled={fetcher.state == 'submitting'}
           >
-            <label htmlFor="node_name" className="sr-only">
-              Column name
+            <label htmlFor="field_name" className="sr-only">
+              Field name
             </label>
             <input
-              id="node_name"
+              id="field_name"
               type="text"
               name="name"
-              placeholder="Column name"
+              placeholder="Field name"
               className="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md"
               autoCapitalize="off"
               autoComplete="off"
               autoCorrect="off"
             />
-            <label htmlFor="node_type" className="sr-only">
-              Column type
+            <label htmlFor="field_type" className="sr-only">
+              Field type
             </label>
             <select
-              id="node_type"
+              id="field_type"
               name="type"
               className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm rounded-md"
             >
@@ -86,7 +86,7 @@ export function AddFieldButton({
               disabled={fetcher.state == 'submitting'}
               className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:col-start-2 sm:text-sm"
             >
-              Create column
+              Create field
             </button>
             <button
               type="button"

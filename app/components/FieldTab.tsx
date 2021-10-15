@@ -8,11 +8,11 @@ import { TabMenu, TabMenuItem } from './TabMenu';
 import { NameForm } from './NameForm';
 
 export function FieldTab({
-  node,
+  field,
   versionId,
   viewId,
 }: {
-  node: Field;
+  field: Field;
   versionId: string;
   viewId: string;
 }) {
@@ -27,29 +27,29 @@ export function FieldTab({
     if (fetcher.type == 'actionSubmission' || fetcher.type == 'actionReload') {
       return fetcher.submission.formData.get('name') as string;
     }
-    return node.name;
-  }, [fetcher.type, node.id, node.name]);
+    return field.name;
+  }, [fetcher.type, field.id, field.name]);
 
   return (
     <li className="flex items-center">
       <div className="flex items-center">
         {isEditing ? (
           <NameForm
-            name={node.name}
+            name={field.name}
             onSubmit={(event) => {
               updateName(event);
               setEditing(false);
             }}
             onCancel={() => setEditing(false)}
-            data={{ _action: Action.RenameField, versionId, nodeId: node.id }}
+            data={{ _action: Action.RenameField, versionId, nodeId: field.id }}
           />
         ) : (
           <div>{name}</div>
         )}
-        <NodeMenu
+        <FieldMenu
           versionId={versionId}
           viewId={viewId}
-          nodeId={node.id}
+          nodeId={field.id}
           rename={() => {
             setTimeout(() => setEditing(true), 50);
           }}
@@ -59,11 +59,11 @@ export function FieldTab({
   );
 }
 
-function NodeMenu({
+function FieldMenu({
   versionId,
   viewId,
   nodeId,
-  rename: renameColumn,
+  rename: renameField,
 }: {
   versionId: string;
   viewId: string;
@@ -71,12 +71,12 @@ function NodeMenu({
   rename: () => void;
 }) {
   const fetcher = useFetcher();
-  const hideNode = () =>
+  const hideField = () =>
     fetcher.submit(
       { _action: Action.HideField, viewId, nodeId, hidden: 'true' },
       { method: 'post', replace: true }
     );
-  const deleteNode = () =>
+  const deleteField = () =>
     fetcher.submit(
       { _action: Action.DeleteField, versionId, nodeId },
       { method: 'post', replace: true }
@@ -84,15 +84,15 @@ function NodeMenu({
 
   return (
     <TabMenu>
-      <TabMenuItem onClick={renameColumn}>
+      <TabMenuItem onClick={renameField}>
         <PencilIcon className="h-4 w-4 mr-2" />
         Rename field
       </TabMenuItem>
-      <TabMenuItem onClick={hideNode} disabled={!!fetcher.submission}>
+      <TabMenuItem onClick={hideField} disabled={!!fetcher.submission}>
         <EyeOffIcon className="h-4 w-4 mr-2" />
         Hide field
       </TabMenuItem>
-      <TabMenuItem onClick={deleteNode} disabled={!!fetcher.submission}>
+      <TabMenuItem onClick={deleteField} disabled={!!fetcher.submission}>
         <TrashIcon className="h-4 w-4 mr-2" />
         Delete field
       </TabMenuItem>

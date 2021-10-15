@@ -33,7 +33,7 @@ export function HideFieldsButton({
         className="flex items-center text-xs focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
       >
         <EyeOffIcon className="h-3 w-3 mr-1" />
-        Hide columns
+        Hide fields
       </Popover.Button>
       <Popover.Panel
         as="ul"
@@ -57,7 +57,7 @@ export function HideFieldsButton({
 
 function Toggle({ viewId, field }: { viewId: string; field: Field }) {
   const fetcher = useFetcher();
-  const toggleColumn = () =>
+  const toggle = () =>
     fetcher.submit(
       {
         _action: Action.HideField,
@@ -79,7 +79,7 @@ function Toggle({ viewId, field }: { viewId: string; field: Field }) {
       <Switch
         checked={enabled}
         disabled={fetcher.state == 'submitting'}
-        onChange={() => toggleColumn()}
+        onChange={toggle}
         className={clsx(
           enabled ? 'bg-green-600' : 'bg-gray-200',
           'relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
