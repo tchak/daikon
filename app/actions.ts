@@ -1,24 +1,24 @@
 import {
   mutation,
-  CreateTextFieldDocument,
   CreateBlocFieldDocument,
-  DeleteFieldDocument,
-  SetFieldNameDocument,
-  DeleteViewDocument,
   CreateGraphDocument,
+  CreateTextFieldDocument,
+  DeleteFieldDocument,
   DeleteGraphDocument,
+  DeleteViewDocument,
+  SetFieldNameDocument,
 } from '~/urql.server';
 
 export enum Action {
-  CreateGraph = 'CreateGraph',
-  DeleteGraph = 'DeleteGraph',
-  DeleteField = 'DeleteField',
   CreateField = 'CreateField',
-  RenameField = 'RenameField',
-  HideField = 'HideField',
-  RenameView = 'RenameView',
-  DeleteView = 'DeleteView',
+  CreateGraph = 'CreateGraph',
+  DeleteField = 'DeleteField',
+  DeleteGraph = 'DeleteGraph',
   DeleteRows = 'DeleteRows',
+  DeleteView = 'DeleteView',
+  HideField = 'HideField',
+  RenameField = 'RenameField',
+  RenameView = 'RenameView',
 }
 
 export async function processAction(request: Request) {
