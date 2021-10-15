@@ -58,6 +58,7 @@ model GraphNode {
   type        NodeType
   cardinality NodeCardinality @default(ONE)
   required    Boolean         @default(false)
+  nullable    Boolean         @default(false)
   options     Json            @default("{}")
   name        String
   description String?
