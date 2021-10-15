@@ -5,7 +5,8 @@ import * as Eq from 'io-ts/Eq';
 
 import { prismaQuery, PrismaTask } from '~/prisma.server';
 import { NODE_ATTRIBUTES, VERSION_ATTRIBUTES } from '.';
-import { EdgeData, RowData } from './field';
+import { EdgeData } from './field';
+import { RowData } from './row';
 
 export enum ChangeOp {
   CREATE,

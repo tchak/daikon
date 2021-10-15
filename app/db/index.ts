@@ -38,7 +38,14 @@ export const NODE_ATTRIBUTES = {
   updatedAt: true,
 };
 
+export const ROW_ATTRIBUTES = {
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+};
+
 export * from './graph';
 export * from './version';
 export * from './field';
 export * from './view';
+export * from './row';

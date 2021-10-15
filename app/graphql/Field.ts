@@ -204,3 +204,15 @@ export class MoveFieldInput {
   @ObjectTypeField(() => Int)
   position!: number;
 }
+
+@InputType()
+export class CreateRowInput {
+  @ObjectTypeField(() => ID)
+  versionId!: string;
+}
+
+@InputType()
+export class DeleteRowsInput {
+  @ObjectTypeField(() => [ID])
+  rowIds!: string[];
+}

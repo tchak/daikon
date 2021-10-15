@@ -13,6 +13,8 @@ import {
   DeleteViewDocument,
   SetFieldNameDocument,
   SetFieldHiddenDocument,
+  DeleteRowsDocument,
+  CreateRowDocument,
 } from '~/urql.server';
 
 export enum Action {
@@ -20,11 +22,12 @@ export enum Action {
   CreateGraph = 'CreateGraph',
   DeleteField = 'DeleteField',
   DeleteGraph = 'DeleteGraph',
-  DeleteRows = 'DeleteRows',
   DeleteView = 'DeleteView',
   HideField = 'HideField',
   RenameField = 'RenameField',
   RenameView = 'RenameView',
+  CreateRow = 'CreateRow',
+  DeleteRows = 'DeleteRows',
 }
 
 export async function processAction(request: Request) {
@@ -67,6 +70,14 @@ export async function processAction(request: Request) {
             return parseInput(deleteFieldD, (input) =>
               mutation(DeleteFieldDocument, { input })
             )(params);
+          case Action.CreateRow:
+            return parseInput(createRowD, (input) =>
+              mutation(CreateRowDocument, { input })
+            )(params);
+          case Action.DeleteRows:
+            return parseInput(deleteRowsD, (input) =>
+              mutation(DeleteRowsDocument, { input })
+            )(params);
           default:
             return { error: 'Action unknown' };
         }
@@ -97,6 +108,9 @@ const renameFieldD = D.struct({
   name: D.string,
 });
 const deleteFieldD = D.struct({ versionId: UUID, nodeId: UUID });
+
+const createRowD = D.struct({ versionId: UUID });
+const deleteRowsD = D.struct({ rowIds: D.array(UUID) });
 
 function parseInput<T, G>(
   decoder: D.Decoder<unknown, T>,

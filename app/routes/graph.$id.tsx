@@ -14,6 +14,7 @@ import { GridView, DataRow } from '~/components/GridView';
 import { FieldTab } from '~/components/FieldTab';
 import { ViewTab } from '~/components/ViewTab';
 import { AddFieldButton } from '~/components/AddFieldButton';
+import { AddRowButton } from '~/components/AddRowButton';
 import { HideFieldsButton } from '~/components/HideFieldsButton';
 import { DeleteRowsButton } from '~/components/DeleteRowsButton';
 import { bgColor } from '~/components/utils';
@@ -150,7 +151,7 @@ export default function GraphRoute() {
     tree.leftId,
     graph.view.id
   );
-  const data: Record<string, unknown>[] = [];
+  const data: readonly Record<string, unknown>[] = graph.rows;
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
 
   return (
@@ -160,11 +161,19 @@ export default function GraphRoute() {
       <div className="flex items-center p-2 border-b border-gray-300">
         <ViewTab view={graph.view} />
         <HideFieldsButton viewId={graph.view.id} fields={tree.nodes} />
-        <DeleteRowsButton graphId={graph.id} selectedRows={selectedRows} />
+        <DeleteRowsButton selectedRows={selectedRows} />
       </div>
 
       <div className="flex-grow overflow-y-scroll">
-        <GridView columns={columns} data={data} onSelect={() => {}} />
+        <GridView
+          columns={columns}
+          data={data}
+          onSelect={(rowIds) => setSelectedRows(rowIds)}
+        />
+      </div>
+
+      <div className="p-2 border-t border-gray-300">
+        <AddRowButton versionId={graph.version.id} />
       </div>
     </div>
   );

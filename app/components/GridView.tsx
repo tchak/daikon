@@ -15,7 +15,7 @@ export function GridView<T extends DataRow = DataRow>({
   onSelect,
 }: {
   columns: Column<T>[];
-  data: T[];
+  data: readonly T[];
   onSelect?: (rowIds: string[]) => void;
 }) {
   const {
@@ -54,7 +54,7 @@ export function GridView<T extends DataRow = DataRow>({
         .map((index) => data[Number(index)].id as string);
       onSelect(ids);
     }
-  }, [onSelect, data, selectedRowIds]);
+  }, [data, selectedRowIds]);
 
   return (
     <table {...getTableProps()} className="divide-y divide-gray-200 text-sm">

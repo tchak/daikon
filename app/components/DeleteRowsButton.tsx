@@ -3,13 +3,7 @@ import { TrashIcon } from '@heroicons/react/outline';
 
 import { Action } from '~/actions';
 
-export function DeleteRowsButton({
-  graphId,
-  selectedRows,
-}: {
-  graphId: string;
-  selectedRows: string[];
-}) {
+export function DeleteRowsButton({ selectedRows }: { selectedRows: string[] }) {
   const fetcher = useFetcher();
   if (selectedRows.length == 0 || fetcher.state == 'submitting') {
     return null;
@@ -18,7 +12,6 @@ export function DeleteRowsButton({
     <div className="text-xs ml-2">
       <fetcher.Form method="post" replace>
         <input type="hidden" name="_action" value={Action.DeleteRows} />
-        <input type="hidden" name="graphId" value={graphId} />
         {selectedRows.map((rowId) => (
           <input type="hidden" name="rowIds[]" value={rowId} key={rowId} />
         ))}

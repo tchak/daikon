@@ -11,7 +11,7 @@ import {
 } from '.';
 import { VersionData } from './version';
 import { ViewData } from './view';
-import { RowData } from './Field';
+import { RowData } from './row';
 
 export type GraphData = {
   id: string;

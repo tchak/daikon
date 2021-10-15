@@ -45,6 +45,10 @@ input CreateGraphInput {
   name: String!
 }
 
+input CreateRowInput {
+  versionId: ID!
+}
+
 input CreateVersionInput {
   versionId: ID!
 }
@@ -86,6 +90,10 @@ input DeleteFieldInput {
 
 input DeleteGraphInput {
   graphId: ID!
+}
+
+input DeleteRowsInput {
+  rowIds: [ID!]!
 }
 
 input DeleteVersionInput {
@@ -180,11 +188,13 @@ type Mutation {
   createFileField(input: CreateFieldInput!): Edge!
   createGraph(input: CreateGraphInput!): Graph!
   createNumberField(input: CreateFieldInput!): Edge!
+  createRow(input: CreateRowInput!): Row!
   createTextField(input: CreateFieldInput!): Edge!
   createVersion(input: CreateVersionInput!): Version!
   createView(input: CreateViewInput!): View!
   deleteField(input: DeleteFieldInput!): Field!
   deleteGraph(input: DeleteGraphInput!): Graph!
+  deleteRows(input: DeleteRowsInput!): [Row!]!
   deleteVersion(input: DeleteVersionInput!): Version!
   deleteView(input: DeleteViewInput!): View!
   lockVersion(input: LockVersionInput!): Version!

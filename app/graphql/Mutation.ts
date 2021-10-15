@@ -3,38 +3,44 @@ import * as TE from 'fp-ts/TaskEither';
 import { pipe } from 'fp-ts/function';
 
 import {
-  GraphData,
-  VersionData,
-  ViewData,
-  FieldData,
-  EdgeData,
-  createGraph,
   createField,
+  createGraph,
+  createRow,
   createVersion,
   createView,
-  lockVersion,
-  unlockVersion,
+  deleteField,
   deleteGraph,
+  deleteRows,
   deleteVersion,
   deleteView,
-  deleteField,
-  updateField,
-  updateViewField,
+  EdgeData,
+  FieldData,
+  GraphData,
+  lockVersion,
   moveField,
   NodeType,
+  RowData,
+  unlockVersion,
+  updateField,
+  updateViewField,
+  VersionData,
+  ViewData,
 } from '~/db';
 
 import { Graph, CreateGraphInput, DeleteGraphInput } from './Graph';
 import {
-  Field,
-  Edge,
   CreateFieldInput,
+  CreateRowInput,
   DeleteFieldInput,
-  SetFieldNameInput,
-  SetFieldDescriptionInput,
-  SetFieldNullableInput,
-  SetFieldHiddenInput,
+  DeleteRowsInput,
+  Edge,
+  Field,
   MoveFieldInput,
+  Row,
+  SetFieldDescriptionInput,
+  SetFieldHiddenInput,
+  SetFieldNameInput,
+  SetFieldNullableInput,
 } from './Field';
 import {
   Version,
@@ -196,6 +202,22 @@ export class MutationResolver {
     input: SetFieldHiddenInput
   ): Promise<ViewData> {
     return pipe(updateViewField(input), throwError())();
+  }
+
+  @Mutation(() => Row)
+  createRow(
+    @Arg('input', () => CreateRowInput)
+    input: CreateRowInput
+  ): Promise<RowData> {
+    return pipe(createRow(input), throwError())();
+  }
+
+  @Mutation(() => [Row])
+  deleteRows(
+    @Arg('input', () => DeleteRowsInput)
+    input: DeleteRowsInput
+  ): Promise<RowData[]> {
+    return pipe(deleteRows(input), throwError())();
   }
 }
 

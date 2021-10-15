@@ -40,6 +40,9 @@ query findGraph($graphId: ID!) {
         }
       }
     }
+    rows {
+      id
+    }
   }
 }
 
@@ -93,6 +96,18 @@ mutation deleteView($input: DeleteViewInput!) {
 
 mutation deleteField($input: DeleteFieldInput!) {
   deleteField(input: $input) {
+    id
+  }
+}
+
+mutation createRow($input: CreateRowInput!) {
+  createRow(input: $input) {
+    id
+  }
+}
+
+mutation deleteRows($input: DeleteRowsInput!) {
+  deleteRows(input: $input) {
     id
   }
 }
