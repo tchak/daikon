@@ -30,6 +30,7 @@ model GraphVersion {
   graphId   String      @db.Uuid
   graph     Graph       @relation(fields: [graphId], references: [id], onDelete: Cascade)
   edges     GraphEdge[]
+  rows      GraphRow[]
 
   @@index(graphId)
 }
@@ -106,4 +107,15 @@ model GraphView {
   sort        Json     @default("{}")
 
   @@index([graphId])
+}
+
+model GraphRow {
+  id        String       @id @default(uuid()) @db.Uuid
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  versionId String       @db.Uuid
+  version   GraphVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  data      Json         @default("{}")
+
+  @@index([versionId])
 }

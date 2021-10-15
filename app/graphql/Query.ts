@@ -17,10 +17,15 @@ import {
   ViewData,
   ChangeData,
   GraphData,
+  RowData,
+  findVersionRows,
+  findGraphRows,
+  findGraphVersions,
+  findGraphViews,
 } from '~/db';
 
 import { Graph } from './Graph';
-import { Edge } from './Field';
+import { Edge, Row } from './Field';
 import { Version } from './Version';
 import { View } from './View';
 import { Change } from './Change';
@@ -28,13 +33,37 @@ import { Change } from './Change';
 @Resolver(Graph)
 export class GraphResolver {
   @FieldResolver(() => Version)
-  version(@Root() root: Graph): Promise<VersionData> {
+  version(@Root() root: GraphData): Promise<VersionData> {
     return pipe(findGraphVersion(root.id), throwError())();
   }
 
   @FieldResolver(() => View)
-  view(@Root() root: Graph): Promise<ViewData> {
+  view(@Root() root: GraphData): Promise<ViewData> {
     return pipe(findGraphView(root.id), throwError())();
+  }
+
+  @FieldResolver(() => [Version])
+  versions(@Root() root: GraphData): Promise<VersionData[]> {
+    return pipe(
+      findGraphVersions(root.id),
+      TE.match(() => [], identity)
+    )();
+  }
+
+  @FieldResolver(() => [View])
+  views(@Root() root: GraphData): Promise<ViewData[]> {
+    return pipe(
+      findGraphViews(root.id),
+      TE.match(() => [], identity)
+    )();
+  }
+
+  @FieldResolver(() => [Row])
+  rows(@Root() root: GraphData): Promise<RowData[]> {
+    return pipe(
+      findGraphRows({ graphId: root.id }),
+      TE.match(() => [], identity)
+    )();
   }
 }
 
@@ -64,12 +93,20 @@ export class VersionResolver {
 
   @FieldResolver(() => [Edge])
   edges(
-    @Root() version: VersionData,
+    @Root() root: VersionData,
     @Arg('leftId', () => ID, { nullable: true }) leftId?: string
   ): Promise<EdgeData[]> {
     return pipe(
-      findVersionEdges({ versionId: version.id, leftId }),
+      findVersionEdges({ versionId: root.id, leftId }),
       throwError()
+    )();
+  }
+
+  @FieldResolver(() => [Row])
+  rows(@Root() root: VersionData): Promise<RowData[]> {
+    return pipe(
+      findVersionRows({ versionId: root.id }),
+      TE.match(() => [], identity)
     )();
   }
 }

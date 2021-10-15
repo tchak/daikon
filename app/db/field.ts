@@ -23,6 +23,12 @@ export type EdgeData = {
   right: FieldData;
 };
 
+export type RowData = {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export function resolveFieldType(node: FieldData): string {
   switch (node.type) {
     case NodeType.TEXT:

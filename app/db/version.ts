@@ -5,7 +5,7 @@ import * as Eq from 'io-ts/Eq';
 
 import { prismaQuery, PrismaTask } from '~/prisma.server';
 import { NODE_ATTRIBUTES, VERSION_ATTRIBUTES } from '.';
-import { EdgeData } from './field';
+import { EdgeData, RowData } from './field';
 
 export enum ChangeOp {
   CREATE,
@@ -69,17 +69,6 @@ export function findVersion(versionId: string): PrismaTask<VersionData> {
   );
 }
 
-export function findGraphVersion(graphId: string): PrismaTask<VersionData> {
-  return prismaQuery((prisma) =>
-    prisma.graphVersion.findFirst({
-      rejectOnNotFound: true,
-      where: { graphId },
-      orderBy: { createdAt: 'desc' },
-      select: VERSION_ATTRIBUTES,
-    })
-  );
-}
-
 export function findVersionEdges({
   versionId,
   leftId,
@@ -98,6 +87,26 @@ export function findVersionEdges({
           right: { select: NODE_ATTRIBUTES },
         },
         orderBy: [{ left: { id: 'asc' } }, { position: 'asc' }],
+      })
+    )
+  );
+}
+
+export function findVersionRows({
+  versionId,
+}: {
+  versionId: string;
+}): PrismaTask<RowData[]> {
+  return pipe(
+    prismaQuery((prisma) =>
+      prisma.graphRow.findMany({
+        where: { versionId },
+        select: {
+          id: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: { createdAt: 'asc' },
       })
     )
   );

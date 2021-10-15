@@ -154,8 +154,11 @@ type Graph {
   createdAt: DateTime!
   id: ID!
   root: RootField!
+  rows: [Row!]!
   version: Version!
+  versions: [Version!]!
   view: View!
+  views: [View!]!
 }
 
 input LockVersionInput {
@@ -215,6 +218,12 @@ type RootField implements Field {
   updatedAt: DateTime!
 }
 
+type Row {
+  createdAt: DateTime!
+  id: ID!
+  updatedAt: DateTime!
+}
+
 input SetFieldDescriptionInput {
   description: String!
   nodeId: ID!
@@ -257,6 +266,7 @@ type Version {
   edges(leftId: ID): [Edge!]!
   id: ID!
   lockedAt: DateTime
+  rows: [Row!]!
 }
 
 type View {

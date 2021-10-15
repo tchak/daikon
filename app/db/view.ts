@@ -23,16 +23,6 @@ export function findView(viewId: string): PrismaTask<ViewData> {
   );
 }
 
-export function findGraphView(graphId: string): PrismaTask<ViewData> {
-  return prismaQuery((prisma) =>
-    prisma.graphView.findFirst({
-      rejectOnNotFound: true,
-      where: { graphId },
-      select: VIEW_ATTRIBUTES,
-    })
-  );
-}
-
 export function findViewEdges({
   viewId,
   leftId,

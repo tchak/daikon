@@ -103,6 +103,18 @@ export class Edge {
   right!: Field;
 }
 
+@ObjectType()
+export class Row {
+  @ObjectTypeField(() => ID)
+  id!: string;
+
+  @ObjectTypeField(() => GraphQLISODateTime)
+  createdAt!: Date;
+
+  @ObjectTypeField(() => GraphQLISODateTime)
+  updatedAt!: Date;
+}
+
 @InputType()
 export class CreateFieldInput {
   @ObjectTypeField(() => ID)

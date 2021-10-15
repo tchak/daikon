@@ -9,6 +9,9 @@ import {
   ROOT_ATTRIBUTES,
   GRAPH_ATTRIBUTES,
 } from '.';
+import { VersionData } from './version';
+import { ViewData } from './view';
+import { RowData } from './Field';
 
 export type GraphData = {
   id: string;
@@ -52,6 +55,68 @@ export function findGraph(graphId: string): PrismaTask<GraphData> {
         },
       },
     })
+  );
+}
+
+export function findGraphVersion(graphId: string): PrismaTask<VersionData> {
+  return prismaQuery((prisma) =>
+    prisma.graphVersion.findFirst({
+      rejectOnNotFound: true,
+      where: { graphId },
+      orderBy: { createdAt: 'desc' },
+      select: VERSION_ATTRIBUTES,
+    })
+  );
+}
+
+export function findGraphVersions(graphId: string): PrismaTask<VersionData[]> {
+  return prismaQuery((prisma) =>
+    prisma.graphVersion.findMany({
+      where: { graphId },
+      orderBy: { createdAt: 'asc' },
+      select: VERSION_ATTRIBUTES,
+    })
+  );
+}
+
+export function findGraphView(graphId: string): PrismaTask<ViewData> {
+  return prismaQuery((prisma) =>
+    prisma.graphView.findFirst({
+      rejectOnNotFound: true,
+      where: { graphId },
+      orderBy: { createdAt: 'asc' },
+      select: VIEW_ATTRIBUTES,
+    })
+  );
+}
+
+export function findGraphViews(graphId: string): PrismaTask<ViewData[]> {
+  return prismaQuery((prisma) =>
+    prisma.graphView.findMany({
+      where: { graphId },
+      orderBy: { createdAt: 'asc' },
+      select: VIEW_ATTRIBUTES,
+    })
+  );
+}
+
+export function findGraphRows({
+  graphId,
+}: {
+  graphId: string;
+}): PrismaTask<RowData[]> {
+  return pipe(
+    prismaQuery((prisma) =>
+      prisma.graphRow.findMany({
+        where: { version: { graphId } },
+        select: {
+          id: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: { createdAt: 'asc' },
+      })
+    )
   );
 }
 
