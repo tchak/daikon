@@ -4,7 +4,6 @@ import {
   Links,
   Scripts,
   useTransition,
-  useMatches,
   LiveReload,
   useCatch,
 } from 'remix';
@@ -12,7 +11,6 @@ import { ReactNode } from 'react';
 import { Outlet } from 'react-router-dom';
 
 import stylesUrl from './styles/index.css';
-import { DefaultLayout } from './components/DefaultLayout';
 import { Progress } from './components/Progress';
 
 export const links: LinksFunction = () => {
@@ -22,11 +20,11 @@ export const links: LinksFunction = () => {
 export const unstable_shouldReload = () => false;
 
 function Document({
-  children,
   pendingLocation = false,
+  children,
 }: {
-  children: ReactNode;
   pendingLocation?: boolean;
+  children: ReactNode;
 }) {
   return (
     <html lang="en">
@@ -48,16 +46,9 @@ function Document({
 
 export default function App() {
   const pendingLocation = useTransition().state == 'loading';
-  const noLayout = useMatches().some(({ handle }) => handle?.layout == false);
   return (
     <Document pendingLocation={!!pendingLocation}>
-      {noLayout ? (
-        <Outlet />
-      ) : (
-        <DefaultLayout profile={{ name: 'Paul', email: 'paul@test.com' }}>
-          <Outlet />
-        </DefaultLayout>
-      )}
+      <Outlet />
     </Document>
   );
 }

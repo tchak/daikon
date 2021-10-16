@@ -1,4 +1,4 @@
-import type { LoaderFunction, ActionFunction, RouteHandle } from 'remix';
+import type { LoaderFunction, ActionFunction } from 'remix';
 import { json } from 'remix';
 import {
   shouldRenderGraphiQL,
@@ -80,7 +80,6 @@ async function graphqlRequest(request: Request) {
   return processHelixRequest(await remixToHelixRequest(request));
 }
 
-export const handle: RouteHandle = { layout: false };
 export const loader: LoaderFunction = ({ request }) => graphqlRequest(request);
 export const action: ActionFunction = ({ request }) => graphqlRequest(request);
 

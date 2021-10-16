@@ -1,4 +1,4 @@
-import type { LoaderFunction, ActionFunction, RouteHandle } from 'remix';
+import type { LoaderFunction, ActionFunction } from 'remix';
 import { useLoaderData, useTransition } from 'remix';
 import { useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
@@ -25,7 +25,6 @@ import { processAction } from '~/actions';
 type Breadcrumb = readonly [name: string, open: () => void];
 type Breadcrumbs = Breadcrumb[];
 
-export const handle: RouteHandle = { layout: false };
 export const loader: LoaderFunction = async ({ params }) => {
   const { graph } = await query(FindGraphDocument, { graphId: params.id });
   if (graph) {
