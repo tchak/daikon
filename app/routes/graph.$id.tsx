@@ -1,7 +1,7 @@
 import type { LoaderFunction, ActionFunction } from 'remix';
 import { useLoaderData, useTransition } from 'remix';
-import { useState, useCallback, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useMemo } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   DatabaseIcon,
   UserIcon,
@@ -19,21 +19,22 @@ import { HideFieldsButton } from '~/components/HideFieldsButton';
 import { DeleteRowsButton } from '~/components/DeleteRowsButton';
 import { bgColor } from '~/components/utils';
 import { query, FindGraphDocument } from '~/urql.server';
-import { Graph, Edge, Field } from '~/types';
+import { Edge, Field } from '~/types';
 import { processAction } from '~/actions';
 
-type Breadcrumb = readonly [name: string, open: () => void];
+type Breadcrumb = readonly [name: string, id: string | null];
 type Breadcrumbs = Breadcrumb[];
 
-export const loader: LoaderFunction = async ({ params }) => {
-  const { graph } = await query(FindGraphDocument, { graphId: params.id });
-  if (graph) {
-    return graph;
-  }
-  throw new Error('Not Found');
+type LoaderData = {
+  name: string;
+  color: string;
+  versionId: string;
+  leftId: string;
+  view: { id: string; name: string };
+  fields: ReadonlyArray<Field & { hidden: boolean }>;
+  rows: ReadonlyArray<{ id: string }>;
+  breadcrumbs: Breadcrumbs;
 };
-
-export const action: ActionFunction = ({ request }) => processAction(request);
 
 function makeTree(
   edges: readonly Edge[],
@@ -45,55 +46,64 @@ function makeTree(
     .map(({ id, right }) => ({ ...right, hidden: !inViewEdges.has(id) }));
 }
 
-function makeBreadcrumbs(
-  edges: readonly Edge[],
-  id: string,
-  setId: (key: string) => void
-): Breadcrumbs {
+function makeBreadcrumbs(edges: readonly Edge[], id: string): Breadcrumbs {
   const edge = edges.find((edge) => edge.right.id == id);
   if (edge) {
     return [
-      [edge.right.name, () => setId(edge.right.id)],
-      ...makeBreadcrumbs(edges, edge.left.id, setId),
+      [edge.right.name, edge.right.id],
+      ...makeBreadcrumbs(edges, edge.left.id),
     ];
   }
   return [];
 }
 
-function useTree(graph: Graph): {
+export const loader: LoaderFunction = async ({
+  request,
+  params,
+}): Promise<LoaderData> => {
+  const url = new URL(request.url);
+  const leftIdParam = url.searchParams.get('l');
+
+  const { graph } = await query(FindGraphDocument, {
+    graphId: params.id!,
+    leftId: leftIdParam,
+  });
+
+  if (graph) {
+    const leftId = leftIdParam ?? graph.root.id;
+    const inViewEdges = new Set(graph.view.edges.map(({ id }) => id));
+    const fields = makeTree(graph.version.edges, leftId, inViewEdges);
+    const breadcrumbs = makeBreadcrumbs(graph.version.edges, leftId);
+
+    return {
+      name: graph.root.name,
+      color: graph.color,
+      versionId: graph.version.id,
+      leftId,
+      view: graph.view,
+      fields,
+      rows: graph.rows,
+      breadcrumbs: [...breadcrumbs, [graph.root.name, null]],
+    };
+  }
+  throw new Error('Not Found');
+};
+
+export const action: ActionFunction = ({ request }) => processAction(request);
+
+type UseGridViewColumnsProps = {
+  fields: Field[];
+  versionId: string;
   leftId: string;
-  nodes: Field[];
-  breadcrumbs: Breadcrumbs;
-  open: (node: Field) => void;
-  close: () => void;
-} {
-  const edges = graph.version.edges;
-  const [leftId, setLeftId] = useState<string>(graph.root.id);
-  const close = useCallback(() => setLeftId(graph.root.id), [graph.id]);
-  const breadcrumbs: Breadcrumbs = useMemo(
-    () => [
-      ...makeBreadcrumbs(edges, leftId, setLeftId),
-      [graph.root.name, close],
-    ],
-    [graph.id, leftId]
-  );
-  const inViewEdges = new Set(graph.view.edges.map(({ id }) => id));
+  viewId: string;
+};
 
-  return {
-    leftId,
-    nodes: makeTree(edges, leftId, inViewEdges),
-    breadcrumbs,
-    open: (node) => setLeftId(node.id),
-    close,
-  };
-}
-
-export function useGridViewColumns<T extends DataRow = DataRow>(
-  nodes: Field[],
-  versionId: string,
-  leftId: string,
-  viewId: string
-): Column<T>[] {
+export function useGridViewColumns<T extends DataRow = DataRow>({
+  fields,
+  versionId,
+  leftId,
+  viewId,
+}: UseGridViewColumnsProps): Column<T>[] {
   const [selectedCell, setSelectedCell] = useState<string | null>(null);
   return useMemo<any>(
     () => [
@@ -103,22 +113,22 @@ export function useGridViewColumns<T extends DataRow = DataRow>(
         accessor: (row: T) => row['id'],
         Cell: ({ cell }: CellProps<DataRow>) => <IdCell id={cell.value} />,
       },
-      ...nodes.map((node) => ({
+      ...fields.map((field) => ({
         Header: () => (
-          <FieldTab field={node} versionId={versionId} viewId={viewId} />
+          <FieldTab field={field} versionId={versionId} viewId={viewId} />
         ),
-        id: node.id,
-        accessor: (row: T) => row[node.id],
+        id: field.id,
+        accessor: (row: T) => row[field.id],
         Cell: (params: CellProps<DataRow>) => (
           <ValueCell
             {...params}
-            isSelected={selectedCell == `${params.cell.row.id}:${node.id}`}
+            isSelected={selectedCell == `${params.cell.row.id}:${field.id}`}
             isEditing={
-              selectedCell == `${params.cell.row.id}:${node.id}:editing`
+              selectedCell == `${params.cell.row.id}:${field.id}:editing`
             }
-            select={() => setSelectedCell(`${params.cell.row.id}:${node.id}`)}
+            select={() => setSelectedCell(`${params.cell.row.id}:${field.id}`)}
             edit={() =>
-              setSelectedCell(`${params.cell.row.id}:${node.id}:editing`)
+              setSelectedCell(`${params.cell.row.id}:${field.id}:editing`)
             }
           />
         ),
@@ -132,7 +142,7 @@ export function useGridViewColumns<T extends DataRow = DataRow>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      nodes
+      fields
         .map(({ id, __typename, name }) => `${id}${__typename}${name}`)
         .join(','),
       versionId,
@@ -142,24 +152,23 @@ export function useGridViewColumns<T extends DataRow = DataRow>(
 }
 
 export default function GraphRoute() {
-  const graph = useLoaderData<Graph>();
-  const tree = useTree(graph);
-  const columns = useGridViewColumns(
-    tree.nodes.filter(({ hidden }) => !hidden),
-    graph.version.id,
-    tree.leftId,
-    graph.view.id
-  );
+  const graph = useLoaderData<LoaderData>();
+  const columns = useGridViewColumns({
+    fields: graph.fields.filter(({ hidden }) => !hidden),
+    versionId: graph.versionId,
+    leftId: graph.leftId,
+    viewId: graph.view.id,
+  });
   const data: readonly Record<string, unknown>[] = graph.rows;
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
 
   return (
     <div className="flex flex-col h-screen">
-      <Header graph={graph} />
+      <Header name={graph.name} color={graph.color} />
 
       <div className="flex items-center p-2 border-b border-gray-300">
         <ViewTab view={graph.view} />
-        <HideFieldsButton viewId={graph.view.id} fields={tree.nodes} />
+        <HideFieldsButton viewId={graph.view.id} fields={graph.fields} />
         <DeleteRowsButton selectedRows={selectedRows} />
       </div>
 
@@ -172,19 +181,31 @@ export default function GraphRoute() {
       </div>
 
       <div className="p-2 border-t border-gray-300">
-        <AddRowButton versionId={graph.version.id} />
+        <AddRowButton versionId={graph.versionId} />
       </div>
     </div>
   );
 }
 
 function BreadcrumbNav({ breadcrumbs }: { breadcrumbs: Breadcrumbs }) {
+  const [params, setParams] = useSearchParams();
   const [[name], ...rest] = breadcrumbs;
   return (
     <h2>
-      {rest.map(([name, onClick], index) => (
+      {rest.map(([name, leftId], index) => (
         <span key={index}>
-          <button onClick={onClick}>{name}</button>
+          <button
+            onClick={() => {
+              if (leftId) {
+                params.set('l', leftId);
+              } else {
+                params.delete('l');
+              }
+              setParams(params);
+            }}
+          >
+            {name}
+          </button>
           {' > '}
         </span>
       ))}
@@ -219,7 +240,11 @@ function ValueCell({
   select: () => void;
   edit: () => void;
 }) {
-  return (
+  return isEditing ? (
+    <span className="ring-2 ring-offset-2 ring-green-500 absolute inset-0">
+      <input />
+    </span>
+  ) : (
     <span
       className={`${
         isSelected ? 'ring-2 ring-offset-2 ring-green-500' : ''
@@ -233,13 +258,11 @@ function ValueCell({
   );
 }
 
-function Header({ graph }: { graph: Graph }) {
+function Header({ name, color }: { name: string; color: string }) {
   const transition = useTransition();
   return (
     <header
-      className={`flex items-center justify-between ${bgColor(
-        graph.color
-      )} p-2`}
+      className={`flex items-center justify-between ${bgColor(color)} p-2`}
     >
       <Link to="/" className="text-white">
         <DatabaseIcon className="h-5 w-5" />
@@ -247,7 +270,7 @@ function Header({ graph }: { graph: Graph }) {
       <span className="text-xs text-white w-32 ml-4">
         {transition.state == 'submitting' ? 'Saving...' : null}
       </span>
-      <h1 className="flex-1 text-center text-white">{graph.root.name}</h1>
+      <h1 className="flex-1 text-center text-white">{name}</h1>
       <span className="w-32"></span>
       <Link to="/account">
         <UserIcon className="h-5 w-5" />

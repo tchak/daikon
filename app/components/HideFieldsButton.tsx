@@ -13,7 +13,7 @@ export function HideFieldsButton({
   fields,
 }: {
   viewId: string;
-  fields: Field[];
+  fields: ReadonlyArray<Field>;
 }) {
   const [popoverButtonElement, setPopoverButtonElement] =
     useState<HTMLButtonElement>();
