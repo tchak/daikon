@@ -208,7 +208,7 @@ function IdCell({ id }: { id: string }) {
     <button
       type="button"
       onClick={setCopied}
-      className="font-mono flex items-center rounded-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+      className="p-1 font-mono flex items-center rounded-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
     >
       {id.substring(0, 8)}
       <ClipboardCopyIcon className="h-3 w-3 ml-1" />
@@ -245,11 +245,11 @@ function ValueCell({
   return isEditing ? (
     <input
       autoFocus
-      className="ring-2 ring-offset-2 ring-green-500 absolute inset-0 p-1 outline-none"
+      className="ring-2 ring-offset-2 ring-green-500 outline-none w-full p-1"
     />
   ) : (
-    <span
-      className={clsx('absolute inset-0', {
+    <div
+      className={clsx('w-full h-full p-1', {
         'ring-2 ring-offset-2 ring-green-500': isSelected,
       })}
       onClick={select}
@@ -257,7 +257,8 @@ function ValueCell({
       tabIndex={0}
     >
       {cell.value}
-    </span>
+      {'\u00A0'}
+    </div>
   );
 }
 
