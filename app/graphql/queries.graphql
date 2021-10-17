@@ -39,6 +39,15 @@ query findGraph($graphId: ID!, $leftId: ID) {
           __typename
         }
       }
+      blocEdges {
+        left {
+          id
+        }
+        right {
+          id
+          name
+        }
+      }
     }
     rows {
       id

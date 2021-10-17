@@ -8,6 +8,7 @@ import {
   findVersion,
   findView,
   findVersionEdges,
+  findVersionBlocEdges,
   findViewEdges,
   findGraphVersion,
   findGraphView,
@@ -100,6 +101,11 @@ export class VersionResolver {
       findVersionEdges({ versionId: root.id, leftId }),
       throwError()
     )();
+  }
+
+  @FieldResolver(() => [Edge])
+  blocEdges(@Root() root: VersionData): Promise<EdgeData[]> {
+    return pipe(findVersionBlocEdges({ versionId: root.id }), throwError())();
   }
 
   @FieldResolver(() => [Row])

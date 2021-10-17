@@ -271,6 +271,7 @@ input UnlockVersionInput {
 }
 
 type Version {
+  blocEdges: [Edge!]!
   createdAt: DateTime!
   diff(versionId: ID!): [Change!]!
   edges(leftId: ID): [Edge!]!

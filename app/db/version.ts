@@ -4,7 +4,7 @@ import * as A from 'fp-ts/ReadonlyArray';
 import * as Eq from 'io-ts/Eq';
 
 import { prismaQuery, PrismaTask } from '~/prisma.server';
-import { NODE_ATTRIBUTES, VERSION_ATTRIBUTES } from '.';
+import { NODE_ATTRIBUTES, VERSION_ATTRIBUTES, NodeType } from '.';
 import { EdgeData } from './field';
 import { RowData } from './row';
 
@@ -81,6 +81,27 @@ export function findVersionEdges({
     prismaQuery((prisma) =>
       prisma.graphEdge.findMany({
         where: leftId ? { versionId, left: { id: leftId } } : { versionId },
+        select: {
+          id: true,
+          position: true,
+          left: { select: NODE_ATTRIBUTES },
+          right: { select: NODE_ATTRIBUTES },
+        },
+        orderBy: [{ left: { id: 'asc' } }, { position: 'asc' }],
+      })
+    )
+  );
+}
+
+export function findVersionBlocEdges({
+  versionId,
+}: {
+  versionId: string;
+}): PrismaTask<EdgeData[]> {
+  return pipe(
+    prismaQuery((prisma) =>
+      prisma.graphEdge.findMany({
+        where: { versionId, right: { type: NodeType.BLOC } },
         select: {
           id: true,
           position: true,

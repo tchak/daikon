@@ -9,6 +9,7 @@ import {
 } from '@heroicons/react/outline';
 import type { Column, CellProps } from 'react-table';
 import useClipboard from 'react-use-clipboard';
+import clsx from 'clsx';
 
 import { GridView, DataRow } from '~/components/GridView';
 import { FieldTab } from '~/components/FieldTab';
@@ -17,13 +18,11 @@ import { AddFieldButton } from '~/components/AddFieldButton';
 import { AddRowButton } from '~/components/AddRowButton';
 import { HideFieldsButton } from '~/components/HideFieldsButton';
 import { DeleteRowsButton } from '~/components/DeleteRowsButton';
+import { GraphBreadcrumbs } from '~/components/GraphBreadcrumbs';
 import { bgColor } from '~/components/utils';
 import { query, FindGraphDocument } from '~/urql.server';
-import { Edge, Field } from '~/types';
+import { Edge, BlocEdge, Field, Breadcrumb } from '~/types';
 import { processAction } from '~/actions';
-
-type Breadcrumb = readonly [name: string, id: string | null];
-type Breadcrumbs = Breadcrumb[];
 
 type LoaderData = {
   name: string;
@@ -33,20 +32,23 @@ type LoaderData = {
   view: { id: string; name: string };
   fields: ReadonlyArray<Field & { hidden: boolean }>;
   rows: ReadonlyArray<{ id: string }>;
-  breadcrumbs: Breadcrumbs;
+  breadcrumbs: ReadonlyArray<Breadcrumb>;
 };
 
 function makeTree(
   edges: readonly Edge[],
   leftId: string,
   inViewEdges: Set<string>
-): Field[] {
+): readonly Field[] {
   return edges
     .filter(({ left }) => left.id == leftId)
     .map(({ id, right }) => ({ ...right, hidden: !inViewEdges.has(id) }));
 }
 
-function makeBreadcrumbs(edges: readonly Edge[], id: string): Breadcrumbs {
+function makeBreadcrumbs(
+  edges: readonly BlocEdge[],
+  id: string
+): readonly Breadcrumb[] {
   const edge = edges.find((edge) => edge.right.id == id);
   if (edge) {
     return [
@@ -73,7 +75,7 @@ export const loader: LoaderFunction = async ({
     const leftId = leftIdParam ?? graph.root.id;
     const inViewEdges = new Set(graph.view.edges.map(({ id }) => id));
     const fields = makeTree(graph.version.edges, leftId, inViewEdges);
-    const breadcrumbs = makeBreadcrumbs(graph.version.edges, leftId);
+    const breadcrumbs = makeBreadcrumbs(graph.version.blocEdges, leftId);
 
     return {
       name: graph.root.name,
@@ -119,19 +121,26 @@ export function useGridViewColumns<T extends DataRow = DataRow>({
         ),
         id: field.id,
         accessor: (row: T) => row[field.id],
-        Cell: (params: CellProps<DataRow>) => (
-          <ValueCell
-            {...params}
-            isSelected={selectedCell == `${params.cell.row.id}:${field.id}`}
-            isEditing={
-              selectedCell == `${params.cell.row.id}:${field.id}:editing`
-            }
-            select={() => setSelectedCell(`${params.cell.row.id}:${field.id}`)}
-            edit={() =>
-              setSelectedCell(`${params.cell.row.id}:${field.id}:editing`)
-            }
-          />
-        ),
+        Cell: (params: CellProps<DataRow>) => {
+          if (field.__typename == 'BlocField') {
+            return <BlocCell {...params} leftId={field.id} />;
+          }
+          return (
+            <ValueCell
+              {...params}
+              isSelected={selectedCell == `${params.cell.row.id}:${field.id}`}
+              isEditing={
+                selectedCell == `${params.cell.row.id}:${field.id}:editing`
+              }
+              select={() =>
+                setSelectedCell(`${params.cell.row.id}:${field.id}`)
+              }
+              edit={() =>
+                setSelectedCell(`${params.cell.row.id}:${field.id}:editing`)
+              }
+            />
+          );
+        },
       })),
       {
         Header: () => <AddFieldButton versionId={versionId} leftId={leftId} />,
@@ -172,6 +181,12 @@ export default function GraphRoute() {
         <DeleteRowsButton selectedRows={selectedRows} />
       </div>
 
+      {graph.breadcrumbs.length > 1 ? (
+        <div className="p-2 border-b border-gray-300">
+          <GraphBreadcrumbs breadcrumbs={graph.breadcrumbs} />
+        </div>
+      ) : null}
+
       <div className="flex-grow overflow-y-scroll">
         <GridView
           columns={columns}
@@ -184,33 +199,6 @@ export default function GraphRoute() {
         <AddRowButton versionId={graph.versionId} />
       </div>
     </div>
-  );
-}
-
-function BreadcrumbNav({ breadcrumbs }: { breadcrumbs: Breadcrumbs }) {
-  const [params, setParams] = useSearchParams();
-  const [[name], ...rest] = breadcrumbs;
-  return (
-    <h2>
-      {rest.map(([name, leftId], index) => (
-        <span key={index}>
-          <button
-            onClick={() => {
-              if (leftId) {
-                params.set('l', leftId);
-              } else {
-                params.delete('l');
-              }
-              setParams(params);
-            }}
-          >
-            {name}
-          </button>
-          {' > '}
-        </span>
-      ))}
-      {name}
-    </h2>
   );
 }
 
@@ -228,6 +216,20 @@ function IdCell({ id }: { id: string }) {
   );
 }
 
+function BlocCell({ leftId }: CellProps<DataRow> & { leftId: string }) {
+  const [params, setParams] = useSearchParams();
+  return (
+    <button
+      onClick={() => {
+        params.set('l', leftId);
+        setParams(params);
+      }}
+    >
+      Open
+    </button>
+  );
+}
+
 function ValueCell({
   cell,
   isSelected,
@@ -241,14 +243,15 @@ function ValueCell({
   edit: () => void;
 }) {
   return isEditing ? (
-    <span className="ring-2 ring-offset-2 ring-green-500 absolute inset-0">
-      <input />
-    </span>
+    <input
+      autoFocus
+      className="ring-2 ring-offset-2 ring-green-500 absolute inset-0 p-1 outline-none"
+    />
   ) : (
     <span
-      className={`${
-        isSelected ? 'ring-2 ring-offset-2 ring-green-500' : ''
-      } absolute inset-0`}
+      className={clsx('absolute inset-0', {
+        'ring-2 ring-offset-2 ring-green-500': isSelected,
+      })}
       onClick={select}
       onDoubleClick={edit}
       tabIndex={0}
