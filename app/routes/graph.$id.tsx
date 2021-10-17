@@ -138,6 +138,9 @@ export function useGridViewColumns<T extends DataRow = DataRow>({
               edit={() =>
                 setSelectedCell(`${params.cell.row.id}:${field.id}:editing`)
               }
+              doneEditing={() =>
+                setSelectedCell(`${params.cell.row.id}:${field.id}`)
+              }
             />
           );
         },
@@ -236,15 +239,18 @@ function ValueCell({
   isEditing,
   select,
   edit,
+  doneEditing,
 }: CellProps<DataRow> & {
   isSelected: boolean;
   isEditing: boolean;
   select: () => void;
   edit: () => void;
+  doneEditing: () => void;
 }) {
   return isEditing ? (
     <input
       autoFocus
+      onBlur={() => doneEditing()}
       className="ring-2 ring-offset-2 ring-green-500 outline-none w-full p-1"
     />
   ) : (
