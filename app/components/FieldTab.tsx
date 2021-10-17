@@ -1,6 +1,8 @@
 import { useFetcher } from 'remix';
 import { useState, FormEvent, useMemo } from 'react';
 import { PencilIcon, TrashIcon, EyeOffIcon } from '@heroicons/react/outline';
+import { pipe } from 'fp-ts/function';
+import S from 'fp-ts-std/String';
 
 import { Field } from '~/types';
 import { Action } from '~/actions';
@@ -44,7 +46,7 @@ export function FieldTab({
             data={{ _action: Action.RenameField, versionId, nodeId: field.id }}
           />
         ) : (
-          <div>{name}</div>
+          <div title={name}>{truncate(15)(name)}</div>
         )}
         <FieldMenu
           versionId={versionId}
@@ -98,4 +100,9 @@ function FieldMenu({
       </TabMenuItem>
     </TabMenu>
   );
+}
+
+function truncate(size: number, elipse = '...'): (str: string) => string {
+  return (str) =>
+    str.length > size ? pipe(str, S.takeLeft(size), S.append(elipse)) : str;
 }
