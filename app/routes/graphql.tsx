@@ -14,8 +14,6 @@ import { GraphQLError } from 'graphql';
 
 import { schema } from '~/graphql.server';
 
-const ENDPOINT = '/graphql';
-
 const getEnveloped = envelop({
   plugins: [
     useSchema(schema),
@@ -40,7 +38,7 @@ async function remixToHelixRequest(request: Request): Promise<HelixRequest> {
 async function processHelixRequest(request: HelixRequest) {
   if (shouldRenderGraphiQL(request)) {
     const html = renderGraphiQL({
-      endpoint: ENDPOINT,
+      endpoint: '/graphql',
     });
     return new Response(html, { headers: { 'content-type': 'text/html' } });
   } else {
