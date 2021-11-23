@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import type { LoaderFunction, ActionFunction } from 'remix';
 import { json } from 'remix';
 import {
@@ -13,7 +14,7 @@ import { GraphQLError } from 'graphql';
 
 import { schema } from '~/graphql.server';
 
-const ENDPOINT = '/graphql?_data=routes%2Fgraphql';
+const ENDPOINT = '/graphql';
 
 const getEnveloped = envelop({
   plugins: [
@@ -28,7 +29,10 @@ async function remixToHelixRequest(request: Request): Promise<HelixRequest> {
   return {
     method: request.method,
     headers: request.headers,
-    body: request.method.toLowerCase() == 'get' ? null : await request.json(),
+    body:
+      request.method.toLowerCase() == 'get'
+        ? null
+        : ((await request.json()) as object),
     query: Object.fromEntries(new URL(request.url).searchParams),
   };
 }
@@ -82,5 +86,3 @@ async function graphqlRequest(request: Request) {
 
 export const loader: LoaderFunction = ({ request }) => graphqlRequest(request);
 export const action: ActionFunction = ({ request }) => graphqlRequest(request);
-
-export default () => null;

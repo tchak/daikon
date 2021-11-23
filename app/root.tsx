@@ -6,6 +6,7 @@ import {
   useTransition,
   LiveReload,
   useCatch,
+  ScrollRestoration,
 } from 'remix';
 import { ReactNode } from 'react';
 import { Outlet } from 'react-router-dom';
@@ -37,6 +38,7 @@ function Document({
       <body>
         <Progress isAnimating={pendingLocation} />
         {children}
+        <ScrollRestoration />
         <Scripts />
         {process.env.NODE_ENV === 'development' && <LiveReload />}
       </body>

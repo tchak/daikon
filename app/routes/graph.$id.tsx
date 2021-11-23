@@ -47,9 +47,9 @@ function makeTree(
 
 function makeBreadcrumbs(
   edges: readonly BlocEdge[],
-  id: string
+  leftId: string
 ): readonly Breadcrumb[] {
-  const edge = edges.find((edge) => edge.right.id == id);
+  const edge = edges.find((edge) => edge.right.id == leftId);
   if (edge) {
     return [
       [edge.right.name, edge.right.id],
@@ -67,7 +67,7 @@ export const loader: LoaderFunction = async ({
   const leftIdParam = url.searchParams.get('l');
 
   const { graph } = await query(FindGraphDocument, {
-    graphId: params.id!,
+    graphId: String(params.id),
     leftId: leftIdParam,
   });
 
@@ -107,13 +107,15 @@ export function useGridViewColumns<T extends DataRow = DataRow>({
   viewId,
 }: UseGridViewColumnsProps): Column<T>[] {
   const [selectedCell, setSelectedCell] = useState<string | null>(null);
-  return useMemo<any>(
+  return useMemo<Column<T>[]>(
     () => [
       {
         Header: () => <span>ID</span>,
         id: 'id',
         accessor: (row: T) => row['id'],
-        Cell: ({ cell }: CellProps<DataRow>) => <IdCell id={cell.value} />,
+        Cell: ({ cell }: CellProps<DataRow>) => (
+          <IdCell id={cell.value as string} />
+        ),
       },
       ...fields.map((field) => ({
         Header: () => (

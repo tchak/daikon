@@ -72,7 +72,7 @@ function Toggle({ viewId, field }: { viewId: string; field: Field }) {
       return fetcher.submission.formData.get('hidden') != 'true';
     }
     return !field.hidden;
-  }, [fetcher.type, field.id]);
+  }, [fetcher.type, field.id, field.hidden]);
 
   return (
     <Switch.Group as="div" className="flex items-center">

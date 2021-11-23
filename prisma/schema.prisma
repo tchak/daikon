@@ -14,7 +14,7 @@ generator client {
 model Graph {
   id        String         @id @default(uuid()) @db.Uuid
   createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  updatedAt DateTime       @default(now()) @updatedAt
   color     String         @default("blue")
   versions  GraphVersion[]
   views     GraphView[]
@@ -25,7 +25,7 @@ model Graph {
 model GraphVersion {
   id        String      @id @default(uuid()) @db.Uuid
   createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  updatedAt DateTime    @default(now()) @updatedAt
   lockedAt  DateTime?
   graphId   String      @db.Uuid
   graph     Graph       @relation(fields: [graphId], references: [id], onDelete: Cascade)
@@ -55,7 +55,7 @@ model GraphNode {
   internalId  String          @id @default(uuid()) @db.Uuid
   id          String          @default(uuid()) @db.Uuid
   createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  updatedAt   DateTime        @default(now()) @updatedAt
   type        NodeType
   cardinality NodeCardinality @default(ONE)
   required    Boolean         @default(false)
@@ -73,7 +73,7 @@ model GraphNode {
 model GraphEdge {
   id        String       @id @default(uuid()) @db.Uuid
   createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  updatedAt DateTime     @default(now()) @updatedAt
   position  Int          @default(0)
   versionId String       @db.Uuid
   version   GraphVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
@@ -96,7 +96,7 @@ enum ViewType {
 model GraphView {
   id          String   @id @default(uuid()) @db.Uuid
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now()) @updatedAt
   type        ViewType @default(GRID)
   name        String
   description String?

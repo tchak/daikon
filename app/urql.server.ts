@@ -28,7 +28,7 @@ export async function query<Result, Variables>(
   variables?: Variables
 ): Promise<Result> {
   const { data, error } = await client
-    .query(document, variables as any)
+    .query(document, variables as unknown as object)
     .toPromise();
 
   if (data) {
