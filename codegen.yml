@@ -1,0 +1,13 @@
+overwrite: true
+schema: ${API_URL}
+documents: "app/queries/**/*.graphql"
+generates:
+  app/graphql-operations.ts:
+    plugins:
+      - typescript
+      - typescript-operations
+      - typed-document-node
+    config:
+      immutableTypes: true
+      skipTypename: true
+      useTypeImports: true

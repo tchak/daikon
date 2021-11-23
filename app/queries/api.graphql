@@ -1,0 +1,67 @@
+query findGraphs {
+  graphs {
+    id
+    root {
+      id
+      name
+    }
+    color
+  }
+}
+
+query findGraph($graphId: ID!) {
+  graph(graphId: $graphId) {
+    id
+    createdAt
+    color
+    root {
+      id
+      name
+    }
+    version {
+      id
+      lockedAt
+      edges {
+        position
+        left {
+          id
+        }
+        right {
+          id
+          name
+          __typename
+        }
+      }
+    }
+  }
+}
+
+mutation createTextNode($input: CreateNodeInput!) {
+  createTextNode(input: $input) {
+    id
+  }
+}
+
+mutation createBlocNode($input: CreateNodeInput!) {
+  createBlocNode(input: $input) {
+    id
+  }
+}
+
+mutation deleteNode($input: DeleteNodeInput!) {
+  deleteNode(input: $input) {
+    id
+  }
+}
+
+mutation createGraph($input: CreateGraphInput!) {
+  createGraph(input: $input) {
+    id
+  }
+}
+
+mutation deleteGraph($input: DeleteGraphInput!) {
+  deleteGraph(input: $input) {
+    id
+  }
+}
