@@ -25,7 +25,7 @@ export function GraphBreadcrumbs({
           <li key={index}>
             {leftId ? (
               <div className="flex items-center">
-                <SlasheIcon />
+                <SlashIcon />
                 <button
                   onClick={() => setCellId(leftId)}
                   className="ml-2 text-sm font-medium text-gray-500 hover:text-gray-700"
@@ -51,7 +51,7 @@ export function GraphBreadcrumbs({
         ))}
         <li>
           <div className="flex items-center">
-            <SlasheIcon />
+            <SlashIcon />
             <span className="ml-2 text-sm font-medium text-gray-500">
               {name}
             </span>
@@ -62,7 +62,7 @@ export function GraphBreadcrumbs({
   );
 }
 
-function SlasheIcon() {
+function SlashIcon() {
   return (
     <svg
       className="flex-shrink-0 h-5 w-5 text-gray-300"
