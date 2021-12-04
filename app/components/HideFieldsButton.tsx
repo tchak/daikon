@@ -38,7 +38,7 @@ export function HideFieldsButton({
       <Popover.Panel
         as="ul"
         ref={(el: HTMLUListElement) => setPopoverElement(el)}
-        className="rounded-md shadow-lg py-1 bg-white"
+        className="rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5"
         style={styles.popper}
         {...attributes.popper}
       >

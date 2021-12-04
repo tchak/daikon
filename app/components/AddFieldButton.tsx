@@ -36,7 +36,7 @@ export function AddFieldButton({
       <Popover.Panel
         as="ul"
         ref={(el: HTMLUListElement) => setPopoverElement(el)}
-        className="rounded-md shadow-lg p-2 bg-white"
+        className="rounded-md shadow-lg p-2 bg-white ring-1 ring-black ring-opacity-5"
         style={styles.popper}
         {...attributes.popper}
       >
@@ -64,6 +64,7 @@ export function AddFieldButton({
               autoCapitalize="off"
               autoComplete="off"
               autoCorrect="off"
+              autoFocus
             />
             <label htmlFor="field_type" className="sr-only">
               Field type
