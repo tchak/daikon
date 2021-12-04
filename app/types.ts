@@ -1,4 +1,4 @@
-import { FindGraphQuery } from '~/urql.server';
+import type { FindGraphQuery } from '~/urql.server';
 
 export type Graph = NonNullable<FindGraphQuery['graph']>;
 export type View = { id: string; name: string };
