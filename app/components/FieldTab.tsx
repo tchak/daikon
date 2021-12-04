@@ -5,7 +5,7 @@ import { pipe } from 'fp-ts/function';
 import S from 'fp-ts-std/String';
 
 import { Field } from '~/types';
-import { Action } from '~/actions';
+import { ActionType } from '~/actions';
 import { TabMenu, TabMenuItem } from './TabMenu';
 import { NameForm } from './NameForm';
 
@@ -43,7 +43,11 @@ export function FieldTab({
               setEditing(false);
             }}
             onCancel={() => setEditing(false)}
-            data={{ _action: Action.RenameField, versionId, nodeId: field.id }}
+            data={{
+              actionType: ActionType.RenameField,
+              versionId,
+              nodeId: field.id,
+            }}
           />
         ) : (
           <div title={name}>{truncate(15)(name)}</div>
@@ -75,12 +79,12 @@ function FieldMenu({
   const fetcher = useFetcher();
   const hideField = () =>
     fetcher.submit(
-      { _action: Action.HideField, viewId, nodeId, hidden: 'true' },
+      { actionType: ActionType.HideField, viewId, nodeId, hidden: 'true' },
       { method: 'post', replace: true }
     );
   const deleteField = () =>
     fetcher.submit(
-      { _action: Action.DeleteField, versionId, nodeId },
+      { actionType: ActionType.DeleteField, versionId, nodeId },
       { method: 'post', replace: true }
     );
 

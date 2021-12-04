@@ -8,7 +8,7 @@ import {
   findVersion,
   findView,
   findVersionEdges,
-  findVersionBlocEdges,
+  findVersionBlockEdges,
   findViewEdges,
   findGraphVersion,
   findGraphView,
@@ -47,23 +47,20 @@ export class GraphResolver {
   versions(@Root() root: GraphData): Promise<VersionData[]> {
     return pipe(
       findGraphVersions(root.id),
-      TE.match(() => [], identity)
+      TE.match(constEmptyArray, identity)
     )();
   }
 
   @FieldResolver(() => [View])
   views(@Root() root: GraphData): Promise<ViewData[]> {
-    return pipe(
-      findGraphViews(root.id),
-      TE.match(() => [], identity)
-    )();
+    return pipe(findGraphViews(root.id), TE.match(constEmptyArray, identity))();
   }
 
   @FieldResolver(() => [Row])
   rows(@Root() root: GraphData): Promise<RowData[]> {
     return pipe(
       findGraphRows({ graphId: root.id }),
-      TE.match(() => [], identity)
+      TE.match(constEmptyArray, identity)
     )();
   }
 }
@@ -88,7 +85,7 @@ export class VersionResolver {
   ): Promise<ChangeData[]> {
     return pipe(
       diff({ leftVersionId: root.id, rightVersionId: versionId }),
-      TE.match(() => [], identity)
+      TE.match(constEmptyArray, identity)
     )();
   }
 
@@ -104,15 +101,15 @@ export class VersionResolver {
   }
 
   @FieldResolver(() => [Edge])
-  blocEdges(@Root() root: VersionData): Promise<EdgeData[]> {
-    return pipe(findVersionBlocEdges({ versionId: root.id }), throwError())();
+  blockEdges(@Root() root: VersionData): Promise<EdgeData[]> {
+    return pipe(findVersionBlockEdges({ versionId: root.id }), throwError())();
   }
 
   @FieldResolver(() => [Row])
   rows(@Root() root: VersionData): Promise<RowData[]> {
     return pipe(
       findVersionRows({ versionId: root.id }),
-      TE.match(() => [], identity)
+      TE.match(constEmptyArray, identity)
     )();
   }
 }
@@ -121,10 +118,7 @@ export class VersionResolver {
 export class QueryResolver {
   @Query(() => [Graph])
   graphs(): Promise<GraphData[]> {
-    return pipe(
-      findGraphs(),
-      TE.match(() => [], identity)
-    )();
+    return pipe(findGraphs(), TE.match(constEmptyArray, identity))();
   }
 
   @Query(() => Graph, { nullable: true })
@@ -144,6 +138,8 @@ export class QueryResolver {
     return pipe(findView(viewId), TE.match(constNull, identity))();
   }
 }
+
+const constEmptyArray = () => [];
 
 const throwError = <E, A>() =>
   TE.getOrElse<E, A>((error) => {

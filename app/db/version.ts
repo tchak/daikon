@@ -93,7 +93,7 @@ export function findVersionEdges({
   );
 }
 
-export function findVersionBlocEdges({
+export function findVersionBlockEdges({
   versionId,
 }: {
   versionId: string;
@@ -101,7 +101,7 @@ export function findVersionBlocEdges({
   return pipe(
     prismaQuery((prisma) =>
       prisma.graphEdge.findMany({
-        where: { versionId, right: { type: NodeType.BLOC } },
+        where: { versionId, right: { type: NodeType.BLOCK } },
         select: {
           id: true,
           position: true,

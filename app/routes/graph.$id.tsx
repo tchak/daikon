@@ -21,7 +21,7 @@ import { DeleteRowsButton } from '~/components/DeleteRowsButton';
 import { GraphBreadcrumbs } from '~/components/GraphBreadcrumbs';
 import { bgColor } from '~/components/utils';
 import { query, FindGraphDocument } from '~/urql.server';
-import { Edge, BlocEdge, Field, Breadcrumb } from '~/types';
+import { Edge, BlockEdge, Field, Breadcrumb } from '~/types';
 import { processAction } from '~/actions';
 
 type LoaderData = {
@@ -46,7 +46,7 @@ function makeTree(
 }
 
 function makeBreadcrumbs(
-  edges: readonly BlocEdge[],
+  edges: readonly BlockEdge[],
   leftId: string
 ): readonly Breadcrumb[] {
   const edge = edges.find((edge) => edge.right.id == leftId);
@@ -75,7 +75,7 @@ export const loader: LoaderFunction = async ({
     const leftId = leftIdParam ?? graph.root.id;
     const inViewEdges = new Set(graph.view.edges.map(({ id }) => id));
     const fields = makeTree(graph.version.edges, leftId, inViewEdges);
-    const breadcrumbs = makeBreadcrumbs(graph.version.blocEdges, leftId);
+    const breadcrumbs = makeBreadcrumbs(graph.version.blockEdges, leftId);
 
     return {
       name: graph.root.name,
@@ -124,8 +124,8 @@ export function useGridViewColumns<T extends DataRow = DataRow>({
         id: field.id,
         accessor: (row: T) => row[field.id],
         Cell: (params: CellProps<DataRow>) => {
-          if (field.__typename == 'BlocField') {
-            return <BlocCell {...params} leftId={field.id} />;
+          if (field.__typename == 'BlockField') {
+            return <BlockCell {...params} leftId={field.id} />;
           }
           return (
             <ValueCell
@@ -221,7 +221,7 @@ function IdCell({ id }: { id: string }) {
   );
 }
 
-function BlocCell({ leftId }: CellProps<DataRow> & { leftId: string }) {
+function BlockCell({ leftId }: CellProps<DataRow> & { leftId: string }) {
   const [params, setParams] = useSearchParams();
   return (
     <button

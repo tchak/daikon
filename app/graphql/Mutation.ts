@@ -21,6 +21,7 @@ import {
   NodeType,
   RowData,
   unlockVersion,
+  updateView,
   updateField,
   updateViewField,
   VersionData,
@@ -49,7 +50,12 @@ import {
   UnlockVersionInput,
   DeleteVersionInput,
 } from './Version';
-import { View, CreateViewInput, DeleteViewInput } from './View';
+import {
+  View,
+  CreateViewInput,
+  SetViewNameInput,
+  DeleteViewInput,
+} from './View';
 
 @Resolver()
 export class MutationResolver {
@@ -86,6 +92,13 @@ export class MutationResolver {
     @Arg('input', () => CreateViewInput) input: CreateViewInput
   ): Promise<ViewData> {
     return pipe(createView(input), throwError())();
+  }
+
+  @Mutation(() => Field)
+  setViewName(
+    @Arg('input', () => SetViewNameInput) input: SetViewNameInput
+  ): Promise<ViewData> {
+    return pipe(updateView(input), throwError())();
   }
 
   @Mutation(() => View)
@@ -131,10 +144,10 @@ export class MutationResolver {
   }
 
   @Mutation(() => Edge)
-  createBlocField(
+  createBlockField(
     @Arg('input', () => CreateFieldInput) input: CreateFieldInput
   ): Promise<EdgeData> {
-    return pipe(createField(NodeType.BLOC, input), throwError())();
+    return pipe(createField(NodeType.BLOCK, input), throwError())();
   }
 
   @Mutation(() => Edge)

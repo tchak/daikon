@@ -11,7 +11,7 @@ import clsx from 'clsx';
 import { query, FindGraphsDocument, FindGraphsQuery } from '~/urql.server';
 import { Header, Main } from '~/components/DefaultLayout';
 import { bgColor } from '~/components/utils';
-import { Action, processAction } from '~/actions';
+import { ActionType, processAction } from '~/actions';
 
 type Graph = FindGraphsQuery['graphs'][0];
 
@@ -59,8 +59,8 @@ function OrganizationCard({ graphs }: { graphs: Graph[] }) {
               <Form method="post" replace>
                 <input
                   type="hidden"
-                  name="_action"
-                  defaultValue={Action.CreateGraph}
+                  name="actionType"
+                  defaultValue={ActionType.CreateGraph}
                 />
                 <input type="hidden" name="name" defaultValue="New Graph" />
                 <button
@@ -105,7 +105,7 @@ function GraphMenu({ graph }: { graph: Graph }) {
   const deleteGraph = useCallback(
     () =>
       fetcher.submit(
-        { _action: Action.DeleteGraph, id: graph.id },
+        { actionType: ActionType.DeleteGraph, id: graph.id },
         { method: 'delete', replace: true }
       ),
     [graph.id, fetcher]

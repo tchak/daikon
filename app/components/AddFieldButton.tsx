@@ -4,7 +4,7 @@ import { Popover } from '@headlessui/react';
 import { usePopper } from 'react-popper';
 import { PlusCircleIcon } from '@heroicons/react/outline';
 
-import { Action } from '~/actions';
+import { ActionType } from '~/actions';
 
 export function AddFieldButton({
   versionId,
@@ -43,8 +43,8 @@ export function AddFieldButton({
         <fetcher.Form method="post" replace>
           <input
             type="hidden"
-            name="_action"
-            defaultValue={Action.CreateField}
+            name="actionType"
+            defaultValue={ActionType.CreateField}
           />
           <input type="hidden" name="versionId" defaultValue={versionId} />
           <input type="hidden" name="leftId" defaultValue={leftId} />

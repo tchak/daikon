@@ -39,7 +39,7 @@ query findGraph($graphId: ID!, $leftId: ID) {
           __typename
         }
       }
-      blocEdges {
+      blockEdges {
         left {
           id
         }
@@ -73,8 +73,8 @@ mutation createTextField($input: CreateFieldInput!) {
   }
 }
 
-mutation createBlocField($input: CreateFieldInput!) {
-  createBlocField(input: $input) {
+mutation createBlockField($input: CreateFieldInput!) {
+  createBlockField(input: $input) {
     id
   }
 }
@@ -93,6 +93,12 @@ mutation setFieldHidden($input: SetFieldHiddenInput!) {
 
 mutation deleteGraph($input: DeleteGraphInput!) {
   deleteGraph(input: $input) {
+    id
+  }
+}
+
+mutation setViewName($input: SetViewNameInput!) {
+  setViewName(input: $input) {
     id
   }
 }

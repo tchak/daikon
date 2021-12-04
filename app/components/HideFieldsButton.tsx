@@ -5,7 +5,7 @@ import { usePopper } from 'react-popper';
 import { EyeOffIcon } from '@heroicons/react/outline';
 import clsx from 'clsx';
 
-import { Action } from '~/actions';
+import { ActionType } from '~/actions';
 import { Field } from '~/types';
 
 export function HideFieldsButton({
@@ -60,7 +60,7 @@ function Toggle({ viewId, field }: { viewId: string; field: Field }) {
   const toggle = () =>
     fetcher.submit(
       {
-        _action: Action.HideField,
+        actionType: ActionType.HideField,
         viewId,
         nodeId: field.id,
         hidden: field.hidden ? 'false' : 'true',

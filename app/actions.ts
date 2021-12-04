@@ -1,11 +1,9 @@
-import { pipe } from 'fp-ts/function';
-import * as D from 'io-ts/Decoder';
-import { UUID, BooleanFromString } from 'io-ts-types-experimental/Decoder';
-import * as E from 'fp-ts/Either';
+import { match } from 'ts-pattern';
+import { z } from 'zod';
 
 import {
   mutation,
-  CreateBlocFieldDocument,
+  CreateBlockFieldDocument,
   CreateGraphDocument,
   CreateTextFieldDocument,
   DeleteFieldDocument,
@@ -15,9 +13,10 @@ import {
   SetFieldHiddenDocument,
   DeleteRowsDocument,
   CreateRowDocument,
+  SetViewNameDocument,
 } from '~/urql.server';
 
-export enum Action {
+export enum ActionType {
   CreateField = 'CreateField',
   CreateGraph = 'CreateGraph',
   DeleteField = 'DeleteField',
@@ -30,113 +29,106 @@ export enum Action {
   DeleteRows = 'DeleteRows',
 }
 
+const Action = z.object({
+  actionType: z.nativeEnum(ActionType),
+  type: z.enum(['text', 'block']).optional(),
+});
+const CreateGraph = z.object({ name: z.string().nonempty() });
+const DeleteGraph = z.object({ graphId: z.string().uuid() });
+const DeleteView = z.object({ viewId: z.string().uuid() });
+const CreateField = z.object({
+  name: z.string().nonempty(),
+  versionId: z.string().uuid(),
+  leftId: z.string().uuid(),
+});
+const HideField = z.object({
+  viewId: z.string().uuid(),
+  nodeId: z.string().uuid(),
+  hidden: z.string().transform((hidden) => hidden == 'true'),
+});
+const RenameField = z.object({
+  versionId: z.string().uuid(),
+  nodeId: z.string().uuid(),
+  name: z.string().nonempty(),
+});
+const RenameView = z.object({
+  viewId: z.string().uuid(),
+  name: z.string().nonempty(),
+});
+const DeleteField = z.object({
+  versionId: z.string().uuid(),
+  nodeId: z.string().uuid(),
+});
+const CreateRow = z.object({ versionId: z.string().uuid() });
+const DeleteRows = z.object({ rowIds: z.array(z.string().uuid()) });
+
 export async function processAction(request: Request) {
-  const params = await parseBody(request);
+  // const user = await authenticator.isAuthenticated(request, {
+  //   failureRedirect: '/signin',
+  // });
+  const body = await parseBody(request);
 
-  return pipe(
-    actionD.decode(params),
-    E.match(
-      () => ({ error: 'Action unknown' }),
-      ({ _action }) => {
-        switch (_action) {
-          case Action.CreateGraph:
-            return parseInput(createGraphD, (input) =>
-              mutation(CreateGraphDocument, { input })
-            )(params);
-          case Action.DeleteGraph:
-            return parseInput(deleteGraphD, (input) =>
-              mutation(DeleteGraphDocument, { input })
-            )(params);
-          case Action.DeleteView:
-            return parseInput(deleteViewD, (input) =>
-              mutation(DeleteViewDocument, { input })
-            )(params);
-          case Action.CreateField:
-            return parseInput(createFieldD, ({ type, ...input }) => {
-              if (type == 'text') {
-                return mutation(CreateTextFieldDocument, { input });
-              }
-              return mutation(CreateBlocFieldDocument, { input });
-            })(params);
-          case Action.HideField:
-            return parseInput(hideFieldD, (input) =>
-              mutation(SetFieldHiddenDocument, { input })
-            )(params);
-          case Action.RenameField:
-            return parseInput(renameFieldD, (input) =>
-              mutation(SetFieldNameDocument, { input })
-            )(params);
-          case Action.DeleteField:
-            return parseInput(deleteFieldD, (input) =>
-              mutation(DeleteFieldDocument, { input })
-            )(params);
-          case Action.CreateRow:
-            return parseInput(createRowD, (input) =>
-              mutation(CreateRowDocument, { input })
-            )(params);
-          case Action.DeleteRows:
-            return parseInput(deleteRowsD, (input) =>
-              mutation(DeleteRowsDocument, { input })
-            )(params);
-          default:
-            return { error: 'Action unknown' };
-        }
-      }
+  return match(Action.parse(body))
+    .with({ actionType: ActionType.CreateGraph }, () =>
+      mutation(CreateGraphDocument, CreateGraph, body)
     )
-  );
+    .with({ actionType: ActionType.DeleteGraph }, () =>
+      mutation(DeleteGraphDocument, DeleteGraph, body)
+    )
+    .with({ actionType: ActionType.DeleteView }, () =>
+      mutation(DeleteViewDocument, DeleteView, body)
+    )
+    .with({ actionType: ActionType.CreateField, type: 'text' }, () =>
+      mutation(CreateTextFieldDocument, CreateField, body)
+    )
+    .with({ actionType: ActionType.CreateField, type: 'block' }, () =>
+      mutation(CreateBlockFieldDocument, CreateField, body)
+    )
+    .with({ actionType: ActionType.RenameField }, () =>
+      mutation(SetFieldNameDocument, RenameField, body)
+    )
+    .with({ actionType: ActionType.HideField }, () =>
+      mutation(SetFieldHiddenDocument, HideField, body)
+    )
+    .with({ actionType: ActionType.DeleteField }, () =>
+      mutation(DeleteFieldDocument, DeleteField, body)
+    )
+    .with({ actionType: ActionType.CreateRow }, () =>
+      mutation(CreateRowDocument, CreateRow, body)
+    )
+    .with({ actionType: ActionType.DeleteRows }, () =>
+      mutation(DeleteRowsDocument, DeleteRows, body)
+    )
+    .with({ actionType: ActionType.RenameView }, () =>
+      mutation(SetViewNameDocument, RenameView, body)
+    )
+    .exhaustive();
 }
 
-const actionD = D.struct({ _action: D.string });
-const createGraphD = D.struct({ name: D.string });
-const deleteGraphD = D.struct({ graphId: UUID });
-const deleteViewD = D.struct({ viewId: UUID });
-
-const createFieldD = D.struct({
-  type: D.literal('text', 'bloc'),
-  name: D.string,
-  versionId: UUID,
-  leftId: UUID,
-});
-const hideFieldD = D.struct({
-  viewId: UUID,
-  nodeId: UUID,
-  hidden: BooleanFromString,
-});
-const renameFieldD = D.struct({
-  versionId: UUID,
-  nodeId: UUID,
-  name: D.string,
-});
-const deleteFieldD = D.struct({ versionId: UUID, nodeId: UUID });
-
-const createRowD = D.struct({ versionId: UUID });
-const deleteRowsD = D.struct({ rowIds: D.array(UUID) });
-
-function parseInput<T, G>(
-  decoder: D.Decoder<unknown, T>,
-  fn: (input: T) => G | { error: string }
-): (params: unknown) => G | { error: string } {
-  return (params) =>
-    pipe(
-      decoder.decode(params),
-      E.match(() => ({ error: 'Invalid input' }), fn)
-    );
+async function parseBody(request: Request): Promise<FormDataObject> {
+  const formData = await request.formData();
+  return formDataToObject(formData);
 }
 
-async function parseBody(request: Request) {
-  const params = new URLSearchParams(await request.text());
-  const body = new Map<string, string | string[]>();
-  for (const [key, value] of params) {
+type FormDataEntryValueWithArray = FormDataEntryValue | FormDataEntryValue[];
+type FormDataObject = Record<string, FormDataEntryValueWithArray>;
+
+function formDataToObject(
+  formData: FormData | URLSearchParams
+): FormDataObject {
+  const data = new Map<string, FormDataEntryValueWithArray>();
+  formData.forEach((value, key) => {
     if (key.endsWith('[]')) {
       const arrayKey = key.slice(0, -2);
-      if (body.has(arrayKey)) {
-        (body.get(arrayKey) as string[]).push(value);
+      const arrayValue = data.get(arrayKey);
+      if (Array.isArray(arrayValue)) {
+        arrayValue.push(value);
       } else {
-        body.set(arrayKey, [value]);
+        data.set(arrayKey, [value]);
       }
     } else {
-      body.set(key, value);
+      data.set(key, value);
     }
-  }
-  return Object.fromEntries(body);
+  });
+  return Object.fromEntries(data);
 }

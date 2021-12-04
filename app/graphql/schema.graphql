@@ -3,7 +3,7 @@
 # !!!   DO NOT MODIFY THIS FILE BY YOURSELF   !!!
 # -----------------------------------------------
 
-type BlocField implements Field {
+type BlockField implements Field {
   cardinality: Cardinality!
   description: String
   id: ID!
@@ -181,7 +181,7 @@ input MoveFieldInput {
 }
 
 type Mutation {
-  createBlocField(input: CreateFieldInput!): Edge!
+  createBlockField(input: CreateFieldInput!): Edge!
   createBooleanField(input: CreateFieldInput!): Edge!
   createDateField(input: CreateFieldInput!): Edge!
   createDateTimeField(input: CreateFieldInput!): Edge!
@@ -203,6 +203,7 @@ type Mutation {
   setFieldHidden(input: SetFieldHiddenInput!): View!
   setFieldName(input: SetFieldNameInput!): Field!
   setFieldNullable(input: SetFieldNullableInput!): Field!
+  setViewName(input: SetViewNameInput!): Field!
   unlockVersion(input: UnlockVersionInput!): Version!
 }
 
@@ -258,6 +259,11 @@ input SetFieldNullableInput {
   versionId: ID!
 }
 
+input SetViewNameInput {
+  name: String!
+  viewId: ID!
+}
+
 type TextField implements Field {
   description: String
   id: ID!
@@ -271,7 +277,7 @@ input UnlockVersionInput {
 }
 
 type Version {
-  blocEdges: [Edge!]!
+  blockEdges: [Edge!]!
   createdAt: DateTime!
   diff(versionId: ID!): [Change!]!
   edges(leftId: ID): [Edge!]!

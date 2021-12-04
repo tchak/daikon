@@ -34,6 +34,15 @@ export class CreateViewInput {
 }
 
 @InputType()
+export class SetViewNameInput {
+  @Field(() => ID)
+  viewId!: string;
+
+  @Field(() => String)
+  name!: string;
+}
+
+@InputType()
 export class DeleteViewInput {
   @Field(() => ID)
   viewId!: string;

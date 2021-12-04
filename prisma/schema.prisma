@@ -43,7 +43,7 @@ enum NodeType {
   DATE
   DATE_TIME
   FILE
-  BLOC
+  BLOCK
 }
 
 enum NodeCardinality {

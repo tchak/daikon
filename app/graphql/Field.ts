@@ -71,7 +71,7 @@ export class DateTimeField extends Field {
 }
 
 @ObjectType({ implements: Field })
-export class BlocField extends Field {
+export class BlockField extends Field {
   @ObjectTypeField(() => Cardinality)
   cardinality!: Cardinality;
 

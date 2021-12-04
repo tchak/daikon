@@ -85,6 +85,24 @@ export function createView({
   );
 }
 
+export function updateView({
+  viewId,
+  name,
+}: {
+  viewId: string;
+  name: string;
+}): PrismaTask<ViewData> {
+  return pipe(
+    prismaQuery((prisma) =>
+      prisma.graphView.update({
+        where: { id: viewId },
+        data: { name },
+        select: VIEW_ATTRIBUTES,
+      })
+    )
+  );
+}
+
 export function updateViewField({
   viewId,
   nodeId,

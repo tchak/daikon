@@ -3,7 +3,7 @@ import { useState, FormEvent, useMemo } from 'react';
 import { PencilIcon, TrashIcon } from '@heroicons/react/outline';
 
 import { View } from '~/types';
-import { Action } from '~/actions';
+import { ActionType } from '~/actions';
 import { TabMenu, TabMenuItem } from './TabMenu';
 import { NameForm } from './NameForm';
 
@@ -32,7 +32,7 @@ export function ViewTab({ view }: { view: View }) {
             setEditing(false);
           }}
           onCancel={() => setEditing(false)}
-          data={{ _action: Action.RenameView, viewId: view.id }}
+          data={{ actionType: ActionType.RenameView, viewId: view.id }}
         />
       ) : (
         <div>{name}</div>
@@ -60,7 +60,7 @@ function ViewMenu({
   const fetcher = useFetcher();
   const deleteView = () =>
     fetcher.submit(
-      { _action: Action.DeleteView, viewId: view.id },
+      { actionType: ActionType.DeleteView, viewId: view.id },
       { method: 'post', replace: true }
     );
 

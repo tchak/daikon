@@ -1,5 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import * as TE from 'fp-ts/TaskEither';
+import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 
 import { prismaQuery, PrismaTask } from '~/prisma.server';
@@ -35,8 +36,8 @@ export function resolveFieldType(node: FieldData): string {
       return 'DateField';
     case NodeType.DATE_TIME:
       return 'DateTimeField';
-    case NodeType.BLOC:
-      return 'BlocField';
+    case NodeType.BLOCK:
+      return 'BlockField';
     default:
       return 'RootField';
   }
@@ -59,30 +60,30 @@ export function createField(
   return pipe(
     TE.Do,
     TE.bind('leftId', () => findNodeInternalId(versionId, leftId)),
-    TE.bind('edge', () =>
-      prismaQuery((prisma) =>
-        prisma.graphEdge.findFirst({
-          rejectOnNotFound: true,
-          where: { versionId, left: { id: leftId } },
-          orderBy: { position: 'desc' },
-          select: { position: true },
-        })
+    TE.bind('lastPosition', () =>
+      pipe(
+        prismaQuery((prisma) =>
+          prisma.graphEdge.findFirst({
+            rejectOnNotFound: true,
+            where: { versionId, left: { id: leftId } },
+            orderBy: { position: 'desc' },
+            select: { position: true },
+          })
+        ),
+        TE.match(
+          () => E.right(1),
+          (edge) => E.right(edge.position + 1)
+        )
       )
     ),
-    TE.chain(({ leftId, edge }) =>
+    TE.chain(({ leftId, lastPosition }) =>
       prismaQuery((prisma) =>
         prisma.graphEdge.create({
           data: {
-            position: position ? position : edge.position + 1,
-            version: {
-              connect: { id: versionId },
-            },
-            left: {
-              connect: { internalId: leftId },
-            },
-            right: {
-              create: { type, name },
-            },
+            position: position ? position : lastPosition,
+            version: { connect: { id: versionId } },
+            left: { connect: { internalId: leftId } },
+            right: { create: { type, name } },
           },
           select: {
             id: true,
@@ -107,25 +108,27 @@ export function deleteField({
     TE.Do,
     TE.bind('node', () => findUnlockedNode(versionId, nodeId)),
     TE.bind('_', ({ node: { internalId } }) =>
-      prismaQuery(async (prisma) => {
-        await prisma.graphNode.deleteMany({
-          where: {
-            id: nodeId,
-            AND: [
-              { lefts: { every: { versionId } } },
-              { rights: { every: { versionId } } },
-            ],
-          },
-        });
-        await prisma.graphEdge.deleteMany({
-          where: {
-            OR: [
-              { rightId: internalId, versionId },
-              { leftId: internalId, versionId },
-            ],
-          },
-        });
-      })
+      prismaQuery((prisma) =>
+        prisma.$transaction([
+          prisma.graphNode.deleteMany({
+            where: {
+              id: nodeId,
+              AND: [
+                { lefts: { every: { versionId } } },
+                { rights: { every: { versionId } } },
+              ],
+            },
+          }),
+          prisma.graphEdge.deleteMany({
+            where: {
+              OR: [
+                { rightId: internalId, versionId },
+                { leftId: internalId, versionId },
+              ],
+            },
+          }),
+        ])
+      )
     ),
     TE.map(({ node }) => node)
   );
@@ -203,21 +206,25 @@ function cloneNode(versionId: string, nodeId: string): PrismaTask<string> {
     TE.bind('node', () => findUnlockedNode(versionId, nodeId)),
     TE.bind('internalId', () => TE.of(uuid())),
     TE.chain(({ internalId, node }) =>
-      prismaQuery(async (prisma) => {
-        await prisma.graphNode.create({
-          data: { ...node, internalId },
-          select: { internalId: true },
-        });
-        await prisma.graphEdge.updateMany({
-          where: { right: { id: nodeId }, versionId },
-          data: { rightId: internalId },
-        });
-        await prisma.graphEdge.updateMany({
-          where: { left: { id: nodeId }, versionId },
-          data: { leftId: internalId },
-        });
-        return internalId;
-      })
+      pipe(
+        prismaQuery((prisma) =>
+          prisma.$transaction([
+            prisma.graphNode.create({
+              data: { ...node, internalId },
+              select: { internalId: true },
+            }),
+            prisma.graphEdge.updateMany({
+              where: { right: { id: nodeId }, versionId },
+              data: { rightId: internalId },
+            }),
+            prisma.graphEdge.updateMany({
+              where: { left: { id: nodeId }, versionId },
+              data: { leftId: internalId },
+            }),
+          ])
+        ),
+        TE.map(() => internalId)
+      )
     )
   );
 }
@@ -234,14 +241,10 @@ function findUnlockedNode(
         type: { not: NodeType.ROOT },
         OR: [
           {
-            graph: {
-              versions: { some: { id: versionId, lockedAt: null } },
-            },
+            graph: { versions: { some: { id: versionId, lockedAt: null } } },
           },
           {
-            rights: {
-              some: { version: { id: versionId, lockedAt: null } },
-            },
+            rights: { some: { version: { id: versionId, lockedAt: null } } },
           },
         ],
       },
@@ -262,14 +265,10 @@ function findNodeInternalId(
           id: nodeId,
           OR: [
             {
-              graph: {
-                versions: { some: { id: versionId, lockedAt: null } },
-              },
+              graph: { versions: { some: { id: versionId, lockedAt: null } } },
             },
             {
-              rights: {
-                some: { version: { id: versionId, lockedAt: null } },
-              },
+              rights: { some: { version: { id: versionId, lockedAt: null } } },
             },
           ],
         },
