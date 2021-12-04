@@ -21,7 +21,7 @@ export function GraphBreadcrumbs({
   return (
     <nav className="flex" aria-label="Breadcrumb">
       <ol role="list" className="flex items-center space-x-2">
-        {rest.map(([name, leftId], index) => (
+        {rest.reverse().map(([name, leftId], index) => (
           <li key={index}>
             {leftId ? (
               <div className="flex items-center">

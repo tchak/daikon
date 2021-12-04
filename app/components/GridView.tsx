@@ -37,6 +37,11 @@ export function GridView<T extends DataRow = DataRow>({
               <input
                 type="checkbox"
                 className="focus:ring-green-500 h-4 w-4 text-green-600 border-gray-300 rounded"
+                ref={(input) => {
+                  if (input) {
+                    input.indeterminate = indeterminate ?? false;
+                  }
+                }}
                 {...props}
               />
             </div>

@@ -26,6 +26,10 @@ export function HideFieldsButton({
     }
   );
 
+  if (fields.length == 0) {
+    return null;
+  }
+
   return (
     <Popover>
       <Popover.Button

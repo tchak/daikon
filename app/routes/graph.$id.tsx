@@ -225,12 +225,14 @@ function BlockCell({ leftId }: CellProps<DataRow> & { leftId: string }) {
   const [params, setParams] = useSearchParams();
   return (
     <button
+      type="button"
+      className="p-1 font-mono flex items-center rounded-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
       onClick={() => {
         params.set('l', leftId);
         setParams(params);
       }}
     >
-      Open
+      open
     </button>
   );
 }
