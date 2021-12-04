@@ -8,6 +8,7 @@
     "postinstall": "remix setup",
     "build": "remix build",
     "lint": "eslint . --ext .ts,.tsx",
+    "lint:types": "tsc",
     "dev": "concurrently \"npm:watch:css\" \"npm:start:dev\"",
     "start": "remix-serve build",
     "start:dev": "remix dev",

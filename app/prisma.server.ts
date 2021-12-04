@@ -1,5 +1,5 @@
 import type { TaskEither } from 'fp-ts/TaskEither';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import chalk from 'chalk';
 import * as TE from 'fp-ts/TaskEither';
 import { pipe } from 'fp-ts/function';
@@ -47,10 +47,16 @@ if (process.env.NODE_ENV == 'development') {
   global.__prisma = prisma;
 }
 
-export const PrismaError = 'PrismaError' as const;
-export type PrismaError = typeof PrismaError;
-export const NotFoundError = 'NotFoundError' as const;
-export type NotFoundError = typeof NotFoundError;
+type PrismaError =
+  | Prisma.PrismaClientKnownRequestError
+  | Prisma.PrismaClientUnknownRequestError
+  | Prisma.PrismaClientValidationError
+  | Prisma.PrismaClientRustPanicError;
+type NotFoundError = Error & { name: 'NotFoundError' };
+
+export function isNotFoundError(e: Error): e is NotFoundError {
+  return e.name == 'NotFoundError';
+}
 
 export type PrismaTask<Data> = TaskEither<PrismaError | NotFoundError, Data>;
 
@@ -60,11 +66,13 @@ export const prismaQuery = <Data>(
   pipe(
     TE.tryCatch(
       () => tx(prisma),
-      (e) => {
-        if ((e as { name: string }).name == 'NotFoundError') {
-          return NotFoundError;
+      (error) => {
+        if (isNotFoundError(error as Error)) {
+          const type = chalk['red'](`${(error as Error).message}`);
+          console.log(`prisma:notfound - ${type}`);
+          return error as NotFoundError;
         }
-        return PrismaError;
+        return error as PrismaError;
       }
     )
   );
