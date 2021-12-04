@@ -20,7 +20,7 @@ export type BlockField = Field & {
   readonly description?: Maybe<Scalars['String']>;
   readonly id: Scalars['ID'];
   readonly name: Scalars['String'];
-  readonly required: Scalars['Boolean'];
+  readonly nullable: Scalars['Boolean'];
   readonly updatedAt: Scalars['DateTime'];
 };
 
@@ -28,7 +28,7 @@ export type BooleanField = Field & {
   readonly description?: Maybe<Scalars['String']>;
   readonly id: Scalars['ID'];
   readonly name: Scalars['String'];
-  readonly required: Scalars['Boolean'];
+  readonly nullable: Scalars['Boolean'];
   readonly updatedAt: Scalars['DateTime'];
 };
 
@@ -74,7 +74,7 @@ export type DateField = Field & {
   readonly description?: Maybe<Scalars['String']>;
   readonly id: Scalars['ID'];
   readonly name: Scalars['String'];
-  readonly required: Scalars['Boolean'];
+  readonly nullable: Scalars['Boolean'];
   readonly updatedAt: Scalars['DateTime'];
 };
 
@@ -82,7 +82,7 @@ export type DateTimeField = Field & {
   readonly description?: Maybe<Scalars['String']>;
   readonly id: Scalars['ID'];
   readonly name: Scalars['String'];
-  readonly required: Scalars['Boolean'];
+  readonly nullable: Scalars['Boolean'];
   readonly updatedAt: Scalars['DateTime'];
 };
 
@@ -137,6 +137,12 @@ export type FieldNameChange = Change & {
   readonly to: Scalars['String'];
 };
 
+export type FieldNullableChange = Change & {
+  readonly from: Scalars['Boolean'];
+  readonly nodeId: Scalars['ID'];
+  readonly to: Scalars['Boolean'];
+};
+
 export type FieldParentChange = Change & {
   readonly from: Scalars['ID'];
   readonly nodeId: Scalars['ID'];
@@ -149,18 +155,12 @@ export type FieldPositionChange = Change & {
   readonly to: Scalars['Int'];
 };
 
-export type FieldRequiredChange = Change & {
-  readonly from: Scalars['Boolean'];
-  readonly nodeId: Scalars['ID'];
-  readonly to: Scalars['Boolean'];
-};
-
 export type FileField = Field & {
   readonly cardinality: Cardinality;
   readonly description?: Maybe<Scalars['String']>;
   readonly id: Scalars['ID'];
   readonly name: Scalars['String'];
-  readonly required: Scalars['Boolean'];
+  readonly nullable: Scalars['Boolean'];
   readonly updatedAt: Scalars['DateTime'];
 };
 
@@ -338,7 +338,7 @@ export type NumberField = Field & {
   readonly description?: Maybe<Scalars['String']>;
   readonly id: Scalars['ID'];
   readonly name: Scalars['String'];
-  readonly required: Scalars['Boolean'];
+  readonly nullable: Scalars['Boolean'];
   readonly updatedAt: Scalars['DateTime'];
 };
 
@@ -410,7 +410,7 @@ export type TextField = Field & {
   readonly description?: Maybe<Scalars['String']>;
   readonly id: Scalars['ID'];
   readonly name: Scalars['String'];
-  readonly required: Scalars['Boolean'];
+  readonly nullable: Scalars['Boolean'];
   readonly updatedAt: Scalars['DateTime'];
 };
 

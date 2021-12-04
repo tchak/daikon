@@ -17,7 +17,7 @@ export enum ChangeOp {
 export enum ChangeAttribute {
   NAME,
   DESCRIPTION,
-  REQUIRED,
+  NULLABLE,
   CARDINALITY,
   POSITION,
   PARENT,
@@ -49,8 +49,8 @@ export function resolveChangeType(change: ChangeData): string {
           return 'FieldNameChange';
         case ChangeAttribute.DESCRIPTION:
           return 'FieldDescriptionChange';
-        case ChangeAttribute.REQUIRED:
-          return 'FieldRequiredChange';
+        case ChangeAttribute.NULLABLE:
+          return 'FieldNullableChange';
         case ChangeAttribute.POSITION:
           return 'FieldPositionChange';
         case ChangeAttribute.PARENT:
@@ -312,13 +312,13 @@ function compareEdge(
       to: node2.description,
     });
   }
-  if (node1.required != node2.required) {
+  if (node1.nullable != node2.nullable) {
     changes.push({
       nodeId,
       op: ChangeOp.UPDATE,
-      attribute: ChangeAttribute.REQUIRED,
-      from: node1.required,
-      to: node2.required,
+      attribute: ChangeAttribute.NULLABLE,
+      from: node1.nullable,
+      to: node2.nullable,
     });
   }
   if (edge1.position != edge2.position) {
@@ -354,7 +354,7 @@ const nodeEq = Eq.struct({
   type: Eq.string,
   name: Eq.string,
   description: Eq.nullable(Eq.string),
-  required: Eq.boolean,
+  nullable: Eq.boolean,
 });
 const edgeEq = Eq.struct({ position: Eq.number, left: nodeEq, right: nodeEq });
 const edgesEq = Eq.readonly(Eq.array(edgeEq));

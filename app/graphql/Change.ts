@@ -37,7 +37,7 @@ export class FieldDescriptionChange extends Change {
 }
 
 @ObjectType({ implements: Change })
-export class FieldRequiredChange extends Change {
+export class FieldNullableChange extends Change {
   @Field(() => Boolean)
   from!: boolean;
 

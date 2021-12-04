@@ -128,7 +128,7 @@ export function createGraph(name: string): PrismaTask<GraphData> {
           graph: {
             create: {
               root: { create: { name, type: NodeType.ROOT } },
-              views: { create: { name: 'Grid View' } },
+              views: { create: { name: 'Table View' } },
             },
           },
         },

@@ -8,7 +8,7 @@ type BlockField implements Field {
   description: String
   id: ID!
   name: String!
-  required: Boolean!
+  nullable: Boolean!
   updatedAt: DateTime!
 }
 
@@ -16,7 +16,7 @@ type BooleanField implements Field {
   description: String
   id: ID!
   name: String!
-  required: Boolean!
+  nullable: Boolean!
   updatedAt: DateTime!
 }
 
@@ -62,7 +62,7 @@ type DateField implements Field {
   description: String
   id: ID!
   name: String!
-  required: Boolean!
+  nullable: Boolean!
   updatedAt: DateTime!
 }
 
@@ -75,7 +75,7 @@ type DateTimeField implements Field {
   description: String
   id: ID!
   name: String!
-  required: Boolean!
+  nullable: Boolean!
   updatedAt: DateTime!
 }
 
@@ -130,6 +130,12 @@ type FieldNameChange implements Change {
   to: String!
 }
 
+type FieldNullableChange implements Change {
+  from: Boolean!
+  nodeId: ID!
+  to: Boolean!
+}
+
 type FieldParentChange implements Change {
   from: ID!
   nodeId: ID!
@@ -142,18 +148,12 @@ type FieldPositionChange implements Change {
   to: Int!
 }
 
-type FieldRequiredChange implements Change {
-  from: Boolean!
-  nodeId: ID!
-  to: Boolean!
-}
-
 type FileField implements Field {
   cardinality: Cardinality!
   description: String
   id: ID!
   name: String!
-  required: Boolean!
+  nullable: Boolean!
   updatedAt: DateTime!
 }
 
@@ -211,7 +211,7 @@ type NumberField implements Field {
   description: String
   id: ID!
   name: String!
-  required: Boolean!
+  nullable: Boolean!
   updatedAt: DateTime!
 }
 
@@ -268,7 +268,7 @@ type TextField implements Field {
   description: String
   id: ID!
   name: String!
-  required: Boolean!
+  nullable: Boolean!
   updatedAt: DateTime!
 }
 

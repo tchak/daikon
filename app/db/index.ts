@@ -33,7 +33,7 @@ export const NODE_ATTRIBUTES = {
   type: true,
   name: true,
   description: true,
-  required: true,
+  nullable: true,
   cardinality: true,
   updatedAt: true,
 };

@@ -43,31 +43,31 @@ export class RootField extends Field {}
 @ObjectType({ implements: Field })
 export class TextField extends Field {
   @ObjectTypeField(() => Boolean)
-  required!: boolean;
+  nullable!: boolean;
 }
 
 @ObjectType({ implements: Field })
 export class BooleanField extends Field {
   @ObjectTypeField(() => Boolean)
-  required!: boolean;
+  nullable!: boolean;
 }
 
 @ObjectType({ implements: Field })
 export class NumberField extends Field {
   @ObjectTypeField(() => Boolean)
-  required!: boolean;
+  nullable!: boolean;
 }
 
 @ObjectType({ implements: Field })
 export class DateField extends Field {
   @ObjectTypeField(() => Boolean)
-  required!: boolean;
+  nullable!: boolean;
 }
 
 @ObjectType({ implements: Field })
 export class DateTimeField extends Field {
   @ObjectTypeField(() => Boolean)
-  required!: boolean;
+  nullable!: boolean;
 }
 
 @ObjectType({ implements: Field })
@@ -76,7 +76,7 @@ export class BlockField extends Field {
   cardinality!: Cardinality;
 
   @ObjectTypeField(() => Boolean)
-  required!: boolean;
+  nullable!: boolean;
 }
 
 @ObjectType({ implements: Field })
@@ -85,7 +85,7 @@ export class FileField extends Field {
   cardinality!: Cardinality;
 
   @ObjectTypeField(() => Boolean)
-  required!: boolean;
+  nullable!: boolean;
 }
 
 @ObjectType()

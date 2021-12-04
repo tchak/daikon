@@ -12,7 +12,7 @@ export type FieldData = {
   type: NodeType;
   name: string;
   description: null | string;
-  required: boolean;
+  nullable: boolean;
   updatedAt: Date;
   cardinality: NodeCardinality;
 };
@@ -142,7 +142,7 @@ export function updateField({
   versionId: string;
   nodeId: string;
 } & Partial<
-  Pick<FieldData, 'name' | 'description' | 'required'>
+  Pick<FieldData, 'name' | 'description' | 'nullable'>
 >): PrismaTask<FieldData> {
   return pipe(
     findPinnedNodeInternalId(versionId, nodeId),

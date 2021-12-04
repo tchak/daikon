@@ -39,6 +39,7 @@ enum NodeType {
   ROOT
   TEXT
   NUMBER
+  SELECT
   BOOLEAN
   DATE
   DATE_TIME
@@ -58,7 +59,6 @@ model GraphNode {
   updatedAt   DateTime        @default(now()) @updatedAt
   type        NodeType
   cardinality NodeCardinality @default(ONE)
-  required    Boolean         @default(false)
   nullable    Boolean         @default(false)
   options     Json            @default("{}")
   name        String
@@ -90,18 +90,19 @@ model GraphEdge {
 }
 
 enum ViewType {
-  GRID
+  TABLE
+  FORM
 }
 
 model GraphView {
   id          String   @id @default(uuid()) @db.Uuid
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt
-  type        ViewType @default(GRID)
+  type        ViewType @default(TABLE)
   name        String
   description String?
   graphId     String   @db.Uuid
-  graph       Graph    @relation(fields: [graphId], references: [id])
+  graph       Graph    @relation(fields: [graphId], references: [id], onDelete: Cascade)
   hidden      String[]
   filters     Json     @default("{}")
   sort        Json     @default("{}")
