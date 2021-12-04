@@ -1,3 +1,14 @@
+import { pipe } from 'fp-ts/function';
+import { takeLeft, append } from 'fp-ts-std/String';
+
+export function truncate(
+  size: number,
+  elipse = '...'
+): (str: string) => string {
+  return (str) =>
+    str.length > size ? pipe(str, takeLeft(size), append(elipse)) : str;
+}
+
 const BgColor: Record<string, string> = {
   red: 'bg-red-500',
   yellow: 'bg-yellow-500',

@@ -5,7 +5,7 @@ import { DatabaseIcon } from '@heroicons/react/solid';
 import { NavLink, Link } from 'react-router-dom';
 import clsx from 'clsx';
 
-import { defaultInitials } from './utils';
+import { defaultInitials } from '~/utils';
 
 export function Header({ children }: { children: ReactNode }) {
   return (

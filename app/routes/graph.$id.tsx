@@ -19,7 +19,7 @@ import { AddRowButton } from '~/components/AddRowButton';
 import { HideFieldsButton } from '~/components/HideFieldsButton';
 import { DeleteRowsButton } from '~/components/DeleteRowsButton';
 import { GraphBreadcrumbs } from '~/components/GraphBreadcrumbs';
-import { bgColor } from '~/components/utils';
+import { bgColor } from '~/utils';
 import { query, FindGraphDocument } from '~/urql.server';
 import { Edge, BlockEdge, Field, Breadcrumb } from '~/types';
 import { processAction } from '~/actions';

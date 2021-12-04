@@ -1,9 +1,8 @@
 import { useFetcher } from 'remix';
 import { useState, FormEvent, useMemo } from 'react';
 import { PencilIcon, TrashIcon, EyeOffIcon } from '@heroicons/react/outline';
-import { pipe } from 'fp-ts/function';
-import S from 'fp-ts-std/String';
 
+import { truncate } from '~/utils';
 import { Field } from '~/types';
 import { ActionType } from '~/actions';
 import { TabMenu, TabMenuItem } from './TabMenu';
@@ -104,9 +103,4 @@ function FieldMenu({
       </TabMenuItem>
     </TabMenu>
   );
-}
-
-function truncate(size: number, elipse = '...'): (str: string) => string {
-  return (str) =>
-    str.length > size ? pipe(str, S.takeLeft(size), S.append(elipse)) : str;
 }

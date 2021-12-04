@@ -10,7 +10,7 @@ import clsx from 'clsx';
 
 import { query, FindGraphsDocument, FindGraphsQuery } from '~/urql.server';
 import { Header, Main } from '~/components/DefaultLayout';
-import { bgColor } from '~/components/utils';
+import { bgColor } from '~/utils';
 import { ActionType, processAction } from '~/actions';
 
 type Graph = FindGraphsQuery['graphs'][0];
