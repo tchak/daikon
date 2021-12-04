@@ -31,6 +31,6 @@ export const schema =
     dateScalarMode: 'isoDate',
   });
 
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV == 'development') {
   global.__schema = schema;
 }

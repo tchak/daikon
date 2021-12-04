@@ -20,7 +20,7 @@ export const client =
     exchanges: [executeExchange({ schema })],
   });
 
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV == 'development') {
   global.__client = client;
 }
 
