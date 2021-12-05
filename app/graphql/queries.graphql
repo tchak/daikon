@@ -51,6 +51,12 @@ query findGraph($graphId: ID!, $parentFieldId: ID, $parentId: ID) {
     }
     rows(parentFieldId: $parentFieldId, parentId: $parentId) {
       id
+      cells {
+        id
+        ... on TextCell {
+          value
+        }
+      }
     }
   }
 }

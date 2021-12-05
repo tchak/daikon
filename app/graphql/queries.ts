@@ -24,6 +24,12 @@ export type BlockField = Field & {
   readonly updatedAt: Scalars['DateTime'];
 };
 
+export type BooleanCell = Cell & {
+  readonly id: Scalars['ID'];
+  readonly name: Scalars['String'];
+  readonly value: Scalars['Boolean'];
+};
+
 export type BooleanField = Field & {
   readonly description?: Maybe<Scalars['String']>;
   readonly id: Scalars['ID'];
@@ -36,6 +42,11 @@ export enum Cardinality {
   Many = 'MANY',
   One = 'ONE'
 }
+
+export type Cell = {
+  readonly id: Scalars['ID'];
+  readonly name: Scalars['String'];
+};
 
 export type Change = {
   readonly nodeId: Scalars['ID'];
@@ -71,12 +82,24 @@ export type CreateViewInput = {
   readonly name: Scalars['String'];
 };
 
+export type DateCell = Cell & {
+  readonly id: Scalars['ID'];
+  readonly name: Scalars['String'];
+  readonly value?: Maybe<Scalars['DateTime']>;
+};
+
 export type DateField = Field & {
   readonly description?: Maybe<Scalars['String']>;
   readonly id: Scalars['ID'];
   readonly name: Scalars['String'];
   readonly nullable: Scalars['Boolean'];
   readonly updatedAt: Scalars['DateTime'];
+};
+
+export type DateTimeCell = Cell & {
+  readonly id: Scalars['ID'];
+  readonly name: Scalars['String'];
+  readonly value?: Maybe<Scalars['DateTime']>;
 };
 
 export type DateTimeField = Field & {
@@ -177,6 +200,12 @@ export type FileField = Field & {
   readonly updatedAt: Scalars['DateTime'];
 };
 
+export type FloatCell = Cell & {
+  readonly id: Scalars['ID'];
+  readonly name: Scalars['String'];
+  readonly value?: Maybe<Scalars['Float']>;
+};
+
 export type Graph = {
   readonly color: Scalars['String'];
   readonly createdAt: Scalars['DateTime'];
@@ -193,6 +222,12 @@ export type Graph = {
 export type GraphRowsArgs = {
   parentFieldId?: InputMaybe<Scalars['ID']>;
   parentId?: InputMaybe<Scalars['ID']>;
+};
+
+export type IntCell = Cell & {
+  readonly id: Scalars['ID'];
+  readonly name: Scalars['String'];
+  readonly value?: Maybe<Scalars['Int']>;
 };
 
 export type LockVersionInput = {
@@ -396,6 +431,7 @@ export type RootField = Field & {
 };
 
 export type Row = {
+  readonly cells: ReadonlyArray<Cell>;
   readonly createdAt: Scalars['DateTime'];
   readonly id: Scalars['ID'];
   readonly updatedAt: Scalars['DateTime'];
@@ -428,6 +464,12 @@ export type SetFieldNullableInput = {
 export type SetViewNameInput = {
   readonly name: Scalars['String'];
   readonly viewId: Scalars['ID'];
+};
+
+export type TextCell = Cell & {
+  readonly id: Scalars['ID'];
+  readonly name: Scalars['String'];
+  readonly value?: Maybe<Scalars['String']>;
 };
 
 export type TextField = Field & {
@@ -495,7 +537,7 @@ export type FindGraphQueryVariables = Exact<{
 }>;
 
 
-export type FindGraphQuery = { readonly graph?: { readonly id: string, readonly createdAt: any, readonly color: string, readonly root: { readonly id: string, readonly name: string }, readonly view: { readonly id: string, readonly name: string, readonly edges: ReadonlyArray<{ readonly id: string }> }, readonly version: { readonly id: string, readonly lockedAt?: any | null | undefined, readonly edges: ReadonlyArray<{ readonly id: string, readonly left: { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string }, readonly right: { readonly __typename: 'BlockField', readonly id: string, readonly name: string } | { readonly __typename: 'BooleanField', readonly id: string, readonly name: string } | { readonly __typename: 'DateField', readonly id: string, readonly name: string } | { readonly __typename: 'DateTimeField', readonly id: string, readonly name: string } | { readonly __typename: 'FileField', readonly id: string, readonly name: string } | { readonly __typename: 'NumberField', readonly id: string, readonly name: string } | { readonly __typename: 'RootField', readonly id: string, readonly name: string } | { readonly __typename: 'TextField', readonly id: string, readonly name: string } }>, readonly blockEdges: ReadonlyArray<{ readonly left: { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string }, readonly right: { readonly id: string, readonly name: string } | { readonly id: string, readonly name: string } | { readonly id: string, readonly name: string } | { readonly id: string, readonly name: string } | { readonly id: string, readonly name: string } | { readonly id: string, readonly name: string } | { readonly id: string, readonly name: string } | { readonly id: string, readonly name: string } }> }, readonly rows: ReadonlyArray<{ readonly id: string }> } | null | undefined };
+export type FindGraphQuery = { readonly graph?: { readonly id: string, readonly createdAt: any, readonly color: string, readonly root: { readonly id: string, readonly name: string }, readonly view: { readonly id: string, readonly name: string, readonly edges: ReadonlyArray<{ readonly id: string }> }, readonly version: { readonly id: string, readonly lockedAt?: any | null | undefined, readonly edges: ReadonlyArray<{ readonly id: string, readonly left: { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string }, readonly right: { readonly __typename: 'BlockField', readonly id: string, readonly name: string } | { readonly __typename: 'BooleanField', readonly id: string, readonly name: string } | { readonly __typename: 'DateField', readonly id: string, readonly name: string } | { readonly __typename: 'DateTimeField', readonly id: string, readonly name: string } | { readonly __typename: 'FileField', readonly id: string, readonly name: string } | { readonly __typename: 'NumberField', readonly id: string, readonly name: string } | { readonly __typename: 'RootField', readonly id: string, readonly name: string } | { readonly __typename: 'TextField', readonly id: string, readonly name: string } }>, readonly blockEdges: ReadonlyArray<{ readonly left: { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string }, readonly right: { readonly id: string, readonly name: string } | { readonly id: string, readonly name: string } | { readonly id: string, readonly name: string } | { readonly id: string, readonly name: string } | { readonly id: string, readonly name: string } | { readonly id: string, readonly name: string } | { readonly id: string, readonly name: string } | { readonly id: string, readonly name: string } }> }, readonly rows: ReadonlyArray<{ readonly id: string, readonly cells: ReadonlyArray<{ readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly id: string } | { readonly value?: string | null | undefined, readonly id: string }> }> } | null | undefined };
 
 export type CreateGraphMutationVariables = Exact<{
   input: CreateGraphInput;
@@ -583,7 +625,7 @@ export type DeleteRowsMutation = { readonly deleteRows: ReadonlyArray<{ readonly
 
 
 export const FindGraphsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"findGraphs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"graphs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"root"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"color"}}]}}]}}]} as unknown as DocumentNode<FindGraphsQuery, FindGraphsQueryVariables>;
-export const FindGraphDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"findGraph"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"graphId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"parentFieldId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"parentId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"graph"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"graphId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"graphId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"color"}},{"kind":"Field","name":{"kind":"Name","value":"root"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"view"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"edges"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"leftId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"parentFieldId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"version"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"lockedAt"}},{"kind":"Field","name":{"kind":"Name","value":"edges"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"leftId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"parentFieldId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"left"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"right"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"__typename"}}]}}]}},{"kind":"Field","alias":{"kind":"Name","value":"blockEdges"},"name":{"kind":"Name","value":"edges"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"type"},"value":{"kind":"EnumValue","value":"BLOCK"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"left"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"right"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"rows"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"parentFieldId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"parentFieldId"}}},{"kind":"Argument","name":{"kind":"Name","value":"parentId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"parentId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]} as unknown as DocumentNode<FindGraphQuery, FindGraphQueryVariables>;
+export const FindGraphDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"findGraph"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"graphId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"parentFieldId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"parentId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"graph"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"graphId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"graphId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"color"}},{"kind":"Field","name":{"kind":"Name","value":"root"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"view"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"edges"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"leftId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"parentFieldId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"version"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"lockedAt"}},{"kind":"Field","name":{"kind":"Name","value":"edges"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"leftId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"parentFieldId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"left"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"right"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"__typename"}}]}}]}},{"kind":"Field","alias":{"kind":"Name","value":"blockEdges"},"name":{"kind":"Name","value":"edges"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"type"},"value":{"kind":"EnumValue","value":"BLOCK"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"left"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"right"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"rows"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"parentFieldId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"parentFieldId"}}},{"kind":"Argument","name":{"kind":"Name","value":"parentId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"parentId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"cells"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TextCell"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"value"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<FindGraphQuery, FindGraphQueryVariables>;
 export const CreateGraphDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createGraph"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateGraphInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createGraph"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<CreateGraphMutation, CreateGraphMutationVariables>;
 export const CreateViewDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createView"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateViewInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createView"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<CreateViewMutation, CreateViewMutationVariables>;
 export const CreateTextFieldDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createTextField"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateFieldInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createTextField"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<CreateTextFieldMutation, CreateTextFieldMutationVariables>;

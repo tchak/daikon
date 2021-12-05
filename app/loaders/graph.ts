@@ -11,7 +11,10 @@ export type LoaderData = {
   parentId?: string;
   view: { id: string; name: string };
   fields: ReadonlyArray<Field & { hidden: boolean }>;
-  rows: ReadonlyArray<{ id: string }>;
+  rows: ReadonlyArray<{
+    id: string;
+    [key: string]: unknown;
+  }>;
   breadcrumbs: ReadonlyArray<Breadcrumb>;
 };
 
@@ -76,7 +79,17 @@ async function getGraph({
       parentId,
       view: graph.view,
       fields,
-      rows: graph.rows,
+      rows: graph.rows.map(({ id, cells }) => ({
+        id,
+        ...Object.fromEntries(
+          cells.map((cell) => {
+            if ('value' in cell) {
+              return [cell.id, cell.value];
+            }
+            return [cell.id, null];
+          })
+        ),
+      })),
       breadcrumbs: [{ name: graph.root.name }, ...breadcrumbs],
     };
   }
