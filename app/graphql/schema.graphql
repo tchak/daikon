@@ -149,6 +149,18 @@ type FieldPositionChange implements Change {
   to: Int!
 }
 
+enum FieldType {
+  BLOCK
+  BOOLEAN
+  DATE
+  DATE_TIME
+  FILE
+  NUMBER
+  ROOT
+  SELECT
+  TEXT
+}
+
 type FileField implements Field {
   cardinality: Cardinality!
   description: String
@@ -283,10 +295,9 @@ input UnlockVersionInput {
 }
 
 type Version {
-  blockEdges: [Edge!]!
   createdAt: DateTime!
   diff(versionId: ID!): [Change!]!
-  edges(leftId: ID): [Edge!]!
+  edges(leftId: ID, type: FieldType): [Edge!]!
   id: ID!
   lockedAt: DateTime
   rows(parentFieldId: ID, parentId: ID): [Row!]!
@@ -295,7 +306,7 @@ type Version {
 type View {
   createdAt: DateTime!
   description: String
-  edges(leftId: ID): [Edge!]!
+  edges(leftId: ID, type: FieldType): [Edge!]!
   id: ID!
   name: String!
   updatedAt: DateTime!

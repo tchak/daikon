@@ -2,7 +2,13 @@ import * as TE from 'fp-ts/TaskEither';
 import { pipe } from 'fp-ts/function';
 
 import { prismaQuery, PrismaTask } from '~/prisma.server';
-import { NODE_ATTRIBUTES, VIEW_ATTRIBUTES, ViewData, EdgeData } from '.';
+import {
+  NODE_ATTRIBUTES,
+  VIEW_ATTRIBUTES,
+  ViewData,
+  EdgeData,
+  NodeType,
+} from '.';
 
 export function findView(viewId: string): PrismaTask<ViewData> {
   return prismaQuery((prisma) =>
@@ -17,9 +23,11 @@ export function findView(viewId: string): PrismaTask<ViewData> {
 export function findViewEdges({
   viewId,
   leftId,
+  type,
 }: {
   viewId: string;
   leftId?: string;
+  type?: NodeType;
 }): PrismaTask<EdgeData[]> {
   return pipe(
     prismaQuery((prisma) =>
@@ -37,10 +45,17 @@ export function findViewEdges({
             id: true,
             edges: {
               where: leftId
-                ? {
-                    left: { id: leftId },
-                    right: { id: { notIn: view.hidden } },
-                  }
+                ? type
+                  ? {
+                      left: { id: leftId },
+                      right: { id: { notIn: view.hidden }, type },
+                    }
+                  : {
+                      left: { id: leftId },
+                      right: { id: { notIn: view.hidden } },
+                    }
+                : type
+                ? { right: { id: { notIn: view.hidden }, type } }
                 : { right: { id: { notIn: view.hidden } } },
               select: {
                 id: true,

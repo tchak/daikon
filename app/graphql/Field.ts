@@ -11,12 +11,25 @@ import {
 
 import { FieldData, resolveFieldType } from '~/db';
 
-export enum Cardinality {
+export enum CardinalityEnum {
   ONE = 'ONE',
   MANY = 'MANY',
 }
 
-registerEnumType(Cardinality, { name: 'Cardinality' });
+export enum FieldTypeEnum {
+  ROOT = 'ROOT',
+  TEXT = 'TEXT',
+  NUMBER = 'NUMBER',
+  SELECT = 'SELECT',
+  BOOLEAN = 'BOOLEAN',
+  DATE = 'DATE',
+  DATE_TIME = 'DATE_TIME',
+  FILE = 'FILE',
+  BLOCK = 'BLOCK',
+}
+
+registerEnumType(CardinalityEnum, { name: 'Cardinality' });
+registerEnumType(FieldTypeEnum, { name: 'FieldType' });
 
 @InterfaceType('Field', {
   resolveType(node: FieldData) {
@@ -72,8 +85,8 @@ export class DateTimeField extends FieldType {
 
 @ObjectType({ implements: FieldType })
 export class BlockField extends FieldType {
-  @Field(() => Cardinality)
-  cardinality!: Cardinality;
+  @Field(() => CardinalityEnum)
+  cardinality!: CardinalityEnum;
 
   @Field(() => Boolean)
   nullable!: boolean;
@@ -81,8 +94,8 @@ export class BlockField extends FieldType {
 
 @ObjectType({ implements: FieldType })
 export class FileField extends FieldType {
-  @Field(() => Cardinality)
-  cardinality!: Cardinality;
+  @Field(() => CardinalityEnum)
+  cardinality!: CardinalityEnum;
 
   @Field(() => Boolean)
   nullable!: boolean;

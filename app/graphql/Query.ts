@@ -8,7 +8,6 @@ import {
   findVersion,
   findView,
   findVersionEdges,
-  findVersionBlockEdges,
   findViewEdges,
   findGraphVersion,
   findGraphView,
@@ -26,7 +25,7 @@ import {
 } from '~/db';
 
 import { Graph } from './Graph';
-import { Edge } from './Field';
+import { Edge, FieldTypeEnum } from './Field';
 import { Row } from './Row';
 import { Version } from './Version';
 import { View } from './View';
@@ -75,9 +74,13 @@ export class ViewResolver {
   @FieldResolver(() => [Edge])
   edges(
     @Root() root: ViewData,
-    @Arg('leftId', () => ID, { nullable: true }) leftId?: string
+    @Arg('leftId', () => ID, { nullable: true }) leftId?: string,
+    @Arg('type', () => FieldTypeEnum, { nullable: true }) type?: FieldTypeEnum
   ): Promise<EdgeData[]> {
-    return pipe(findViewEdges({ viewId: root.id }), throwError())();
+    return pipe(
+      findViewEdges({ viewId: root.id, leftId, type }),
+      throwError()
+    )();
   }
 }
 
@@ -97,17 +100,13 @@ export class VersionResolver {
   @FieldResolver(() => [Edge])
   edges(
     @Root() root: VersionData,
-    @Arg('leftId', () => ID, { nullable: true }) leftId?: string
+    @Arg('leftId', () => ID, { nullable: true }) leftId?: string,
+    @Arg('type', () => FieldTypeEnum, { nullable: true }) type?: FieldTypeEnum
   ): Promise<EdgeData[]> {
     return pipe(
-      findVersionEdges({ versionId: root.id, leftId }),
+      findVersionEdges({ versionId: root.id, leftId, type }),
       throwError()
     )();
-  }
-
-  @FieldResolver(() => [Edge])
-  blockEdges(@Root() root: VersionData): Promise<EdgeData[]> {
-    return pipe(findVersionBlockEdges({ versionId: root.id }), throwError())();
   }
 
   @FieldResolver(() => [Row])

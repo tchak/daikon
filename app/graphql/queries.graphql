@@ -39,7 +39,7 @@ query findGraph($graphId: ID!, $parentFieldId: ID, $parentId: ID) {
           __typename
         }
       }
-      blockEdges {
+      blockEdges: edges(type: BLOCK) {
         left {
           id
         }

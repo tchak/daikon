@@ -53,35 +53,22 @@ export function findVersion(versionId: string): PrismaTask<VersionData> {
 export function findVersionEdges({
   versionId,
   leftId,
+  type,
 }: {
   versionId: string;
   leftId?: string;
+  type?: NodeType;
 }): PrismaTask<EdgeData[]> {
   return pipe(
     prismaQuery((prisma) =>
       prisma.graphEdge.findMany({
-        where: leftId ? { versionId, left: { id: leftId } } : { versionId },
-        select: {
-          id: true,
-          position: true,
-          left: { select: NODE_ATTRIBUTES },
-          right: { select: NODE_ATTRIBUTES },
-        },
-        orderBy: [{ left: { id: 'asc' } }, { position: 'asc' }],
-      })
-    )
-  );
-}
-
-export function findVersionBlockEdges({
-  versionId,
-}: {
-  versionId: string;
-}): PrismaTask<EdgeData[]> {
-  return pipe(
-    prismaQuery((prisma) =>
-      prisma.graphEdge.findMany({
-        where: { versionId, right: { type: NodeType.BLOCK } },
+        where: leftId
+          ? type
+            ? { versionId, left: { id: leftId }, right: { type } }
+            : { versionId, left: { id: leftId } }
+          : type
+          ? { versionId, right: { type } }
+          : { versionId },
         select: {
           id: true,
           position: true,
