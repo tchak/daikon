@@ -4,7 +4,12 @@ import * as A from 'fp-ts/ReadonlyArray';
 import * as Eq from 'io-ts/Eq';
 
 import { prismaQuery, PrismaTask } from '~/prisma.server';
-import { NODE_ATTRIBUTES, VERSION_ATTRIBUTES, NodeType } from '.';
+import {
+  NODE_ATTRIBUTES,
+  VERSION_ATTRIBUTES,
+  NodeType,
+  ROW_ATTRIBUTES,
+} from '.';
 import { EdgeData } from './field';
 import { RowData } from './row';
 
@@ -116,18 +121,24 @@ export function findVersionBlockEdges({
 
 export function findVersionRows({
   versionId,
+  parentFieldId,
+  parentId,
 }: {
   versionId: string;
+  parentFieldId?: string;
+  parentId?: string;
 }): PrismaTask<RowData[]> {
   return pipe(
     prismaQuery((prisma) =>
-      prisma.graphRow.findMany({
-        where: { versionId },
-        select: {
-          id: true,
-          createdAt: true,
-          updatedAt: true,
+      prisma.row.findMany({
+        where: {
+          versionId,
+          parentId,
+          parentField: parentFieldId
+            ? { id: parentFieldId }
+            : { rights: { some: { versionId } } },
         },
+        select: ROW_ATTRIBUTES,
         orderBy: { createdAt: 'asc' },
       })
     )

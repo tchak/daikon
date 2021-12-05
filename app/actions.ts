@@ -1,5 +1,6 @@
 import { match } from 'ts-pattern';
 import { z } from 'zod';
+import { parse } from 'qs';
 
 import {
   mutation,
@@ -59,7 +60,15 @@ const DeleteField = z.object({
   versionId: z.string().uuid(),
   nodeId: z.string().uuid(),
 });
-const CreateRow = z.object({ versionId: z.string().uuid() });
+const CreateRow = z.object({
+  versionId: z.string().uuid(),
+  parent: z
+    .object({
+      id: z.string().uuid(),
+      fieldId: z.string().uuid(),
+    })
+    .optional(),
+});
 const DeleteRows = z.object({ rowIds: z.array(z.string().uuid()) });
 
 export async function processAction(request: Request) {
@@ -105,30 +114,7 @@ export async function processAction(request: Request) {
     .exhaustive();
 }
 
-async function parseBody(request: Request): Promise<FormDataObject> {
-  const formData = await request.formData();
-  return formDataToObject(formData);
-}
-
-type FormDataEntryValueWithArray = FormDataEntryValue | FormDataEntryValue[];
-type FormDataObject = Record<string, FormDataEntryValueWithArray>;
-
-function formDataToObject(
-  formData: FormData | URLSearchParams
-): FormDataObject {
-  const data = new Map<string, FormDataEntryValueWithArray>();
-  formData.forEach((value, key) => {
-    if (key.endsWith('[]')) {
-      const arrayKey = key.slice(0, -2);
-      const arrayValue = data.get(arrayKey);
-      if (Array.isArray(arrayValue)) {
-        arrayValue.push(value);
-      } else {
-        data.set(arrayKey, [value]);
-      }
-    } else {
-      data.set(key, value);
-    }
-  });
-  return Object.fromEntries(data);
+async function parseBody(request: Request) {
+  const body = await request.text();
+  return parse(body, { plainObjects: true, charsetSentinel: true });
 }

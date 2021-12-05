@@ -8,6 +8,7 @@ import {
   VIEW_ATTRIBUTES,
   ROOT_ATTRIBUTES,
   GRAPH_ATTRIBUTES,
+  ROW_ATTRIBUTES,
 } from '.';
 import { VersionData } from './version';
 import { ViewData } from './view';
@@ -102,18 +103,24 @@ export function findGraphViews(graphId: string): PrismaTask<ViewData[]> {
 
 export function findGraphRows({
   graphId,
+  parentFieldId,
+  parentId,
 }: {
   graphId: string;
+  parentFieldId?: string;
+  parentId?: string;
 }): PrismaTask<RowData[]> {
   return pipe(
     prismaQuery((prisma) =>
-      prisma.graphRow.findMany({
-        where: { version: { graphId } },
-        select: {
-          id: true,
-          createdAt: true,
-          updatedAt: true,
+      prisma.row.findMany({
+        where: {
+          version: { graphId },
+          parentId,
+          parentField: parentFieldId
+            ? { id: parentFieldId }
+            : { graph: { id: graphId } },
         },
+        select: ROW_ATTRIBUTES,
         orderBy: { createdAt: 'asc' },
       })
     )

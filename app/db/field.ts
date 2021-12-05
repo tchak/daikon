@@ -253,7 +253,7 @@ function findUnlockedNode(
   );
 }
 
-function findNodeInternalId(
+export function findNodeInternalId(
   versionId: string,
   nodeId: string
 ): PrismaTask<string> {
@@ -274,6 +274,21 @@ function findNodeInternalId(
         },
         select: { internalId: true },
         orderBy: { createdAt: 'desc' },
+      })
+    ),
+    TE.map(({ internalId }) => internalId)
+  );
+}
+
+export function findVersionRootInternalId(
+  versionId: string
+): PrismaTask<string> {
+  return pipe(
+    prismaQuery((prisma) =>
+      prisma.graphNode.findFirst({
+        rejectOnNotFound: true,
+        where: { graph: { versions: { some: { id: versionId } } } },
+        select: { internalId: true },
       })
     ),
     TE.map(({ internalId }) => internalId)

@@ -9,7 +9,7 @@ query findGraphs {
   }
 }
 
-query findGraph($graphId: ID!, $leftId: ID) {
+query findGraph($graphId: ID!, $parentFieldId: ID, $parentId: ID) {
   graph(graphId: $graphId) {
     id
     createdAt
@@ -21,14 +21,14 @@ query findGraph($graphId: ID!, $leftId: ID) {
     view {
       id
       name
-      edges(leftId: $leftId) {
+      edges(leftId: $parentFieldId) {
         id
       }
     }
     version {
       id
       lockedAt
-      edges(leftId: $leftId) {
+      edges(leftId: $parentFieldId) {
         id
         left {
           id
@@ -49,7 +49,7 @@ query findGraph($graphId: ID!, $leftId: ID) {
         }
       }
     }
-    rows {
+    rows(parentFieldId: $parentFieldId, parentId: $parentId) {
       id
     }
   }

@@ -40,6 +40,7 @@ export const NODE_ATTRIBUTES = {
 
 export const ROW_ATTRIBUTES = {
   id: true,
+  parentId: true,
   createdAt: true,
   updatedAt: true,
 };

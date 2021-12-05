@@ -46,6 +46,7 @@ input CreateGraphInput {
 }
 
 input CreateRowInput {
+  parent: ParentInput
   versionId: ID!
 }
 
@@ -162,7 +163,7 @@ type Graph {
   createdAt: DateTime!
   id: ID!
   root: RootField!
-  rows: [Row!]!
+  rows(parentFieldId: ID, parentId: ID): [Row!]!
   version: Version!
   versions: [Version!]!
   view: View!
@@ -213,6 +214,11 @@ type NumberField implements Field {
   name: String!
   nullable: Boolean!
   updatedAt: DateTime!
+}
+
+input ParentInput {
+  fieldId: ID!
+  id: ID!
 }
 
 type Query {
@@ -283,7 +289,7 @@ type Version {
   edges(leftId: ID): [Edge!]!
   id: ID!
   lockedAt: DateTime
-  rows: [Row!]!
+  rows(parentFieldId: ID, parentId: ID): [Row!]!
 }
 
 type View {

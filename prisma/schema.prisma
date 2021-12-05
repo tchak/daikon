@@ -30,7 +30,7 @@ model GraphVersion {
   graphId   String      @db.Uuid
   graph     Graph       @relation(fields: [graphId], references: [id], onDelete: Cascade)
   edges     GraphEdge[]
-  rows      GraphRow[]
+  rows      Row[]
 
   @@index(graphId)
 }
@@ -63,9 +63,10 @@ model GraphNode {
   options     Json            @default("{}")
   name        String
   description String?
-  lefts       GraphEdge[]     @relation("lefts")
-  rights      GraphEdge[]     @relation("rights")
+  lefts       GraphEdge[]     @relation("left")
+  rights      GraphEdge[]     @relation("right")
   graph       Graph?
+  rows        Row[]
 
   @@index(id)
 }
@@ -78,9 +79,9 @@ model GraphEdge {
   versionId String       @db.Uuid
   version   GraphVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
   leftId    String       @db.Uuid
-  left      GraphNode    @relation("lefts", fields: [leftId], references: [internalId], onDelete: Cascade)
+  left      GraphNode    @relation("left", fields: [leftId], references: [internalId], onDelete: Cascade)
   rightId   String       @db.Uuid
-  right     GraphNode    @relation("rights", fields: [rightId], references: [internalId], onDelete: Cascade)
+  right     GraphNode    @relation("right", fields: [rightId], references: [internalId], onDelete: Cascade)
 
   @@unique([versionId, leftId, position])
   @@unique([versionId, leftId, rightId])
@@ -110,13 +111,18 @@ model GraphView {
   @@index([graphId])
 }
 
-model GraphRow {
-  id        String       @id @default(uuid()) @db.Uuid
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-  versionId String       @db.Uuid
-  version   GraphVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
-  data      Json         @default("{}")
+model Row {
+  id            String       @id @default(uuid()) @db.Uuid
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  data          Json         @default("{}")
+  versionId     String       @db.Uuid
+  version       GraphVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  parentId      String?      @db.Uuid
+  parent        Row?         @relation("parent", fields: [parentId], references: [id], onDelete: Cascade)
+  parentFieldId String       @db.Uuid
+  parentField   GraphNode?   @relation(fields: [parentFieldId], references: [internalId], onDelete: Cascade)
+  rows          Row[]        @relation("parent")
 
-  @@index([versionId])
+  @@index([parentId, parentFieldId])
 }

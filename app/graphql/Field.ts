@@ -206,9 +206,21 @@ export class MoveFieldInput {
 }
 
 @InputType()
+export class ParentInput {
+  @ObjectTypeField(() => ID)
+  id!: string;
+
+  @ObjectTypeField(() => ID)
+  fieldId!: string;
+}
+
+@InputType()
 export class CreateRowInput {
   @ObjectTypeField(() => ID)
   versionId!: string;
+
+  @ObjectTypeField(() => ParentInput, { nullable: true })
+  parent?: ParentInput;
 }
 
 @InputType()

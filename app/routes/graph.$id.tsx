@@ -1,4 +1,4 @@
-import type { LoaderFunction, ActionFunction } from 'remix';
+import type { ActionFunction } from 'remix';
 import { useLoaderData, useTransition } from 'remix';
 import { useState, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -18,79 +18,13 @@ import { AddFieldButton } from '~/components/AddFieldButton';
 import { AddRowButton } from '~/components/AddRowButton';
 import { HideFieldsButton } from '~/components/HideFieldsButton';
 import { DeleteRowsButton } from '~/components/DeleteRowsButton';
-import { GraphBreadcrumbs } from '~/components/GraphBreadcrumbs';
+import { BreadcrumbsPanel } from '~/components/GraphBreadcrumbs';
 import { bgColor } from '~/utils';
-import { query, FindGraphDocument } from '~/urql.server';
-import { Edge, BlockEdge, Field, Breadcrumb } from '~/types';
+import { Field } from '~/types';
 import { processAction } from '~/actions';
+import { loader, LoaderData } from '~/loaders/graph';
 
-type LoaderData = {
-  name: string;
-  color: string;
-  versionId: string;
-  leftId: string;
-  view: { id: string; name: string };
-  fields: ReadonlyArray<Field & { hidden: boolean }>;
-  rows: ReadonlyArray<{ id: string }>;
-  breadcrumbs: ReadonlyArray<Breadcrumb>;
-};
-
-function makeTree(
-  edges: readonly Edge[],
-  leftId: string,
-  inViewEdges: Set<string>
-): readonly Field[] {
-  return edges
-    .filter(({ left }) => left.id == leftId)
-    .map(({ id, right }) => ({ ...right, hidden: !inViewEdges.has(id) }));
-}
-
-function makeBreadcrumbs(
-  edges: readonly BlockEdge[],
-  leftId: string
-): readonly Breadcrumb[] {
-  const edge = edges.find((edge) => edge.right.id == leftId);
-  if (edge) {
-    return [
-      [edge.right.name, edge.right.id],
-      ...makeBreadcrumbs(edges, edge.left.id),
-    ];
-  }
-  return [];
-}
-
-export const loader: LoaderFunction = async ({
-  request,
-  params,
-}): Promise<LoaderData> => {
-  const url = new URL(request.url);
-  const leftIdParam = url.searchParams.get('l');
-
-  const { graph } = await query(FindGraphDocument, {
-    graphId: String(params.id),
-    leftId: leftIdParam,
-  });
-
-  if (graph) {
-    const leftId = leftIdParam ?? graph.root.id;
-    const inViewEdges = new Set(graph.view.edges.map(({ id }) => id));
-    const fields = makeTree(graph.version.edges, leftId, inViewEdges);
-    const breadcrumbs = makeBreadcrumbs(graph.version.blockEdges, leftId);
-
-    return {
-      name: graph.root.name,
-      color: graph.color,
-      versionId: graph.version.id,
-      leftId,
-      view: graph.view,
-      fields,
-      rows: graph.rows,
-      breadcrumbs: [...breadcrumbs, [graph.root.name, null]],
-    };
-  }
-  throw new Error('Not Found');
-};
-
+export { loader };
 export const action: ActionFunction = ({ request }) => processAction(request);
 
 type UseGridViewColumnsProps = {
@@ -188,7 +122,7 @@ export default function GraphRoute() {
 
       {graph.breadcrumbs.length > 1 ? (
         <div className="p-2 border-b border-gray-300">
-          <GraphBreadcrumbs breadcrumbs={graph.breadcrumbs} />
+          <BreadcrumbsPanel breadcrumbs={graph.breadcrumbs} />
         </div>
       ) : null}
 
@@ -201,7 +135,16 @@ export default function GraphRoute() {
       </div>
 
       <div className="p-2 border-t border-gray-300">
-        <AddRowButton versionId={graph.versionId} />
+        {graph.parentId || graph.breadcrumbs.length == 1 ? (
+          <AddRowButton
+            versionId={graph.versionId}
+            parent={
+              graph.parentId
+                ? { id: graph.parentId, fieldId: graph.leftId }
+                : undefined
+            }
+          />
+        ) : null}
       </div>
     </div>
   );
@@ -221,14 +164,19 @@ function IdCell({ id }: { id: string }) {
   );
 }
 
-function BlockCell({ leftId }: CellProps<DataRow> & { leftId: string }) {
+function BlockCell({
+  cell: {
+    row: { values },
+  },
+  leftId,
+}: CellProps<DataRow> & { leftId: string }) {
   const [params, setParams] = useSearchParams();
   return (
     <button
       type="button"
       className="p-1 font-mono flex items-center rounded-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
       onClick={() => {
-        params.set('l', leftId);
+        params.set('p', `${leftId}:${values['id']}`);
         setParams(params);
       }}
     >

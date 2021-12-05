@@ -57,9 +57,13 @@ export class GraphResolver {
   }
 
   @FieldResolver(() => [Row])
-  rows(@Root() root: GraphData): Promise<RowData[]> {
+  rows(
+    @Root() root: GraphData,
+    @Arg('parentFieldId', () => ID, { nullable: true }) parentFieldId: string,
+    @Arg('parentId', () => ID, { nullable: true }) parentId: string
+  ): Promise<RowData[]> {
     return pipe(
-      findGraphRows({ graphId: root.id }),
+      findGraphRows({ graphId: root.id, parentFieldId, parentId }),
       TE.match(constEmptyArray, identity)
     )();
   }
@@ -106,9 +110,13 @@ export class VersionResolver {
   }
 
   @FieldResolver(() => [Row])
-  rows(@Root() root: VersionData): Promise<RowData[]> {
+  rows(
+    @Root() root: VersionData,
+    @Arg('parentFieldId', () => ID, { nullable: true }) parentFieldId: string,
+    @Arg('parentId', () => ID, { nullable: true }) parentId: string
+  ): Promise<RowData[]> {
     return pipe(
-      findVersionRows({ versionId: root.id }),
+      findVersionRows({ versionId: root.id, parentFieldId, parentId }),
       TE.match(constEmptyArray, identity)
     )();
   }
