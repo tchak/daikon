@@ -9,38 +9,13 @@ import {
   VERSION_ATTRIBUTES,
   NodeType,
   ROW_ATTRIBUTES,
+  RowData,
+  ChangeOp,
+  ChangeAttribute,
+  ChangeData,
+  VersionData,
+  EdgeData,
 } from '.';
-import { EdgeData } from './field';
-import { RowData } from './row';
-
-export enum ChangeOp {
-  CREATE,
-  DELETE,
-  UPDATE,
-}
-
-export enum ChangeAttribute {
-  NAME,
-  DESCRIPTION,
-  NULLABLE,
-  CARDINALITY,
-  POSITION,
-  PARENT,
-}
-
-export type ChangeData = {
-  nodeId: string;
-  op: ChangeOp;
-  attribute?: ChangeAttribute;
-  from?: string | boolean | number | null;
-  to?: string | boolean | number | null;
-};
-
-export type VersionData = {
-  id: string;
-  createdAt: Date;
-  lockedAt: Date | null;
-};
 
 export function resolveChangeType(change: ChangeData): string {
   switch (change.op) {

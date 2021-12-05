@@ -2,7 +2,7 @@ import {
   InputType,
   ObjectType,
   InterfaceType,
-  Field as ObjectTypeField,
+  Field,
   ID,
   Int,
   registerEnumType,
@@ -18,213 +18,179 @@ export enum Cardinality {
 
 registerEnumType(Cardinality, { name: 'Cardinality' });
 
-@InterfaceType({
+@InterfaceType('Field', {
   resolveType(node: FieldData) {
     return resolveFieldType(node);
   },
 })
-export abstract class Field {
-  @ObjectTypeField(() => ID)
+export abstract class FieldType {
+  @Field(() => ID)
   id!: string;
 
-  @ObjectTypeField(() => String)
+  @Field(() => String)
   name!: string;
 
-  @ObjectTypeField(() => String, { nullable: true })
+  @Field(() => String, { nullable: true })
   description!: string | null;
 
-  @ObjectTypeField(() => GraphQLISODateTime)
+  @Field(() => GraphQLISODateTime)
   updatedAt!: Date;
 }
 
-@ObjectType({ implements: Field })
-export class RootField extends Field {}
+@ObjectType({ implements: FieldType })
+export class RootField extends FieldType {}
 
-@ObjectType({ implements: Field })
-export class TextField extends Field {
-  @ObjectTypeField(() => Boolean)
+@ObjectType({ implements: FieldType })
+export class TextField extends FieldType {
+  @Field(() => Boolean)
   nullable!: boolean;
 }
 
-@ObjectType({ implements: Field })
-export class BooleanField extends Field {
-  @ObjectTypeField(() => Boolean)
+@ObjectType({ implements: FieldType })
+export class BooleanField extends FieldType {
+  @Field(() => Boolean)
   nullable!: boolean;
 }
 
-@ObjectType({ implements: Field })
-export class NumberField extends Field {
-  @ObjectTypeField(() => Boolean)
+@ObjectType({ implements: FieldType })
+export class NumberField extends FieldType {
+  @Field(() => Boolean)
   nullable!: boolean;
 }
 
-@ObjectType({ implements: Field })
-export class DateField extends Field {
-  @ObjectTypeField(() => Boolean)
+@ObjectType({ implements: FieldType })
+export class DateField extends FieldType {
+  @Field(() => Boolean)
   nullable!: boolean;
 }
 
-@ObjectType({ implements: Field })
-export class DateTimeField extends Field {
-  @ObjectTypeField(() => Boolean)
+@ObjectType({ implements: FieldType })
+export class DateTimeField extends FieldType {
+  @Field(() => Boolean)
   nullable!: boolean;
 }
 
-@ObjectType({ implements: Field })
-export class BlockField extends Field {
-  @ObjectTypeField(() => Cardinality)
+@ObjectType({ implements: FieldType })
+export class BlockField extends FieldType {
+  @Field(() => Cardinality)
   cardinality!: Cardinality;
 
-  @ObjectTypeField(() => Boolean)
+  @Field(() => Boolean)
   nullable!: boolean;
 }
 
-@ObjectType({ implements: Field })
-export class FileField extends Field {
-  @ObjectTypeField(() => Cardinality)
+@ObjectType({ implements: FieldType })
+export class FileField extends FieldType {
+  @Field(() => Cardinality)
   cardinality!: Cardinality;
 
-  @ObjectTypeField(() => Boolean)
+  @Field(() => Boolean)
   nullable!: boolean;
 }
 
 @ObjectType()
 export class Edge {
-  @ObjectTypeField(() => ID)
+  @Field(() => ID)
   id!: string;
 
-  @ObjectTypeField(() => Int)
+  @Field(() => Int)
   position!: number;
 
-  @ObjectTypeField(() => Field)
-  left!: Field;
+  @Field(() => FieldType)
+  left!: FieldType;
 
-  @ObjectTypeField(() => Field)
-  right!: Field;
-}
-
-@ObjectType()
-export class Row {
-  @ObjectTypeField(() => ID)
-  id!: string;
-
-  @ObjectTypeField(() => GraphQLISODateTime)
-  createdAt!: Date;
-
-  @ObjectTypeField(() => GraphQLISODateTime)
-  updatedAt!: Date;
+  @Field(() => FieldType)
+  right!: FieldType;
 }
 
 @InputType()
 export class CreateFieldInput {
-  @ObjectTypeField(() => ID)
+  @Field(() => ID)
   versionId!: string;
 
-  @ObjectTypeField(() => ID)
+  @Field(() => ID)
   leftId!: string;
 
-  @ObjectTypeField(() => String)
+  @Field(() => String)
   name!: string;
 
-  @ObjectTypeField(() => String, { nullable: true })
+  @Field(() => String, { nullable: true })
   description?: string;
 
-  @ObjectTypeField(() => Int, { nullable: true })
+  @Field(() => Int, { nullable: true })
   position?: number;
 }
 
 @InputType()
 export class DeleteFieldInput {
-  @ObjectTypeField(() => ID)
+  @Field(() => ID)
   versionId!: string;
 
-  @ObjectTypeField(() => ID)
+  @Field(() => ID)
   nodeId!: string;
 }
 
 @InputType()
 export class SetFieldNameInput {
-  @ObjectTypeField(() => ID)
+  @Field(() => ID)
   versionId!: string;
 
-  @ObjectTypeField(() => ID)
+  @Field(() => ID)
   nodeId!: string;
 
-  @ObjectTypeField(() => String)
+  @Field(() => String)
   name!: string;
 }
 
 @InputType()
 export class SetFieldDescriptionInput {
-  @ObjectTypeField(() => ID)
+  @Field(() => ID)
   versionId!: string;
 
-  @ObjectTypeField(() => ID)
+  @Field(() => ID)
   nodeId!: string;
 
-  @ObjectTypeField(() => String)
+  @Field(() => String)
   description!: string;
 }
 
 @InputType()
 export class SetFieldHiddenInput {
-  @ObjectTypeField(() => ID)
+  @Field(() => ID)
   viewId!: string;
 
-  @ObjectTypeField(() => ID)
+  @Field(() => ID)
   nodeId!: string;
 
-  @ObjectTypeField(() => Boolean)
+  @Field(() => Boolean)
   hidden!: boolean;
 }
 
 @InputType()
 export class SetFieldNullableInput {
-  @ObjectTypeField(() => ID)
+  @Field(() => ID)
   versionId!: string;
 
-  @ObjectTypeField(() => ID)
+  @Field(() => ID)
   nodeId!: string;
 
-  @ObjectTypeField(() => Boolean)
+  @Field(() => Boolean)
   nullable!: boolean;
 }
 
 @InputType()
 export class MoveFieldInput {
-  @ObjectTypeField(() => ID)
+  @Field(() => ID)
   versionId!: string;
 
-  @ObjectTypeField(() => ID)
+  @Field(() => ID)
   nodeId!: string;
 
-  @ObjectTypeField(() => ID)
+  @Field(() => ID)
   leftId!: string;
 
-  @ObjectTypeField(() => Int)
+  @Field(() => Int)
   position!: number;
 }
 
-@InputType()
-export class ParentInput {
-  @ObjectTypeField(() => ID)
-  id!: string;
-
-  @ObjectTypeField(() => ID)
-  fieldId!: string;
-}
-
-@InputType()
-export class CreateRowInput {
-  @ObjectTypeField(() => ID)
-  versionId!: string;
-
-  @ObjectTypeField(() => ParentInput, { nullable: true })
-  parent?: ParentInput;
-}
-
-@InputType()
-export class DeleteRowsInput {
-  @ObjectTypeField(() => [ID])
-  rowIds!: string[];
-}
+export { FieldType as Field };

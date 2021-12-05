@@ -26,7 +26,8 @@ import {
 } from '~/db';
 
 import { Graph } from './Graph';
-import { Edge, Row } from './Field';
+import { Edge } from './Field';
+import { Row } from './Row';
 import { Version } from './Version';
 import { View } from './View';
 import { Change } from './Change';

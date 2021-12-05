@@ -9,22 +9,11 @@ import {
   ROOT_ATTRIBUTES,
   GRAPH_ATTRIBUTES,
   ROW_ATTRIBUTES,
+  GraphData,
+  ViewData,
+  VersionData,
+  RowData,
 } from '.';
-import { VersionData } from './version';
-import { ViewData } from './view';
-import { RowData } from './row';
-
-export type GraphData = {
-  id: string;
-  createdAt: Date;
-  color: string;
-  root: {
-    id: string;
-    name: string;
-    description: string | null;
-    updatedAt: Date;
-  };
-};
 
 export function findGraphs(): PrismaTask<GraphData[]> {
   return prismaQuery((prisma) =>

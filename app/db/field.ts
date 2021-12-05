@@ -4,25 +4,7 @@ import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 
 import { prismaQuery, PrismaTask } from '~/prisma.server';
-import { NODE_ATTRIBUTES, NodeType, NodeCardinality } from '.';
-
-export type FieldData = {
-  internalId: string;
-  id: string;
-  type: NodeType;
-  name: string;
-  description: null | string;
-  nullable: boolean;
-  updatedAt: Date;
-  cardinality: NodeCardinality;
-};
-
-export type EdgeData = {
-  id: string;
-  position: number;
-  left: FieldData;
-  right: FieldData;
-};
+import { NODE_ATTRIBUTES, NodeType, FieldData, EdgeData } from '.';
 
 export function resolveFieldType(node: FieldData): string {
   switch (node.type) {

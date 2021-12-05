@@ -1,4 +1,80 @@
-export { NodeType, NodeCardinality } from '@prisma/client';
+import { NodeType, NodeCardinality } from '@prisma/client';
+
+export { NodeType, NodeCardinality };
+
+export type FieldData = {
+  internalId: string;
+  id: string;
+  type: NodeType;
+  name: string;
+  description: null | string;
+  nullable: boolean;
+  updatedAt: Date;
+  cardinality: NodeCardinality;
+};
+
+export type EdgeData = {
+  id: string;
+  position: number;
+  left: FieldData;
+  right: FieldData;
+};
+
+export type GraphData = {
+  id: string;
+  createdAt: Date;
+  color: string;
+  root: {
+    id: string;
+    name: string;
+    description: string | null;
+    updatedAt: Date;
+  };
+};
+
+export type RowData = {
+  id: string;
+  parentId?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export enum ChangeOp {
+  CREATE,
+  DELETE,
+  UPDATE,
+}
+
+export enum ChangeAttribute {
+  NAME,
+  DESCRIPTION,
+  NULLABLE,
+  CARDINALITY,
+  POSITION,
+  PARENT,
+}
+
+export type ChangeData = {
+  nodeId: string;
+  op: ChangeOp;
+  attribute?: ChangeAttribute;
+  from?: string | boolean | number | null;
+  to?: string | boolean | number | null;
+};
+
+export type VersionData = {
+  id: string;
+  createdAt: Date;
+  lockedAt: Date | null;
+};
+
+export type ViewData = {
+  id: string;
+  name: string;
+  description: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 export const GRAPH_ATTRIBUTES = {
   id: true,

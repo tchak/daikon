@@ -2,16 +2,7 @@ import * as TE from 'fp-ts/TaskEither';
 import { pipe } from 'fp-ts/function';
 
 import { prismaQuery, PrismaTask } from '~/prisma.server';
-import { NODE_ATTRIBUTES, VIEW_ATTRIBUTES } from '.';
-import { EdgeData } from './field';
-
-export type ViewData = {
-  id: string;
-  name: string;
-  description: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-};
+import { NODE_ATTRIBUTES, VIEW_ATTRIBUTES, ViewData, EdgeData } from '.';
 
 export function findView(viewId: string): PrismaTask<ViewData> {
   return prismaQuery((prisma) =>

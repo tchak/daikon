@@ -6,14 +6,8 @@ import {
   ROW_ATTRIBUTES,
   findNodeInternalId,
   findVersionRootInternalId,
+  RowData,
 } from '.';
-
-export type RowData = {
-  id: string;
-  parentId?: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-};
 
 export function createRow({
   versionId,

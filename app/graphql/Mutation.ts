@@ -31,18 +31,16 @@ import {
 import { Graph, CreateGraphInput, DeleteGraphInput } from './Graph';
 import {
   CreateFieldInput,
-  CreateRowInput,
   DeleteFieldInput,
-  DeleteRowsInput,
   Edge,
   Field,
   MoveFieldInput,
-  Row,
   SetFieldDescriptionInput,
   SetFieldHiddenInput,
   SetFieldNameInput,
   SetFieldNullableInput,
 } from './Field';
+import { Row, CreateRowInput, DeleteRowsInput } from './Row';
 import {
   Version,
   CreateVersionInput,
