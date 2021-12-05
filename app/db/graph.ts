@@ -13,6 +13,7 @@ import {
   ViewData,
   VersionData,
   RowData,
+  populateCells,
 } from '.';
 
 export function findGraphs(): PrismaTask<GraphData[]> {
@@ -112,7 +113,8 @@ export function findGraphRows({
         select: ROW_ATTRIBUTES,
         orderBy: { createdAt: 'asc' },
       })
-    )
+    ),
+    TE.map((rows) => rows.map(populateCells))
   );
 }
 

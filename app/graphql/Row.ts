@@ -4,7 +4,12 @@ import {
   Field,
   ID,
   GraphQLISODateTime,
+  InterfaceType,
+  Int,
+  Float,
 } from 'type-graphql';
+
+import { CellData, resolveCellType } from '~/db';
 
 @ObjectType()
 export class Row {
@@ -16,6 +21,9 @@ export class Row {
 
   @Field(() => GraphQLISODateTime)
   updatedAt!: Date;
+
+  @Field(() => [CellType])
+  cells!: CellType[];
 }
 
 @InputType()
@@ -40,4 +48,53 @@ export class CreateRowInput {
 export class DeleteRowsInput {
   @Field(() => [ID])
   rowIds!: string[];
+}
+
+@InterfaceType('Cell', {
+  resolveType(cell: CellData) {
+    return resolveCellType(cell);
+  },
+})
+export abstract class CellType {
+  @Field(() => ID)
+  id!: string;
+
+  @Field(() => String)
+  name!: string;
+}
+
+@ObjectType({ implements: CellType })
+export class TextCell extends CellType {
+  @Field(() => String, { nullable: true })
+  value!: string | null;
+}
+
+@ObjectType({ implements: CellType })
+export class IntCell extends CellType {
+  @Field(() => Int, { nullable: true })
+  value!: number | null;
+}
+
+@ObjectType({ implements: CellType })
+export class FloatCell extends CellType {
+  @Field(() => Float, { nullable: true })
+  value!: number | null;
+}
+
+@ObjectType({ implements: CellType })
+export class BooleanCell extends CellType {
+  @Field(() => Boolean)
+  value!: boolean;
+}
+
+@ObjectType({ implements: CellType })
+export class DateCell extends CellType {
+  @Field(() => GraphQLISODateTime, { nullable: true })
+  value!: Date | null;
+}
+
+@ObjectType({ implements: CellType })
+export class DateTimeCell extends CellType {
+  @Field(() => GraphQLISODateTime, { nullable: true })
+  value!: Date | null;
 }

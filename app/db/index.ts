@@ -1,4 +1,4 @@
-import { NodeType, NodeCardinality } from '@prisma/client';
+import { NodeType, NodeCardinality, Prisma } from '@prisma/client';
 
 export { NodeType, NodeCardinality };
 
@@ -32,11 +32,33 @@ export type GraphData = {
   };
 };
 
+export type CellData = {
+  id: string;
+  name: string;
+  type: NodeType;
+  options: unknown;
+  value: unknown;
+};
+
 export type RowData = {
   id: string;
   parentId?: string | null;
   createdAt: Date;
   updatedAt: Date;
+  cells: CellData[];
+};
+
+export type RawCellData = Pick<CellData, 'id' | 'name' | 'type'> & {
+  options: Prisma.JsonValue;
+};
+
+export type RawRowData = Omit<RowData, 'cells'> & {
+  data: Prisma.JsonValue;
+  parentField: {
+    lefts: {
+      right: RawCellData;
+    }[];
+  } | null;
 };
 
 export enum ChangeOp {
@@ -116,9 +138,20 @@ export const NODE_ATTRIBUTES = {
 
 export const ROW_ATTRIBUTES = {
   id: true,
-  parentId: true,
   createdAt: true,
   updatedAt: true,
+  data: true,
+  parentField: {
+    select: {
+      lefts: {
+        select: {
+          right: {
+            select: { id: true, name: true, type: true, options: true },
+          },
+        },
+      },
+    },
+  },
 };
 
 export * from './graph';

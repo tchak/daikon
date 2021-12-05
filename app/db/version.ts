@@ -15,6 +15,7 @@ import {
   ChangeData,
   VersionData,
   EdgeData,
+  populateCells,
 } from '.';
 
 export function resolveChangeType(change: ChangeData): string {
@@ -103,7 +104,8 @@ export function findVersionRows({
         select: ROW_ATTRIBUTES,
         orderBy: { createdAt: 'asc' },
       })
-    )
+    ),
+    TE.map((rows) => rows.map(populateCells))
   );
 }
 

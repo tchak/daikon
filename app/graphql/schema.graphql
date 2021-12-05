@@ -12,6 +12,12 @@ type BlockField implements Field {
   updatedAt: DateTime!
 }
 
+type BooleanCell implements Cell {
+  id: ID!
+  name: String!
+  value: Boolean!
+}
+
 type BooleanField implements Field {
   description: String
   id: ID!
@@ -23,6 +29,11 @@ type BooleanField implements Field {
 enum Cardinality {
   MANY
   ONE
+}
+
+interface Cell {
+  id: ID!
+  name: String!
 }
 
 interface Change {
@@ -59,6 +70,12 @@ input CreateViewInput {
   name: String!
 }
 
+type DateCell implements Cell {
+  id: ID!
+  name: String!
+  value: DateTime
+}
+
 type DateField implements Field {
   description: String
   id: ID!
@@ -71,6 +88,12 @@ type DateField implements Field {
 The javascript `Date` as string. Type represents date and time as the ISO Date string.
 """
 scalar DateTime
+
+type DateTimeCell implements Cell {
+  id: ID!
+  name: String!
+  value: DateTime
+}
 
 type DateTimeField implements Field {
   description: String
@@ -170,6 +193,12 @@ type FileField implements Field {
   updatedAt: DateTime!
 }
 
+type FloatCell implements Cell {
+  id: ID!
+  name: String!
+  value: Float
+}
+
 type Graph {
   color: String!
   createdAt: DateTime!
@@ -180,6 +209,12 @@ type Graph {
   versions: [Version!]!
   view: View!
   views: [View!]!
+}
+
+type IntCell implements Cell {
+  id: ID!
+  name: String!
+  value: Int
 }
 
 input LockVersionInput {
@@ -248,6 +283,7 @@ type RootField implements Field {
 }
 
 type Row {
+  cells: [Cell!]!
   createdAt: DateTime!
   id: ID!
   updatedAt: DateTime!
@@ -280,6 +316,12 @@ input SetFieldNullableInput {
 input SetViewNameInput {
   name: String!
   viewId: ID!
+}
+
+type TextCell implements Cell {
+  id: ID!
+  name: String!
+  value: String
 }
 
 type TextField implements Field {
