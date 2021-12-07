@@ -1,4 +1,4 @@
-import type { MetaFunction, LoaderFunction, ActionFunction } from 'remix';
+import type { MetaFunction, LoaderFunction } from 'remix';
 import { useLoaderData, useTransition, Form, useFetcher } from 'remix';
 import { Link } from 'react-router-dom';
 import { TrashIcon, PlusCircleIcon } from '@heroicons/react/outline';
@@ -11,7 +11,7 @@ import clsx from 'clsx';
 import { query, FindGraphsDocument, FindGraphsQuery } from '~/urql.server';
 import { Header, Main } from '~/components/DefaultLayout';
 import { bgColor } from '~/utils';
-import { ActionType, processAction } from '~/actions';
+import { ActionType, action } from '~/actions';
 
 type Graph = FindGraphsQuery['graphs'][0];
 
@@ -22,10 +22,10 @@ export const loader: LoaderFunction = async () => {
   const { graphs } = await query(FindGraphsDocument);
   return graphs;
 };
-export const action: ActionFunction = ({ request }) => processAction(request);
+export { action };
 
 export default function IndexRoute() {
-  const data = useLoaderData<Graph[]>();
+  const graphs = useLoaderData<Graph[]>();
 
   return (
     <>
@@ -33,7 +33,7 @@ export default function IndexRoute() {
       <Main>
         <ul>
           <li className="mb-6">
-            <OrganizationCard graphs={data} />
+            <OrganizationCard graphs={graphs} />
           </li>
         </ul>
       </Main>

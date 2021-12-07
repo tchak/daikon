@@ -1,4 +1,3 @@
-import type { ActionFunction } from 'remix';
 import { useLoaderData, useTransition, useFetcher } from 'remix';
 import { useState, useMemo, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -21,11 +20,10 @@ import { DeleteRowsButton } from '~/components/DeleteRowsButton';
 import { BreadcrumbsPanel } from '~/components/GraphBreadcrumbs';
 import { bgColor } from '~/utils';
 import { Field } from '~/types';
-import { ActionType, processAction } from '~/actions';
+import { ActionType, action } from '~/actions';
 import { loader, LoaderData } from '~/loaders/graph';
 
-export { loader };
-export const action: ActionFunction = ({ request }) => processAction(request);
+export { loader, action };
 
 type UseGridViewColumnsProps = {
   fields: Field[];
@@ -302,7 +300,7 @@ function Header({ name, color }: { name: string; color: string }) {
       </span>
       <h1 className="flex-1 text-center text-white">{name}</h1>
       <span className="w-32"></span>
-      <Link to="/account">
+      <Link to="/account" className="text-white">
         <UserIcon className="h-5 w-5" />
       </Link>
     </header>

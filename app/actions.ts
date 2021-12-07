@@ -1,3 +1,4 @@
+import type { ActionFunction } from 'remix';
 import { match } from 'ts-pattern';
 import { z } from 'zod';
 import { parse } from 'qs';
@@ -100,7 +101,7 @@ const UpdateBooleanCell = z.object({
   value: z.string().transform((checked) => checked == 'true'),
 });
 
-export async function processAction(request: Request) {
+export const action: ActionFunction = async ({ request }) => {
   // const user = await authenticator.isAuthenticated(request, {
   //   failureRedirect: '/signin',
   // });
@@ -166,7 +167,7 @@ export async function processAction(request: Request) {
     .otherwise((action) => {
       throw `Unknown action ${JSON.stringify(action, null, 2)}`;
     });
-}
+};
 
 async function parseBody(request: Request) {
   const body = await request.text();

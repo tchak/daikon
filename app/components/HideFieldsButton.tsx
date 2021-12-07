@@ -6,14 +6,13 @@ import { EyeOffIcon } from '@heroicons/react/outline';
 import clsx from 'clsx';
 
 import { ActionType } from '~/actions';
-import { Field } from '~/types';
 
 export function HideFieldsButton({
   viewId,
   fields,
 }: {
   viewId: string;
-  fields: ReadonlyArray<Field>;
+  fields: ReadonlyArray<{ id: string; name: string; hidden: boolean }>;
 }) {
   const [popoverButtonElement, setPopoverButtonElement] =
     useState<HTMLButtonElement>();
@@ -59,7 +58,13 @@ export function HideFieldsButton({
   );
 }
 
-function Toggle({ viewId, field }: { viewId: string; field: Field }) {
+function Toggle({
+  viewId,
+  field,
+}: {
+  viewId: string;
+  field: { id: string; name: string; hidden: boolean };
+}) {
   const fetcher = useFetcher();
   const toggle = () =>
     fetcher.submit(

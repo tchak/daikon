@@ -3,7 +3,6 @@ import { useState, FormEvent, useMemo } from 'react';
 import { PencilIcon, TrashIcon, EyeOffIcon } from '@heroicons/react/outline';
 
 import { truncate } from '~/utils';
-import { Field } from '~/types';
 import { ActionType } from '~/actions';
 import { TabMenu, TabMenuItem } from './TabMenu';
 import { NameForm } from './NameForm';
@@ -13,7 +12,7 @@ export function FieldTab({
   versionId,
   viewId,
 }: {
-  field: Field;
+  field: { id: string; name: string };
   versionId: string;
   viewId: string;
 }) {

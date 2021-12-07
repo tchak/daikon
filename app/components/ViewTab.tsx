@@ -2,12 +2,11 @@ import { useFetcher } from 'remix';
 import { useState, FormEvent, useMemo } from 'react';
 import { PencilIcon, TrashIcon } from '@heroicons/react/outline';
 
-import { View } from '~/types';
 import { ActionType } from '~/actions';
 import { TabMenu, TabMenuItem } from './TabMenu';
 import { NameForm } from './NameForm';
 
-export function ViewTab({ view }: { view: View }) {
+export function ViewTab({ view }: { view: { id: string; name: string } }) {
   const [isEditing, setEditing] = useState(false);
   const fetcher = useFetcher();
   const updateName = (event: FormEvent<HTMLFormElement>) =>
@@ -53,8 +52,8 @@ function ViewMenu({
   view,
   rename: renameView,
 }: {
-  views: View[];
-  view: View;
+  views: { id: string; name: string }[];
+  view: { id: string; name: string };
   rename: () => void;
 }) {
   const fetcher = useFetcher();
