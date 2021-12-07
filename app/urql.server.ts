@@ -16,7 +16,7 @@ declare const global: CustomNodeJsGlobal;
 export const client =
   global.__client ??
   createClient({
-    url: '/__graphql__',
+    url: '/graphql',
     exchanges: [executeExchange({ schema })],
   });
 
@@ -48,7 +48,7 @@ export async function mutation<MutationResult, Input, Def>(
     .mutation(document, { input })
     .toPromise();
 
-  if (data) {
+  if (data && !error) {
     return data;
   }
   throw error;
