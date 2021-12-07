@@ -6,6 +6,13 @@ import { PlusCircleIcon } from '@heroicons/react/outline';
 
 import { ActionType } from '~/actions';
 
+const fieldTypes = [
+  { label: 'Text', type: 'TEXT' },
+  { label: 'Checkbox', type: 'BOOLEAN' },
+  { label: 'Number', type: 'NUMBER' },
+  { label: 'Block', type: 'BLOCK' },
+];
+
 export function AddFieldButton({
   versionId,
   leftId,
@@ -74,9 +81,9 @@ export function AddFieldButton({
               name="type"
               className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm rounded-md"
             >
-              {['text', 'block'].map((type) => (
+              {fieldTypes.map(({ label, type }) => (
                 <option key={type} value={type}>
-                  {type}
+                  {label}
                 </option>
               ))}
             </select>

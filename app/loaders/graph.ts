@@ -46,6 +46,43 @@ function getBreadcrumbs(
   return [];
 }
 
+function getRows(
+  rows: ReadonlyArray<{
+    id: string;
+    cells: ReadonlyArray<{
+      id: string;
+      textValue?: string;
+      booleanValue?: boolean;
+      intValue?: number;
+      floatValue?: number;
+      dateTimeValue?: Date;
+      dateValue?: Date;
+    }>;
+  }>
+) {
+  return rows.map(({ id, cells }) => ({
+    id,
+    ...Object.fromEntries(
+      cells.map((cell) => {
+        if ('textValue' in cell) {
+          return [cell.id, cell.textValue];
+        } else if ('booleanValue' in cell) {
+          return [cell.id, cell.booleanValue];
+        } else if ('intValue' in cell) {
+          return [cell.id, cell.intValue];
+        } else if ('floatValue' in cell) {
+          return [cell.id, cell.floatValue];
+        } else if ('dateTimeValue' in cell) {
+          return [cell.id, cell.dateTimeValue];
+        } else if ('dateValue' in cell) {
+          return [cell.id, cell.dateValue];
+        }
+        return [cell.id, null];
+      })
+    ),
+  }));
+}
+
 async function getGraph({
   graphId,
   parentId,
@@ -79,17 +116,7 @@ async function getGraph({
       parentId,
       view: graph.view,
       fields,
-      rows: graph.rows.map(({ id, cells }) => ({
-        id,
-        ...Object.fromEntries(
-          cells.map((cell) => {
-            if ('value' in cell) {
-              return [cell.id, cell.value];
-            }
-            return [cell.id, null];
-          })
-        ),
-      })),
+      rows: getRows(graph.rows),
       breadcrumbs: [{ name: graph.root.name }, ...breadcrumbs],
     };
   }

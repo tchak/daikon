@@ -1,6 +1,6 @@
 import type { ActionFunction } from 'remix';
-import { useLoaderData, useTransition } from 'remix';
-import { useState, useMemo } from 'react';
+import { useLoaderData, useTransition, useFetcher } from 'remix';
+import { useState, useMemo, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
   DatabaseIcon,
@@ -21,7 +21,7 @@ import { DeleteRowsButton } from '~/components/DeleteRowsButton';
 import { BreadcrumbsPanel } from '~/components/GraphBreadcrumbs';
 import { bgColor } from '~/utils';
 import { Field } from '~/types';
-import { processAction } from '~/actions';
+import { ActionType, processAction } from '~/actions';
 import { loader, LoaderData } from '~/loaders/graph';
 
 export { loader };
@@ -58,27 +58,31 @@ export function useGridViewColumns<T extends DataRow = DataRow>({
         id: field.id,
         accessor: (row: T) => row[field.id],
         Cell: (params: CellProps<DataRow>) => {
-          if (field.__typename == 'BlockField') {
-            return <BlockCell {...params} leftId={field.id} />;
-          }
-          return (
-            <ValueCell
-              {...params}
-              isSelected={selectedCell == `${params.cell.row.id}:${field.id}`}
-              isEditing={
-                selectedCell == `${params.cell.row.id}:${field.id}:editing`
-              }
-              select={() =>
-                setSelectedCell(`${params.cell.row.id}:${field.id}`)
-              }
-              edit={() =>
-                setSelectedCell(`${params.cell.row.id}:${field.id}:editing`)
-              }
-              doneEditing={() =>
-                setSelectedCell(`${params.cell.row.id}:${field.id}`)
-              }
-            />
+          const cellId = `${params.cell.row.id}:${field.id}`;
+          const selection = useMemo(
+            () => ({
+              isSelected: selectedCell == cellId,
+              isEditing: selectedCell == `${cellId}:editing`,
+              select: () => setSelectedCell(cellId),
+              edit: () => setSelectedCell(`${cellId}:editing`),
+              done: () => setSelectedCell(cellId),
+            }),
+            [cellId]
           );
+          switch (field.__typename) {
+            case 'BlockField':
+              return <BlockFieldCell cell={params.cell} leftId={field.id} />;
+            case 'BooleanField':
+              return <BooleanFieldCell cell={params.cell} field={field} />;
+            default:
+              return (
+                <TextFieldCell
+                  cell={params.cell}
+                  field={field}
+                  {...selection}
+                />
+              );
+          }
         },
       })),
       {
@@ -107,7 +111,6 @@ export default function GraphRoute() {
     leftId: graph.leftId,
     viewId: graph.view.id,
   });
-  const data: readonly Record<string, unknown>[] = graph.rows;
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
 
   return (
@@ -129,7 +132,7 @@ export default function GraphRoute() {
       <div className="flex-grow overflow-y-scroll">
         <GridView
           columns={columns}
-          data={data}
+          data={graph.rows}
           onSelect={(rowIds) => setSelectedRows(rowIds)}
         />
       </div>
@@ -164,12 +167,15 @@ function IdCell({ id }: { id: string }) {
   );
 }
 
-function BlockCell({
+function BlockFieldCell({
   cell: {
     row: { values },
   },
   leftId,
-}: CellProps<DataRow> & { leftId: string }) {
+}: {
+  cell: CellProps<DataRow>['cell'];
+  leftId: string;
+}) {
   const [params, setParams] = useSearchParams();
   return (
     <button
@@ -185,24 +191,52 @@ function BlockCell({
   );
 }
 
-function ValueCell({
+function TextFieldCell({
+  field,
   cell,
   isSelected,
   isEditing,
   select,
   edit,
-  doneEditing,
-}: CellProps<DataRow> & {
+  done,
+}: {
+  cell: CellProps<DataRow>['cell'];
+  field: Field;
   isSelected: boolean;
   isEditing: boolean;
   select: () => void;
   edit: () => void;
-  doneEditing: () => void;
+  done: () => void;
 }) {
+  const fetcher = useFetcher();
+  useEffect(() => {
+    if (fetcher.type == 'done') {
+      done();
+    }
+  }, [fetcher.type, done]);
+  const value =
+    fetcher.type == 'actionSubmission' || fetcher.type == 'actionReload'
+      ? fetcher.submission.formData.get('value')
+      : cell.value;
+
   return isEditing ? (
     <input
+      type="text"
       autoFocus
-      onBlur={() => doneEditing()}
+      onBlur={(event) => {
+        const value = event.target.value;
+        fetcher.submit(
+          {
+            actionType: ActionType.UpdateCell,
+            rowId: cell.row.values['id'],
+            fieldId: field.id,
+            type: field.__typename.replace('Field', '').toUpperCase(),
+            value,
+          },
+          { method: 'post', replace: true }
+        );
+      }}
+      defaultValue={value}
       className="ring-2 ring-offset-2 ring-green-500 outline-none w-full p-1"
     />
   ) : (
@@ -217,6 +251,40 @@ function ValueCell({
       {cell.value}
       {'\u00A0'}
     </div>
+  );
+}
+
+function BooleanFieldCell({
+  cell,
+  field,
+}: {
+  cell: CellProps<DataRow>['cell'];
+  field: Field;
+}) {
+  const fetcher = useFetcher();
+  const checked =
+    fetcher.type == 'actionSubmission' || fetcher.type == 'actionReload'
+      ? fetcher.submission.formData.get('value') == 'true'
+      : cell.value == true;
+  return (
+    <input
+      type="checkbox"
+      className="focus:ring-green-500 h-4 w-4 text-green-600 border-gray-300 rounded"
+      defaultChecked={checked}
+      onChange={(event) => {
+        const value = event.target.checked;
+        fetcher.submit(
+          {
+            actionType: ActionType.UpdateCell,
+            rowId: cell.row.values['id'],
+            fieldId: field.id,
+            type: 'BOOLEAN',
+            value: value ? 'true' : 'false',
+          },
+          { method: 'post', replace: true }
+        );
+      }}
+    />
   );
 }
 

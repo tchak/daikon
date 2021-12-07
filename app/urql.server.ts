@@ -32,7 +32,7 @@ export async function query<QueryResult, Variables>(
     .query(document, variables as unknown as object)
     .toPromise();
 
-  if (data) {
+  if (data && !error) {
     return data;
   }
   throw error;

@@ -13,9 +13,9 @@ type BlockField implements Field {
 }
 
 type BooleanCell implements Cell {
+  booleanValue: Boolean!
   id: ID!
   name: String!
-  value: Boolean!
 }
 
 type BooleanField implements Field {
@@ -70,10 +70,15 @@ input CreateViewInput {
   name: String!
 }
 
+"""
+A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
+scalar Date
+
 type DateCell implements Cell {
+  dateValue: Date
   id: ID!
   name: String!
-  value: DateTime
 }
 
 type DateField implements Field {
@@ -90,9 +95,9 @@ The javascript `Date` as string. Type represents date and time as the ISO Date s
 scalar DateTime
 
 type DateTimeCell implements Cell {
+  dateTimeValue: DateTime
   id: ID!
   name: String!
-  value: DateTime
 }
 
 type DateTimeField implements Field {
@@ -194,9 +199,9 @@ type FileField implements Field {
 }
 
 type FloatCell implements Cell {
+  floatValue: Float
   id: ID!
   name: String!
-  value: Float
 }
 
 type Graph {
@@ -213,8 +218,8 @@ type Graph {
 
 type IntCell implements Cell {
   id: ID!
+  intValue: Int
   name: String!
-  value: Int
 }
 
 input LockVersionInput {
@@ -253,6 +258,12 @@ type Mutation {
   setFieldNullable(input: SetFieldNullableInput!): Field!
   setViewName(input: SetViewNameInput!): Field!
   unlockVersion(input: UnlockVersionInput!): Version!
+  updateBooleanCell(input: UpdateBooleanCellInput!): Row!
+  updateDateCell(input: UpdateDateCellInput!): Row!
+  updateDateTimeCell(input: UpdateDateTimeCellInput!): Row!
+  updateFloatCell(input: UpdateFloatCellInput!): Row!
+  updateIntCell(input: UpdateIntCellInput!): Row!
+  updateTextCell(input: UpdateTextCellInput!): Row!
 }
 
 type NumberField implements Field {
@@ -321,7 +332,7 @@ input SetViewNameInput {
 type TextCell implements Cell {
   id: ID!
   name: String!
-  value: String
+  textValue: String
 }
 
 type TextField implements Field {
@@ -334,6 +345,42 @@ type TextField implements Field {
 
 input UnlockVersionInput {
   versionId: ID!
+}
+
+input UpdateBooleanCellInput {
+  fieldId: ID!
+  rowId: ID!
+  value: Boolean!
+}
+
+input UpdateDateCellInput {
+  fieldId: ID!
+  rowId: ID!
+  value: Date!
+}
+
+input UpdateDateTimeCellInput {
+  fieldId: ID!
+  rowId: ID!
+  value: DateTime!
+}
+
+input UpdateFloatCellInput {
+  fieldId: ID!
+  rowId: ID!
+  value: Float!
+}
+
+input UpdateIntCellInput {
+  fieldId: ID!
+  rowId: ID!
+  value: Int!
+}
+
+input UpdateTextCellInput {
+  fieldId: ID!
+  rowId: ID!
+  value: String!
 }
 
 type Version {

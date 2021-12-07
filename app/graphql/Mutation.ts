@@ -1,6 +1,7 @@
 import { Resolver, Mutation, Arg } from 'type-graphql';
 import * as TE from 'fp-ts/TaskEither';
 import { pipe } from 'fp-ts/function';
+import formatISO from 'date-fns/formatISO';
 
 import {
   createField,
@@ -18,6 +19,7 @@ import {
   GraphData,
   lockVersion,
   moveField,
+  updateCell,
   NodeType,
   RowData,
   unlockVersion,
@@ -40,7 +42,17 @@ import {
   SetFieldNameInput,
   SetFieldNullableInput,
 } from './Field';
-import { Row, CreateRowInput, DeleteRowsInput } from './Row';
+import {
+  Row,
+  CreateRowInput,
+  DeleteRowsInput,
+  UpdateTextCellInput,
+  UpdateFloatCellInput,
+  UpdateIntCellInput,
+  UpdateBooleanCellInput,
+  UpdateDateTimeCellInput,
+  UpdateDateCellInput,
+} from './Row';
 import {
   Version,
   CreateVersionInput,
@@ -229,6 +241,66 @@ export class MutationResolver {
     input: DeleteRowsInput
   ): Promise<RowData[]> {
     return pipe(deleteRows(input), throwError())();
+  }
+
+  @Mutation(() => Row)
+  updateTextCell(
+    @Arg('input', () => UpdateTextCellInput)
+    input: UpdateTextCellInput
+  ): Promise<RowData> {
+    return pipe(updateCell(input), throwError())();
+  }
+
+  @Mutation(() => Row)
+  updateBooleanCell(
+    @Arg('input', () => UpdateBooleanCellInput)
+    input: UpdateBooleanCellInput
+  ): Promise<RowData> {
+    return pipe(updateCell(input), throwError())();
+  }
+
+  @Mutation(() => Row)
+  updateIntCell(
+    @Arg('input', () => UpdateIntCellInput)
+    input: UpdateIntCellInput
+  ): Promise<RowData> {
+    return pipe(updateCell(input), throwError())();
+  }
+
+  @Mutation(() => Row)
+  updateFloatCell(
+    @Arg('input', () => UpdateFloatCellInput)
+    input: UpdateFloatCellInput
+  ): Promise<RowData> {
+    return pipe(updateCell(input), throwError())();
+  }
+
+  @Mutation(() => Row)
+  updateDateTimeCell(
+    @Arg('input', () => UpdateDateTimeCellInput)
+    input: UpdateDateTimeCellInput
+  ): Promise<RowData> {
+    return pipe(
+      updateCell({
+        ...input,
+        value: formatISO(input.value, { representation: 'complete' }),
+      }),
+      throwError()
+    )();
+  }
+
+  @Mutation(() => Row)
+  updateDateCell(
+    @Arg('input', () => UpdateDateCellInput)
+    input: UpdateDateCellInput
+  ): Promise<RowData> {
+    return pipe(
+      updateCell({
+        ...input,
+        value: formatISO(input.value, { representation: 'date' }),
+      }),
+      throwError()
+    )();
   }
 }
 

@@ -8,6 +8,7 @@ import {
   Int,
   Float,
 } from 'type-graphql';
+import { GraphQLDate } from 'graphql-scalars';
 
 import { CellData, resolveCellType } from '~/db';
 
@@ -66,35 +67,107 @@ export abstract class CellType {
 @ObjectType({ implements: CellType })
 export class TextCell extends CellType {
   @Field(() => String, { nullable: true })
-  value!: string | null;
+  textValue!: string | null;
 }
 
 @ObjectType({ implements: CellType })
 export class IntCell extends CellType {
   @Field(() => Int, { nullable: true })
-  value!: number | null;
+  intValue!: number | null;
 }
 
 @ObjectType({ implements: CellType })
 export class FloatCell extends CellType {
   @Field(() => Float, { nullable: true })
-  value!: number | null;
+  floatValue!: number | null;
 }
 
 @ObjectType({ implements: CellType })
 export class BooleanCell extends CellType {
   @Field(() => Boolean)
-  value!: boolean;
-}
-
-@ObjectType({ implements: CellType })
-export class DateCell extends CellType {
-  @Field(() => GraphQLISODateTime, { nullable: true })
-  value!: Date | null;
+  booleanValue!: boolean;
 }
 
 @ObjectType({ implements: CellType })
 export class DateTimeCell extends CellType {
   @Field(() => GraphQLISODateTime, { nullable: true })
-  value!: Date | null;
+  dateTimeValue!: Date | null;
+}
+
+@ObjectType({ implements: CellType })
+export class DateCell extends CellType {
+  @Field(() => GraphQLDate, { nullable: true })
+  dateValue!: Date | null;
+}
+
+@InputType()
+export class UpdateTextCellInput {
+  @Field(() => ID)
+  rowId!: string;
+
+  @Field(() => ID)
+  fieldId!: string;
+
+  @Field(() => String)
+  value!: string;
+}
+
+@InputType()
+export class UpdateBooleanCellInput {
+  @Field(() => ID)
+  rowId!: string;
+
+  @Field(() => ID)
+  fieldId!: string;
+
+  @Field(() => Boolean)
+  value!: boolean;
+}
+
+@InputType()
+export class UpdateIntCellInput {
+  @Field(() => ID)
+  rowId!: string;
+
+  @Field(() => ID)
+  fieldId!: string;
+
+  @Field(() => Int)
+  value!: number;
+}
+
+@InputType()
+export class UpdateFloatCellInput {
+  @Field(() => ID)
+  rowId!: string;
+
+  @Field(() => ID)
+  fieldId!: string;
+
+  @Field(() => Float)
+  value!: number;
+}
+
+@InputType()
+export class UpdateDateTimeCellInput {
+  @Field(() => ID)
+  rowId!: string;
+
+  @Field(() => ID)
+  fieldId!: string;
+
+  @Field(() => GraphQLISODateTime)
+  value!: Date;
+}
+
+@InputType()
+export class UpdateDateCellInput {
+  @Field(() => ID)
+  rowId!: string;
+
+  @Field(() => ID)
+  fieldId!: string;
+
+  @Field(() => GraphQLDate)
+  value!: Date;
 }

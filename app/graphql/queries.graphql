@@ -54,7 +54,22 @@ query findGraph($graphId: ID!, $parentFieldId: ID, $parentId: ID) {
       cells {
         id
         ... on TextCell {
-          value
+          textValue
+        }
+        ... on BooleanCell {
+          booleanValue
+        }
+        ... on IntCell {
+          intValue
+        }
+        ... on FloatCell {
+          floatValue
+        }
+        ... on DateCell {
+          dateValue
+        }
+        ... on DateTimeCell {
+          dateTimeValue
         }
       }
     }
@@ -75,6 +90,18 @@ mutation createView($input: CreateViewInput!) {
 
 mutation createTextField($input: CreateFieldInput!) {
   createTextField(input: $input) {
+    id
+  }
+}
+
+mutation createBooleanField($input: CreateFieldInput!) {
+  createBooleanField(input: $input) {
+    id
+  }
+}
+
+mutation createNumberField($input: CreateFieldInput!) {
+  createNumberField(input: $input) {
     id
   }
 }
@@ -129,6 +156,30 @@ mutation createRow($input: CreateRowInput!) {
 
 mutation deleteRows($input: DeleteRowsInput!) {
   deleteRows(input: $input) {
+    id
+  }
+}
+
+mutation updateTextCell($input: UpdateTextCellInput!) {
+  updateTextCell(input: $input) {
+    id
+  }
+}
+
+mutation updateBooleanCell($input: UpdateBooleanCellInput!) {
+  updateBooleanCell(input: $input) {
+    id
+  }
+}
+
+mutation updateIntCell($input: UpdateIntCellInput!) {
+  updateIntCell(input: $input) {
+    id
+  }
+}
+
+mutation updateFloatCell($input: UpdateFloatCellInput!) {
+  updateFloatCell(input: $input) {
     id
   }
 }

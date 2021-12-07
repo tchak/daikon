@@ -37,7 +37,10 @@ export type CellData = {
   name: string;
   type: NodeType;
   options: unknown;
-  value: unknown;
+  textValue?: unknown;
+  booleanValue?: unknown;
+  intValue?: unknown;
+  floatValue?: unknown;
 };
 
 export type RowData = {

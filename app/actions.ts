@@ -7,6 +7,8 @@ import {
   CreateBlockFieldDocument,
   CreateGraphDocument,
   CreateTextFieldDocument,
+  CreateBooleanFieldDocument,
+  CreateNumberFieldDocument,
   DeleteFieldDocument,
   DeleteGraphDocument,
   DeleteViewDocument,
@@ -15,6 +17,11 @@ import {
   DeleteRowsDocument,
   CreateRowDocument,
   SetViewNameDocument,
+  UpdateTextCellDocument,
+  UpdateBooleanCellDocument,
+  UpdateFloatCellDocument,
+  UpdateIntCellDocument,
+  FieldType,
 } from '~/urql.server';
 
 export enum ActionType {
@@ -28,11 +35,13 @@ export enum ActionType {
   RenameView = 'RenameView',
   CreateRow = 'CreateRow',
   DeleteRows = 'DeleteRows',
+  UpdateCell = 'UpdateCell',
 }
 
 const Action = z.object({
   actionType: z.nativeEnum(ActionType),
-  type: z.enum(['text', 'block']).optional(),
+  type: z.nativeEnum(FieldType).optional(),
+  decimal: z.boolean().optional(),
 });
 const CreateGraph = z.object({ name: z.string().nonempty() });
 const DeleteGraph = z.object({ graphId: z.string().uuid() });
@@ -70,6 +79,26 @@ const CreateRow = z.object({
     .optional(),
 });
 const DeleteRows = z.object({ rowIds: z.array(z.string().uuid()) });
+const UpdateTextCell = z.object({
+  rowId: z.string().uuid(),
+  fieldId: z.string().uuid(),
+  value: z.string(),
+});
+const UpdateIntCell = z.object({
+  rowId: z.string().uuid(),
+  fieldId: z.string().uuid(),
+  value: z.string().transform((value) => parseInt(value, 10)),
+});
+const UpdateFloatCell = z.object({
+  rowId: z.string().uuid(),
+  fieldId: z.string().uuid(),
+  value: z.string().transform((value) => parseFloat(value)),
+});
+const UpdateBooleanCell = z.object({
+  rowId: z.string().uuid(),
+  fieldId: z.string().uuid(),
+  value: z.string().transform((checked) => checked == 'true'),
+});
 
 export async function processAction(request: Request) {
   // const user = await authenticator.isAuthenticated(request, {
@@ -87,10 +116,16 @@ export async function processAction(request: Request) {
     .with({ actionType: ActionType.DeleteView }, () =>
       mutation(DeleteViewDocument, DeleteView, body)
     )
-    .with({ actionType: ActionType.CreateField, type: 'text' }, () =>
+    .with({ actionType: ActionType.CreateField, type: FieldType.Text }, () =>
       mutation(CreateTextFieldDocument, CreateField, body)
     )
-    .with({ actionType: ActionType.CreateField, type: 'block' }, () =>
+    .with({ actionType: ActionType.CreateField, type: FieldType.Boolean }, () =>
+      mutation(CreateBooleanFieldDocument, CreateField, body)
+    )
+    .with({ actionType: ActionType.CreateField, type: FieldType.Number }, () =>
+      mutation(CreateNumberFieldDocument, CreateField, body)
+    )
+    .with({ actionType: ActionType.CreateField, type: FieldType.Block }, () =>
       mutation(CreateBlockFieldDocument, CreateField, body)
     )
     .with({ actionType: ActionType.RenameField }, () =>
@@ -111,7 +146,26 @@ export async function processAction(request: Request) {
     .with({ actionType: ActionType.RenameView }, () =>
       mutation(SetViewNameDocument, RenameView, body)
     )
-    .exhaustive();
+    .with({ actionType: ActionType.UpdateCell, type: FieldType.Text }, () =>
+      mutation(UpdateTextCellDocument, UpdateTextCell, body)
+    )
+    .with({ actionType: ActionType.UpdateCell, type: FieldType.Boolean }, () =>
+      mutation(UpdateBooleanCellDocument, UpdateBooleanCell, body)
+    )
+    .with(
+      {
+        actionType: ActionType.UpdateCell,
+        type: FieldType.Number,
+        decimal: true,
+      },
+      () => mutation(UpdateFloatCellDocument, UpdateFloatCell, body)
+    )
+    .with({ actionType: ActionType.UpdateCell, type: FieldType.Number }, () =>
+      mutation(UpdateIntCellDocument, UpdateIntCell, body)
+    )
+    .otherwise((action) => {
+      throw `Unknown action ${JSON.stringify(action, null, 2)}`;
+    });
 }
 
 async function parseBody(request: Request) {

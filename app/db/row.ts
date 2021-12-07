@@ -1,5 +1,6 @@
 import { pipe } from 'fp-ts/function';
 import * as TE from 'fp-ts/TaskEither';
+import parseISO from 'date-fns/parseISO';
 
 import { prismaQuery, PrismaTask } from '~/prisma.server';
 import {
@@ -45,15 +46,32 @@ export function populateCells({
           .filter(({ right }) => right.type != NodeType.BLOCK)
           .map(({ right }) => ({
             ...right,
-            value: getValue(right, data),
+            ...getValue(right, data),
           }))
       : [],
   };
 }
 
 function getValue(cell: RawCellData, data: RawRowData['data']) {
+  const value = (data as Record<string, unknown>)[cell.id];
   const defaultValue = cell.type == NodeType.BOOLEAN ? false : null;
-  return (data as Record<string, unknown>)[cell.id] ?? defaultValue;
+  switch (cell.type) {
+    case NodeType.BOOLEAN:
+      return { booleanValue: value ?? defaultValue };
+    case NodeType.NUMBER:
+      if ((cell.options as { decimal?: boolean })['decimal']) {
+        return { floatValue: value ?? defaultValue };
+      }
+      return { intValue: value ?? defaultValue };
+    case NodeType.DATE_TIME:
+      return {
+        dateTimeValue: value ? parseISO(value as string) : defaultValue,
+      };
+    case NodeType.DATE:
+      return { dateValue: value ? parseISO(value as string) : defaultValue };
+    default:
+      return { textValue: value ?? defaultValue };
+  }
 }
 
 export function createRow({
@@ -71,6 +89,36 @@ export function createRow({
       prismaQuery((prisma) =>
         prisma.row.create({
           data: { versionId, parentFieldId, parentId: parent?.id },
+          select: ROW_ATTRIBUTES,
+        })
+      )
+    ),
+    TE.map(populateCells)
+  );
+}
+
+export function updateCell({
+  rowId,
+  fieldId,
+  value,
+}: {
+  rowId: string;
+  fieldId: string;
+  value: RawRowData['data'];
+}): PrismaTask<RowData> {
+  return pipe(
+    prismaQuery((prisma) =>
+      prisma.row.findUnique({
+        rejectOnNotFound: true,
+        where: { id: rowId },
+        select: { data: true },
+      })
+    ),
+    TE.chain(({ data }) =>
+      prismaQuery((prisma) =>
+        prisma.row.update({
+          where: { id: rowId },
+          data: { data: { ...(data as object), [fieldId]: value } },
           select: ROW_ATTRIBUTES,
         })
       )
