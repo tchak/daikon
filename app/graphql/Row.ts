@@ -10,7 +10,7 @@ import {
 } from 'type-graphql';
 import { GraphQLDate } from 'graphql-scalars';
 
-import { CellData, resolveCellType } from '~/db';
+import { CellData, resolveCellType } from '~/models';
 
 @ObjectType()
 export class Row {

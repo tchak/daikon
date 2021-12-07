@@ -8,7 +8,7 @@ import {
   ViewData,
   EdgeData,
   NodeType,
-} from '.';
+} from './validators';
 
 export function findView(viewId: string): PrismaTask<ViewData> {
   return prismaQuery((prisma) =>

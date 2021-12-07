@@ -22,7 +22,7 @@ import {
   findGraphRows,
   findGraphVersions,
   findGraphViews,
-} from '~/db';
+} from '~/models';
 
 import { Graph } from './Graph';
 import { Edge, FieldTypeEnum } from './Field';

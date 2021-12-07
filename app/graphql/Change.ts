@@ -1,6 +1,6 @@
 import { ObjectType, InterfaceType, Field, ID, Int } from 'type-graphql';
 
-import { ChangeData, resolveChangeType } from '~/db';
+import { ChangeData, resolveChangeType } from '~/models';
 
 @InterfaceType({
   resolveType(change: ChangeData) {

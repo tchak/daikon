@@ -4,7 +4,7 @@ import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 
 import { prismaQuery, PrismaTask } from '~/prisma.server';
-import { NODE_ATTRIBUTES, NodeType, FieldData, EdgeData } from '.';
+import { NODE_ATTRIBUTES, NodeType, FieldData, EdgeData } from './validators';
 
 export function resolveFieldType(node: FieldData): string {
   switch (node.type) {

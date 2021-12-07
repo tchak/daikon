@@ -9,7 +9,7 @@ import {
   GraphQLISODateTime,
 } from 'type-graphql';
 
-import { FieldData, resolveFieldType } from '~/db';
+import { FieldData, resolveFieldType } from '~/models';
 
 export enum CardinalityEnum {
   ONE = 'ONE',

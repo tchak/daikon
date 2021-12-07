@@ -5,14 +5,13 @@ import parseISO from 'date-fns/parseISO';
 import { prismaQuery, PrismaTask } from '~/prisma.server';
 import {
   ROW_ATTRIBUTES,
-  findNodeInternalId,
-  findVersionRootInternalId,
   RowData,
   CellData,
   NodeType,
   RawCellData,
   RawRowData,
-} from '.';
+} from './validators';
+import { findNodeInternalId, findVersionRootInternalId } from './field';
 
 export function resolveCellType(cell: CellData): string {
   switch (cell.type) {

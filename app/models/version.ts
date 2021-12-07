@@ -15,8 +15,8 @@ import {
   ChangeData,
   VersionData,
   EdgeData,
-  populateCells,
-} from '.';
+} from './validators';
+import { populateCells } from './row';
 
 export function resolveChangeType(change: ChangeData): string {
   switch (change.op) {

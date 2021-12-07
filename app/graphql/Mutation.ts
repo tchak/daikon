@@ -28,7 +28,7 @@ import {
   updateViewField,
   VersionData,
   ViewData,
-} from '~/db';
+} from '~/models';
 
 import { Graph, CreateGraphInput, DeleteGraphInput } from './Graph';
 import {

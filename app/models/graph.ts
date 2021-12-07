@@ -13,8 +13,8 @@ import {
   ViewData,
   VersionData,
   RowData,
-  populateCells,
-} from '.';
+} from './validators';
+import { populateCells } from './row';
 
 export function findGraphs(): PrismaTask<GraphData[]> {
   return prismaQuery((prisma) =>

@@ -1,35 +1,36 @@
-import { NodeType, NodeCardinality, Prisma } from '@prisma/client';
+import {
+  NodeType,
+  NodeCardinality,
+  Prisma,
+  GraphView,
+  GraphVersion,
+  GraphNode,
+  GraphEdge,
+  Graph,
+  Row,
+} from '@prisma/client';
 
 export { NodeType, NodeCardinality };
 
-export type FieldData = {
-  internalId: string;
-  id: string;
-  type: NodeType;
-  name: string;
-  description: null | string;
-  nullable: boolean;
-  updatedAt: Date;
-  cardinality: NodeCardinality;
-};
+export type FieldData = Pick<
+  GraphNode,
+  | 'internalId'
+  | 'id'
+  | 'type'
+  | 'name'
+  | 'description'
+  | 'nullable'
+  | 'cardinality'
+  | 'updatedAt'
+>;
 
-export type EdgeData = {
-  id: string;
-  position: number;
+export type EdgeData = Pick<GraphEdge, 'id' | 'position'> & {
   left: FieldData;
   right: FieldData;
 };
 
-export type GraphData = {
-  id: string;
-  createdAt: Date;
-  color: string;
-  root: {
-    id: string;
-    name: string;
-    description: string | null;
-    updatedAt: Date;
-  };
+export type GraphData = Pick<Graph, 'id' | 'createdAt' | 'color'> & {
+  root: Pick<GraphNode, 'id' | 'name' | 'description' | 'updatedAt'>;
 };
 
 export type CellData = {
@@ -43,13 +44,11 @@ export type CellData = {
   floatValue?: unknown;
 };
 
-export type RowData = {
-  id: string;
-  parentId?: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  cells: CellData[];
-};
+export type RowData =
+  | Pick<Row, 'id' | 'parentId' | 'createdAt' | 'updatedAt'>
+  | {
+      cells: CellData[];
+    };
 
 export type RawCellData = Pick<CellData, 'id' | 'name' | 'type'> & {
   options: Prisma.JsonValue;
@@ -87,48 +86,43 @@ export type ChangeData = {
   to?: string | boolean | number | null;
 };
 
-export type VersionData = {
-  id: string;
-  createdAt: Date;
-  lockedAt: Date | null;
-};
+export type VersionData = Pick<GraphVersion, 'id' | 'createdAt' | 'lockedAt'>;
 
-export type ViewData = {
-  id: string;
-  name: string;
-  description: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-};
+export type ViewData = Pick<
+  GraphView,
+  'id' | 'name' | 'description' | 'createdAt' | 'updatedAt'
+>;
 
-export const GRAPH_ATTRIBUTES = {
+export const GRAPH_ATTRIBUTES = Prisma.validator<Prisma.GraphSelect>()({
   id: true,
   createdAt: true,
   color: true,
-};
+});
 
-export const ROOT_ATTRIBUTES = {
+export const ROOT_ATTRIBUTES = Prisma.validator<Prisma.GraphNodeSelect>()({
   id: true,
   name: true,
   description: true,
   updatedAt: true,
-};
+});
 
-export const VERSION_ATTRIBUTES = {
-  id: true,
-  createdAt: true,
-  lockedAt: true,
-};
+export const VERSION_ATTRIBUTES = Prisma.validator<Prisma.GraphVersionSelect>()(
+  {
+    id: true,
+    createdAt: true,
+    lockedAt: true,
+  }
+);
 
-export const VIEW_ATTRIBUTES = {
+export const VIEW_ATTRIBUTES = Prisma.validator<Prisma.GraphViewSelect>()({
   id: true,
   createdAt: true,
   updatedAt: true,
   name: true,
   description: true,
-};
+});
 
-export const NODE_ATTRIBUTES = {
+export const NODE_ATTRIBUTES = Prisma.validator<Prisma.GraphNodeSelect>()({
   id: true,
   internalId: true,
   type: true,
@@ -137,9 +131,9 @@ export const NODE_ATTRIBUTES = {
   nullable: true,
   cardinality: true,
   updatedAt: true,
-};
+});
 
-export const ROW_ATTRIBUTES = {
+export const ROW_ATTRIBUTES = Prisma.validator<Prisma.RowSelect>()({
   id: true,
   createdAt: true,
   updatedAt: true,
@@ -155,10 +149,4 @@ export const ROW_ATTRIBUTES = {
       },
     },
   },
-};
-
-export * from './graph';
-export * from './version';
-export * from './field';
-export * from './view';
-export * from './row';
+});
