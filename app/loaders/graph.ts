@@ -51,12 +51,12 @@ function getRows(
     id: string;
     cells: ReadonlyArray<{
       id: string;
-      textValue?: string;
+      textValue?: string | null;
       booleanValue?: boolean;
-      intValue?: number;
-      floatValue?: number;
-      dateTimeValue?: Date;
-      dateValue?: Date;
+      intValue?: number | null;
+      floatValue?: number | null;
+      dateTimeValue?: Date | null;
+      dateValue?: Date | null;
     }>;
   }>
 ) {

@@ -2,7 +2,7 @@ import { pipe } from 'fp-ts/function';
 import * as TE from 'fp-ts/TaskEither';
 import parseISO from 'date-fns/parseISO';
 
-import { prismaQuery, PrismaTask } from '~/prisma.server';
+import { prismaQuery, PrismaTask, EventType } from '~/prisma.server';
 import {
   ROW_ATTRIBUTES,
   RowData,
@@ -86,9 +86,22 @@ export function createRow({
       : findVersionRootInternalId(versionId),
     TE.chain((parentFieldId) =>
       prismaQuery((prisma) =>
-        prisma.row.create({
-          data: { versionId, parentFieldId, parentId: parent?.id },
-          select: ROW_ATTRIBUTES,
+        prisma.$transaction(async (prisma) => {
+          const row = await prisma.row.create({
+            data: { versionId, parentFieldId, parentId: parent?.id },
+            select: ROW_ATTRIBUTES,
+          });
+          await prisma.event.create({
+            data: {
+              type: EventType.ROW_CREATED,
+              payload: {
+                rowId: row.id,
+                versionId,
+                parent,
+              },
+            },
+          });
+          return row;
         })
       )
     ),
@@ -115,10 +128,23 @@ export function updateCell({
     ),
     TE.chain(({ data }) =>
       prismaQuery((prisma) =>
-        prisma.row.update({
-          where: { id: rowId },
-          data: { data: { ...(data as object), [fieldId]: value } },
-          select: ROW_ATTRIBUTES,
+        prisma.$transaction(async (prisma) => {
+          const row = await prisma.row.update({
+            where: { id: rowId },
+            data: { data: { ...(data as object), [fieldId]: value } },
+            select: ROW_ATTRIBUTES,
+          });
+          await prisma.event.create({
+            data: {
+              type: EventType.CELL_UPDATED,
+              payload: {
+                rowId,
+                fieldId,
+                value,
+              },
+            },
+          });
+          return row;
         })
       )
     ),
@@ -140,6 +166,12 @@ export function deleteRows({
         });
         await prisma.row.deleteMany({
           where: { id: { in: rowIds } },
+        });
+        await prisma.event.createMany({
+          data: rowIds.map((rowId) => ({
+            type: EventType.ROW_DELETED,
+            payload: { rowId },
+          })),
         });
         return rows;
       })

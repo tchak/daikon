@@ -1,7 +1,7 @@
 import * as TE from 'fp-ts/TaskEither';
 import { pipe } from 'fp-ts/function';
 
-import { prismaQuery, PrismaTask } from '~/prisma.server';
+import { prismaQuery, PrismaTask, EventType } from '~/prisma.server';
 import {
   NODE_ATTRIBUTES,
   VIEW_ATTRIBUTES,
@@ -81,12 +81,21 @@ export function createView({
   name: string;
 }): PrismaTask<ViewData> {
   return prismaQuery((prisma) =>
-    prisma.graphView.create({
-      data: {
-        name,
-        graphId,
-      },
-      select: VIEW_ATTRIBUTES,
+    prisma.$transaction(async (prisma) => {
+      const view = await prisma.graphView.create({
+        data: {
+          name,
+          graphId,
+        },
+        select: VIEW_ATTRIBUTES,
+      });
+      await prisma.event.create({
+        data: {
+          type: EventType.VIEW_CREATED,
+          payload: { graphId, name },
+        },
+      });
+      return view;
     })
   );
 }
@@ -100,10 +109,19 @@ export function updateView({
 }): PrismaTask<ViewData> {
   return pipe(
     prismaQuery((prisma) =>
-      prisma.graphView.update({
-        where: { id: viewId },
-        data: { name },
-        select: VIEW_ATTRIBUTES,
+      prisma.$transaction(async (prisma) => {
+        const view = await prisma.graphView.update({
+          where: { id: viewId },
+          data: { name },
+          select: VIEW_ATTRIBUTES,
+        });
+        await prisma.event.create({
+          data: {
+            type: EventType.VIEW_NAME_CHANGED,
+            payload: { viewId, name },
+          },
+        });
+        return view;
       })
     )
   );
@@ -148,9 +166,18 @@ export function deleteView({
   viewId: string;
 }): PrismaTask<ViewData> {
   return prismaQuery((prisma) =>
-    prisma.graphView.delete({
-      where: { id: viewId },
-      select: VIEW_ATTRIBUTES,
+    prisma.$transaction(async (prisma) => {
+      const view = await prisma.graphView.delete({
+        where: { id: viewId },
+        select: VIEW_ATTRIBUTES,
+      });
+      await prisma.event.create({
+        data: {
+          type: EventType.VIEW_DELETED,
+          payload: { viewId },
+        },
+      });
+      return view;
     })
   );
 }

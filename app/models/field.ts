@@ -3,7 +3,7 @@ import * as TE from 'fp-ts/TaskEither';
 import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 
-import { prismaQuery, PrismaTask } from '~/prisma.server';
+import { prismaQuery, PrismaTask, EventType } from '~/prisma.server';
 import { NODE_ATTRIBUTES, NodeType, FieldData, EdgeData } from './validators';
 
 export function resolveFieldType(node: FieldData): string {
@@ -91,8 +91,8 @@ export function deleteField({
     TE.bind('node', () => findUnlockedNode(versionId, nodeId)),
     TE.bind('_', ({ node: { internalId } }) =>
       prismaQuery((prisma) =>
-        prisma.$transaction([
-          prisma.graphNode.deleteMany({
+        prisma.$transaction(async (prisma) => {
+          await prisma.graphNode.deleteMany({
             where: {
               id: nodeId,
               AND: [
@@ -100,16 +100,22 @@ export function deleteField({
                 { rights: { every: { versionId } } },
               ],
             },
-          }),
-          prisma.graphEdge.deleteMany({
+          });
+          await prisma.graphEdge.deleteMany({
             where: {
               OR: [
                 { rightId: internalId, versionId },
                 { leftId: internalId, versionId },
               ],
             },
-          }),
-        ])
+          });
+          await prisma.event.create({
+            data: {
+              type: EventType.FIELD_DELETED,
+              payload: { versionId, fieldId: nodeId },
+            },
+          });
+        })
       )
     ),
     TE.map(({ node }) => node)

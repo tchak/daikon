@@ -3,7 +3,7 @@ import { pipe } from 'fp-ts/function';
 import * as A from 'fp-ts/ReadonlyArray';
 import * as Eq from 'io-ts/Eq';
 
-import { prismaQuery, PrismaTask } from '~/prisma.server';
+import { prismaQuery, PrismaTask, EventType } from '~/prisma.server';
 import {
   NODE_ATTRIBUTES,
   VERSION_ATTRIBUTES,
@@ -154,6 +154,12 @@ export function lockVersion({
         where: { id: versionId },
         data: { lockedAt: new Date() },
       });
+      await prisma.event.create({
+        data: {
+          type: EventType.VERSION_LOCKED,
+          payload: { versionId },
+        },
+      });
       return version;
     })
   );
@@ -175,6 +181,12 @@ export function unlockVersion({
         where: { id: versionId },
         data: { lockedAt: null },
       });
+      await prisma.event.create({
+        data: {
+          type: EventType.VERSION_UNLOCKED,
+          payload: { versionId },
+        },
+      });
       return version;
     })
   );
@@ -193,6 +205,12 @@ export function deleteVersion({
         select: VERSION_ATTRIBUTES,
       });
       await prisma.graphVersion.delete({ where: { id: versionId } });
+      await prisma.event.create({
+        data: {
+          type: EventType.VERSION_DELETED,
+          payload: { versionId },
+        },
+      });
       return version;
     })
   );

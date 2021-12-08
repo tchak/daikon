@@ -1,8 +1,10 @@
 import type { TaskEither } from 'fp-ts/TaskEither';
-import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaClient, Prisma, EventType } from '@prisma/client';
 import chalk from 'chalk';
 import * as TE from 'fp-ts/TaskEither';
 import { pipe } from 'fp-ts/function';
+
+export { EventType };
 
 const logThreshold = 30;
 

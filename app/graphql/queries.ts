@@ -11,6 +11,8 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  /** A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar. */
+  Date: any;
   /** The javascript `Date` as string. Type represents date and time as the ISO Date string. */
   DateTime: any;
 };
@@ -83,7 +85,7 @@ export type CreateViewInput = {
 };
 
 export type DateCell = Cell & {
-  readonly dateValue?: Maybe<Scalars['DateTime']>;
+  readonly dateValue?: Maybe<Scalars['Date']>;
   readonly id: Scalars['ID'];
   readonly name: Scalars['String'];
 };
@@ -267,6 +269,8 @@ export type Mutation = {
   readonly setViewName: Field;
   readonly unlockVersion: Version;
   readonly updateBooleanCell: Row;
+  readonly updateDateCell: Row;
+  readonly updateDateTimeCell: Row;
   readonly updateFloatCell: Row;
   readonly updateIntCell: Row;
   readonly updateTextCell: Row;
@@ -398,6 +402,16 @@ export type MutationUpdateBooleanCellArgs = {
 };
 
 
+export type MutationUpdateDateCellArgs = {
+  input: UpdateDateCellInput;
+};
+
+
+export type MutationUpdateDateTimeCellArgs = {
+  input: UpdateDateTimeCellInput;
+};
+
+
 export type MutationUpdateFloatCellArgs = {
   input: UpdateFloatCellInput;
 };
@@ -512,6 +526,18 @@ export type UpdateBooleanCellInput = {
   readonly fieldId: Scalars['ID'];
   readonly rowId: Scalars['ID'];
   readonly value: Scalars['Boolean'];
+};
+
+export type UpdateDateCellInput = {
+  readonly fieldId: Scalars['ID'];
+  readonly rowId: Scalars['ID'];
+  readonly value: Scalars['Date'];
+};
+
+export type UpdateDateTimeCellInput = {
+  readonly fieldId: Scalars['ID'];
+  readonly rowId: Scalars['ID'];
+  readonly value: Scalars['DateTime'];
 };
 
 export type UpdateFloatCellInput = {

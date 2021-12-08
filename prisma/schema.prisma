@@ -126,3 +126,33 @@ model Row {
 
   @@index([parentId, parentFieldId])
 }
+
+enum EventType {
+  FIELD_CREATED
+  FIELD_NAME_CHANGED
+  FIELD_TYPE_CHANGED
+  FIELD_DELETED
+  VERSION_CREATED
+  VERSION_LOCKED
+  VERSION_UNLOCKED
+  VERSION_DELETED
+  VIEW_CREATED
+  VIEW_NAME_CHANGED
+  VIEW_DELETED
+  VIEW_FIELD_HIDDEN
+  VIEW_FIELD_SHOWN
+  ROW_CREATED
+  ROW_DELETED
+  CELL_UPDATED
+}
+
+model Event {
+  id        String    @id @default(uuid()) @db.Uuid
+  type      EventType
+  version   Int       @default(1)
+  payload   Json      @default("{}")
+  createdAt DateTime  @default(now())
+  requestId String?   @db.Uuid
+
+  @@index(type)
+}
