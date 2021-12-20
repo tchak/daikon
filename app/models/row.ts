@@ -2,7 +2,7 @@ import { pipe } from 'fp-ts/function';
 import * as TE from 'fp-ts/TaskEither';
 import parseISO from 'date-fns/parseISO';
 
-import { prismaQuery, PrismaTask, EventType } from '~/prisma.server';
+import { PrismaTask, EventType, runQuery, runCommand } from '~/prisma.server';
 import {
   ROW_ATTRIBUTES,
   RowData,
@@ -85,25 +85,23 @@ export function createRow({
       ? findNodeInternalId(versionId, parent.fieldId)
       : findVersionRootInternalId(versionId),
     TE.chain((parentFieldId) =>
-      prismaQuery((prisma) =>
-        prisma.$transaction(async (prisma) => {
-          const row = await prisma.row.create({
-            data: { versionId, parentFieldId, parentId: parent?.id },
-            select: ROW_ATTRIBUTES,
-          });
-          await prisma.event.create({
-            data: {
-              type: EventType.ROW_CREATED,
-              payload: {
-                rowId: row.id,
-                versionId,
-                parent,
-              },
+      runCommand(async (prisma) => {
+        const row = await prisma.row.create({
+          data: { versionId, parentFieldId, parentId: parent?.id },
+          select: ROW_ATTRIBUTES,
+        });
+        await prisma.event.create({
+          data: {
+            type: EventType.ROW_CREATED,
+            payload: {
+              rowId: row.id,
+              versionId,
+              parent,
             },
-          });
-          return row;
-        })
-      )
+          },
+        });
+        return row;
+      })
     ),
     TE.map(populateCells)
   );
@@ -119,7 +117,7 @@ export function updateCell({
   value: RawRowData['data'];
 }): PrismaTask<RowData> {
   return pipe(
-    prismaQuery((prisma) =>
+    runQuery((prisma) =>
       prisma.row.findUnique({
         rejectOnNotFound: true,
         where: { id: rowId },
@@ -127,26 +125,24 @@ export function updateCell({
       })
     ),
     TE.chain(({ data }) =>
-      prismaQuery((prisma) =>
-        prisma.$transaction(async (prisma) => {
-          const row = await prisma.row.update({
-            where: { id: rowId },
-            data: { data: { ...(data as object), [fieldId]: value } },
-            select: ROW_ATTRIBUTES,
-          });
-          await prisma.event.create({
-            data: {
-              type: EventType.CELL_UPDATED,
-              payload: {
-                rowId,
-                fieldId,
-                value,
-              },
+      runCommand(async (prisma) => {
+        const row = await prisma.row.update({
+          where: { id: rowId },
+          data: { data: { ...(data as object), [fieldId]: value } },
+          select: ROW_ATTRIBUTES,
+        });
+        await prisma.event.create({
+          data: {
+            type: EventType.CELL_UPDATED,
+            payload: {
+              rowId,
+              fieldId,
+              value,
             },
-          });
-          return row;
-        })
-      )
+          },
+        });
+        return row;
+      })
     ),
     TE.map(populateCells)
   );
@@ -158,24 +154,22 @@ export function deleteRows({
   rowIds: string[];
 }): PrismaTask<RowData[]> {
   return pipe(
-    prismaQuery((prisma) =>
-      prisma.$transaction(async (prisma) => {
-        const rows = await prisma.row.findMany({
-          where: { id: { in: rowIds } },
-          select: ROW_ATTRIBUTES,
-        });
-        await prisma.row.deleteMany({
-          where: { id: { in: rowIds } },
-        });
-        await prisma.event.createMany({
-          data: rowIds.map((rowId) => ({
-            type: EventType.ROW_DELETED,
-            payload: { rowId },
-          })),
-        });
-        return rows;
-      })
-    ),
+    runCommand(async (prisma) => {
+      const rows = await prisma.row.findMany({
+        where: { id: { in: rowIds } },
+        select: ROW_ATTRIBUTES,
+      });
+      await prisma.row.deleteMany({
+        where: { id: { in: rowIds } },
+      });
+      await prisma.event.createMany({
+        data: rowIds.map((rowId) => ({
+          type: EventType.ROW_DELETED,
+          payload: { rowId },
+        })),
+      });
+      return rows;
+    }),
     TE.map((rows) => rows.map(populateCells))
   );
 }

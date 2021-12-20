@@ -6,6 +6,18 @@ import { pipe } from 'fp-ts/function';
 
 export { EventType };
 
+type PrismaError =
+  | Prisma.PrismaClientKnownRequestError
+  | Prisma.PrismaClientUnknownRequestError
+  | Prisma.PrismaClientValidationError
+  | Prisma.PrismaClientRustPanicError;
+type NotFoundError = Error & { name: 'NotFoundError' };
+
+export type PrismaTask<Data> = TaskEither<PrismaError | NotFoundError, Data>;
+export type PrismaClientTransaction = Parameters<
+  Parameters<typeof prisma.$transaction>[0]
+>[0];
+
 const logThreshold = 30;
 
 function getClient() {
@@ -49,32 +61,37 @@ if (process.env.NODE_ENV == 'development') {
   global.__prisma = prisma;
 }
 
-type PrismaError =
-  | Prisma.PrismaClientKnownRequestError
-  | Prisma.PrismaClientUnknownRequestError
-  | Prisma.PrismaClientValidationError
-  | Prisma.PrismaClientRustPanicError;
-type NotFoundError = Error & { name: 'NotFoundError' };
-
 export function isNotFoundError(e: Error): e is NotFoundError {
   return e.name == 'NotFoundError';
 }
 
-export type PrismaTask<Data> = TaskEither<PrismaError | NotFoundError, Data>;
-
-export const prismaQuery = <Data>(
-  tx: (prisma: PrismaClient) => Promise<Data>
-): PrismaTask<Data> =>
-  pipe(
+export function runQuery<Data>(
+  query: (db: PrismaClient) => Promise<Data>
+): PrismaTask<Data> {
+  return pipe(
     TE.tryCatch(
-      () => tx(prisma),
-      (error) => {
-        if (isNotFoundError(error as Error)) {
-          const type = chalk['red'](`${(error as Error).message}`);
-          console.log(`prisma:notfound - ${type}`);
-          return error as NotFoundError;
-        }
-        return error as PrismaError;
-      }
+      () => query(prisma),
+      (error) => castError(error as Error)
     )
   );
+}
+
+export function runCommand<Data>(
+  command: (db: PrismaClientTransaction) => Promise<Data>
+): PrismaTask<Data> {
+  return pipe(
+    TE.tryCatch(
+      () => prisma.$transaction(command),
+      (error) => castError(error as Error)
+    )
+  );
+}
+
+function castError(error: Error): PrismaError | NotFoundError {
+  if (isNotFoundError(error)) {
+    const type = chalk['red'](`${error.message}`);
+    console.log(`prisma:notfound - ${type}`);
+    return error;
+  }
+  return error as PrismaError;
+}

@@ -3,7 +3,7 @@ import { pipe } from 'fp-ts/function';
 import * as A from 'fp-ts/ReadonlyArray';
 import * as Eq from 'io-ts/Eq';
 
-import { prismaQuery, PrismaTask, EventType } from '~/prisma.server';
+import { PrismaTask, EventType, runQuery, runCommand } from '~/prisma.server';
 import {
   NODE_ATTRIBUTES,
   VERSION_ATTRIBUTES,
@@ -42,7 +42,7 @@ export function resolveChangeType(change: ChangeData): string {
 }
 
 export function findVersion(versionId: string): PrismaTask<VersionData> {
-  return prismaQuery((prisma) =>
+  return runQuery((prisma) =>
     prisma.graphVersion.findUnique({
       rejectOnNotFound: true,
       where: { id: versionId },
@@ -61,7 +61,7 @@ export function findVersionEdges({
   type?: NodeType;
 }): PrismaTask<EdgeData[]> {
   return pipe(
-    prismaQuery((prisma) =>
+    runQuery((prisma) =>
       prisma.graphEdge.findMany({
         where: leftId
           ? type
@@ -92,7 +92,7 @@ export function findVersionRows({
   parentId?: string;
 }): PrismaTask<RowData[]> {
   return pipe(
-    prismaQuery((prisma) =>
+    runQuery((prisma) =>
       prisma.row.findMany({
         where: {
           versionId,
@@ -115,7 +115,7 @@ export function createVersion({
   versionId: string;
 }): PrismaTask<VersionData> {
   return pipe(
-    prismaQuery((prisma) =>
+    runQuery((prisma) =>
       prisma.graphVersion.findUnique({
         rejectOnNotFound: true,
         where: { id: versionId },
@@ -128,7 +128,7 @@ export function createVersion({
       })
     ),
     TE.chain(({ graphId, edges }) =>
-      prismaQuery((prisma) =>
+      runQuery((prisma) =>
         prisma.graphVersion.create({
           data: { graphId, edges: { createMany: { data: edges } } },
           select: VERSION_ATTRIBUTES,
@@ -143,26 +143,24 @@ export function lockVersion({
 }: {
   versionId: string;
 }): PrismaTask<VersionData> {
-  return prismaQuery((prisma) =>
-    prisma.$transaction(async (prisma) => {
-      const version = await prisma.graphVersion.findFirst({
-        rejectOnNotFound: true,
-        where: { id: versionId, lockedAt: null },
-        select: VERSION_ATTRIBUTES,
-      });
-      await prisma.graphVersion.update({
-        where: { id: versionId },
-        data: { lockedAt: new Date() },
-      });
-      await prisma.event.create({
-        data: {
-          type: EventType.VERSION_LOCKED,
-          payload: { versionId },
-        },
-      });
-      return version;
-    })
-  );
+  return runCommand(async (prisma) => {
+    const version = await prisma.graphVersion.findFirst({
+      rejectOnNotFound: true,
+      where: { id: versionId, lockedAt: null },
+      select: VERSION_ATTRIBUTES,
+    });
+    await prisma.graphVersion.update({
+      where: { id: versionId },
+      data: { lockedAt: new Date() },
+    });
+    await prisma.event.create({
+      data: {
+        type: EventType.VERSION_LOCKED,
+        payload: { versionId },
+      },
+    });
+    return version;
+  });
 }
 
 export function unlockVersion({
@@ -170,26 +168,24 @@ export function unlockVersion({
 }: {
   versionId: string;
 }): PrismaTask<VersionData> {
-  return prismaQuery((prisma) =>
-    prisma.$transaction(async (prisma) => {
-      const version = await prisma.graphVersion.findFirst({
-        rejectOnNotFound: true,
-        where: { id: versionId, lockedAt: { not: null } },
-        select: VERSION_ATTRIBUTES,
-      });
-      await prisma.graphVersion.update({
-        where: { id: versionId },
-        data: { lockedAt: null },
-      });
-      await prisma.event.create({
-        data: {
-          type: EventType.VERSION_UNLOCKED,
-          payload: { versionId },
-        },
-      });
-      return version;
-    })
-  );
+  return runCommand(async (prisma) => {
+    const version = await prisma.graphVersion.findFirst({
+      rejectOnNotFound: true,
+      where: { id: versionId, lockedAt: { not: null } },
+      select: VERSION_ATTRIBUTES,
+    });
+    await prisma.graphVersion.update({
+      where: { id: versionId },
+      data: { lockedAt: null },
+    });
+    await prisma.event.create({
+      data: {
+        type: EventType.VERSION_UNLOCKED,
+        payload: { versionId },
+      },
+    });
+    return version;
+  });
 }
 
 export function deleteVersion({
@@ -197,23 +193,21 @@ export function deleteVersion({
 }: {
   versionId: string;
 }): PrismaTask<VersionData> {
-  return prismaQuery((prisma) =>
-    prisma.$transaction(async (prisma) => {
-      const version = await prisma.graphVersion.findFirst({
-        rejectOnNotFound: true,
-        where: { id: versionId, lockedAt: null },
-        select: VERSION_ATTRIBUTES,
-      });
-      await prisma.graphVersion.delete({ where: { id: versionId } });
-      await prisma.event.create({
-        data: {
-          type: EventType.VERSION_DELETED,
-          payload: { versionId },
-        },
-      });
-      return version;
-    })
-  );
+  return runCommand(async (prisma) => {
+    const version = await prisma.graphVersion.findFirst({
+      rejectOnNotFound: true,
+      where: { id: versionId, lockedAt: null },
+      select: VERSION_ATTRIBUTES,
+    });
+    await prisma.graphVersion.delete({ where: { id: versionId } });
+    await prisma.event.create({
+      data: {
+        type: EventType.VERSION_DELETED,
+        payload: { versionId },
+      },
+    });
+    return version;
+  });
 }
 
 export function diff({
@@ -224,7 +218,7 @@ export function diff({
   rightVersionId: string;
 }): PrismaTask<ChangeData[]> {
   return pipe(
-    prismaQuery((prisma) =>
+    runQuery((prisma) =>
       prisma.graphEdge.findMany({
         where: { id: { in: [leftVersionId, rightVersionId] } },
         select: {

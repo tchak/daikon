@@ -12,7 +12,7 @@ import { GraphQLDate } from 'graphql-scalars';
 
 import { CellData, resolveCellType } from '~/models';
 
-@ObjectType()
+@ObjectType('Row')
 export class Row {
   @Field(() => ID)
   id!: string;

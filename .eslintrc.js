@@ -8,4 +8,10 @@ module.exports = {
     'plugin:react-hooks/recommended',
     'prettier',
   ],
+  overrides: [
+    {
+      files: ['remix.config.js', 'tailwind.config.js'],
+      env: { node: true },
+    },
+  ],
 };

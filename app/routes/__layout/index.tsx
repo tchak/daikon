@@ -8,7 +8,7 @@ import { ReactNode, useState, useCallback } from 'react';
 import { usePopper } from 'react-popper';
 import clsx from 'clsx';
 
-import { query, FindGraphsDocument, FindGraphsQuery } from '~/urql.server';
+import { query, FindGraphsDocument, FindGraphsQuery } from '~/graphql.server';
 import { Header, Main } from '~/components/DefaultLayout';
 import { bgColor } from '~/utils';
 import { ActionType, action } from '~/actions';

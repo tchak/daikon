@@ -1,6 +1,6 @@
 import type { LoaderFunction } from 'remix';
 import { redirect } from 'remix';
-import { query, FindGraphDocument } from '~/urql.server';
+import { query, FindGraphDocument } from '~/graphql.server';
 import { Edge, BlockEdge, Field, Breadcrumb } from '~/types';
 
 export type LoaderData = {

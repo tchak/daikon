@@ -23,7 +23,7 @@ import {
   UpdateFloatCellDocument,
   UpdateIntCellDocument,
   FieldType,
-} from '~/urql.server';
+} from '~/graphql.server';
 
 export enum ActionType {
   CreateField = 'CreateField',

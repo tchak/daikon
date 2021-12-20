@@ -1,7 +1,7 @@
 import * as TE from 'fp-ts/TaskEither';
 import { pipe } from 'fp-ts/function';
 
-import { prismaQuery, PrismaTask } from '~/prisma.server';
+import { runQuery, runCommand, PrismaTask } from '~/prisma.server';
 import {
   NodeType,
   VERSION_ATTRIBUTES,
@@ -17,8 +17,8 @@ import {
 import { populateCells } from './row';
 
 export function findGraphs(): PrismaTask<GraphData[]> {
-  return prismaQuery((prisma) =>
-    prisma.graph.findMany({
+  return runQuery((db) =>
+    db.graph.findMany({
       select: {
         ...GRAPH_ATTRIBUTES,
         root: { select: ROOT_ATTRIBUTES },
@@ -29,8 +29,8 @@ export function findGraphs(): PrismaTask<GraphData[]> {
 }
 
 export function findGraph(graphId: string): PrismaTask<GraphData> {
-  return prismaQuery((prisma) =>
-    prisma.graph.findUnique({
+  return runQuery((db) =>
+    db.graph.findUnique({
       rejectOnNotFound: true,
       where: { id: graphId },
       select: {
@@ -50,8 +50,8 @@ export function findGraph(graphId: string): PrismaTask<GraphData> {
 }
 
 export function findGraphVersion(graphId: string): PrismaTask<VersionData> {
-  return prismaQuery((prisma) =>
-    prisma.graphVersion.findFirst({
+  return runQuery((db) =>
+    db.graphVersion.findFirst({
       rejectOnNotFound: true,
       where: { graphId },
       orderBy: { createdAt: 'desc' },
@@ -61,8 +61,8 @@ export function findGraphVersion(graphId: string): PrismaTask<VersionData> {
 }
 
 export function findGraphVersions(graphId: string): PrismaTask<VersionData[]> {
-  return prismaQuery((prisma) =>
-    prisma.graphVersion.findMany({
+  return runQuery((db) =>
+    db.graphVersion.findMany({
       where: { graphId },
       orderBy: { createdAt: 'asc' },
       select: VERSION_ATTRIBUTES,
@@ -71,8 +71,8 @@ export function findGraphVersions(graphId: string): PrismaTask<VersionData[]> {
 }
 
 export function findGraphView(graphId: string): PrismaTask<ViewData> {
-  return prismaQuery((prisma) =>
-    prisma.graphView.findFirst({
+  return runQuery((db) =>
+    db.graphView.findFirst({
       rejectOnNotFound: true,
       where: { graphId },
       orderBy: { createdAt: 'asc' },
@@ -82,8 +82,8 @@ export function findGraphView(graphId: string): PrismaTask<ViewData> {
 }
 
 export function findGraphViews(graphId: string): PrismaTask<ViewData[]> {
-  return prismaQuery((prisma) =>
-    prisma.graphView.findMany({
+  return runQuery((db) =>
+    db.graphView.findMany({
       where: { graphId },
       orderBy: { createdAt: 'asc' },
       select: VIEW_ATTRIBUTES,
@@ -101,8 +101,8 @@ export function findGraphRows({
   parentId?: string;
 }): PrismaTask<RowData[]> {
   return pipe(
-    prismaQuery((prisma) =>
-      prisma.row.findMany({
+    runQuery((db) =>
+      db.row.findMany({
         where: {
           version: { graphId },
           parentId,
@@ -120,8 +120,8 @@ export function findGraphRows({
 
 export function createGraph(name: string): PrismaTask<GraphData> {
   return pipe(
-    prismaQuery((prisma) =>
-      prisma.graphVersion.create({
+    runCommand((db) =>
+      db.graphVersion.create({
         data: {
           graph: {
             create: {
@@ -150,8 +150,8 @@ export function deleteGraph({
 }: {
   graphId: string;
 }): PrismaTask<GraphData> {
-  return prismaQuery((prisma) =>
-    prisma.graph.delete({
+  return runCommand((db) =>
+    db.graph.delete({
       where: { id: graphId },
       select: {
         ...GRAPH_ATTRIBUTES,

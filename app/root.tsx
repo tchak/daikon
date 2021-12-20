@@ -11,11 +11,11 @@ import {
 import { ReactNode } from 'react';
 import { Outlet } from 'react-router-dom';
 
-import stylesUrl from './styles/index.css';
+import tailwind from './styles/tailwind.css';
 import { Progress } from './components/Progress';
 
 export const links: LinksFunction = () => {
-  return [{ rel: 'stylesheet', href: stylesUrl }];
+  return [{ rel: 'stylesheet', href: tailwind }];
 };
 
 export const unstable_shouldReload = () => false;

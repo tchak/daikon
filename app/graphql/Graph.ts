@@ -8,7 +8,7 @@ import {
 
 import { RootField } from './Field';
 
-@ObjectType()
+@ObjectType('Graph')
 export class Graph {
   @Field(() => ID)
   id!: string;

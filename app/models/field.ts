@@ -3,7 +3,7 @@ import * as TE from 'fp-ts/TaskEither';
 import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 
-import { prismaQuery, PrismaTask, EventType } from '~/prisma.server';
+import { PrismaTask, EventType, runQuery, runCommand } from '~/prisma.server';
 import { NODE_ATTRIBUTES, NodeType, FieldData, EdgeData } from './validators';
 
 export function resolveFieldType(node: FieldData): string {
@@ -44,7 +44,7 @@ export function createField(
     TE.bind('leftId', () => findNodeInternalId(versionId, leftId)),
     TE.bind('lastPosition', () =>
       pipe(
-        prismaQuery((prisma) =>
+        runQuery((prisma) =>
           prisma.graphEdge.findFirst({
             rejectOnNotFound: true,
             where: { versionId, left: { id: leftId } },
@@ -59,7 +59,7 @@ export function createField(
       )
     ),
     TE.chain(({ leftId, lastPosition }) =>
-      prismaQuery((prisma) =>
+      runCommand((prisma) =>
         prisma.graphEdge.create({
           data: {
             position: position ? position : lastPosition,
@@ -90,33 +90,31 @@ export function deleteField({
     TE.Do,
     TE.bind('node', () => findUnlockedNode(versionId, nodeId)),
     TE.bind('_', ({ node: { internalId } }) =>
-      prismaQuery((prisma) =>
-        prisma.$transaction(async (prisma) => {
-          await prisma.graphNode.deleteMany({
-            where: {
-              id: nodeId,
-              AND: [
-                { lefts: { every: { versionId } } },
-                { rights: { every: { versionId } } },
-              ],
-            },
-          });
-          await prisma.graphEdge.deleteMany({
-            where: {
-              OR: [
-                { rightId: internalId, versionId },
-                { leftId: internalId, versionId },
-              ],
-            },
-          });
-          await prisma.event.create({
-            data: {
-              type: EventType.FIELD_DELETED,
-              payload: { versionId, fieldId: nodeId },
-            },
-          });
-        })
-      )
+      runCommand(async (prisma) => {
+        await prisma.graphNode.deleteMany({
+          where: {
+            id: nodeId,
+            AND: [
+              { lefts: { every: { versionId } } },
+              { rights: { every: { versionId } } },
+            ],
+          },
+        });
+        await prisma.graphEdge.deleteMany({
+          where: {
+            OR: [
+              { rightId: internalId, versionId },
+              { leftId: internalId, versionId },
+            ],
+          },
+        });
+        await prisma.event.create({
+          data: {
+            type: EventType.FIELD_DELETED,
+            payload: { versionId, fieldId: nodeId },
+          },
+        });
+      })
     ),
     TE.map(({ node }) => node)
   );
@@ -136,7 +134,7 @@ export function updateField({
     findPinnedNodeInternalId(versionId, nodeId),
     TE.alt(() => cloneNode(versionId, nodeId)),
     TE.chain((internalId) =>
-      prismaQuery((prisma) =>
+      runCommand((prisma) =>
         prisma.graphNode.update({
           where: { internalId },
           data: node,
@@ -163,7 +161,7 @@ export function moveField({
     TE.bind('leftId', () => findNodeInternalId(versionId, leftId)),
     TE.bind('rightId', () => findNodeInternalId(versionId, nodeId)),
     TE.bind('edge', ({ rightId }) =>
-      prismaQuery((prisma) =>
+      runQuery((prisma) =>
         prisma.graphEdge.findFirst({
           rejectOnNotFound: true,
           where: { versionId, rightId },
@@ -172,7 +170,7 @@ export function moveField({
       )
     ),
     TE.chain(({ leftId, edge }) =>
-      prismaQuery((prisma) =>
+      runCommand((prisma) =>
         prisma.graphEdge.update({
           where: edge,
           data: { position, leftId },
@@ -195,22 +193,20 @@ function cloneNode(versionId: string, nodeId: string): PrismaTask<string> {
     TE.bind('internalId', () => TE.of(uuid())),
     TE.chain(({ internalId, node }) =>
       pipe(
-        prismaQuery((prisma) =>
-          prisma.$transaction([
-            prisma.graphNode.create({
-              data: { ...node, internalId },
-              select: { internalId: true },
-            }),
-            prisma.graphEdge.updateMany({
-              where: { right: { id: nodeId }, versionId },
-              data: { rightId: internalId },
-            }),
-            prisma.graphEdge.updateMany({
-              where: { left: { id: nodeId }, versionId },
-              data: { leftId: internalId },
-            }),
-          ])
-        ),
+        runCommand(async (prisma) => {
+          await prisma.graphNode.create({
+            data: { ...node, internalId },
+            select: { internalId: true },
+          });
+          await prisma.graphEdge.updateMany({
+            where: { right: { id: nodeId }, versionId },
+            data: { rightId: internalId },
+          });
+          await prisma.graphEdge.updateMany({
+            where: { left: { id: nodeId }, versionId },
+            data: { leftId: internalId },
+          });
+        }),
         TE.map(() => internalId)
       )
     )
@@ -221,7 +217,7 @@ function findUnlockedNode(
   versionId: string,
   nodeId: string
 ): PrismaTask<FieldData> {
-  return prismaQuery((prisma) =>
+  return runQuery((prisma) =>
     prisma.graphNode.findFirst({
       rejectOnNotFound: true,
       where: {
@@ -246,7 +242,7 @@ export function findNodeInternalId(
   nodeId: string
 ): PrismaTask<string> {
   return pipe(
-    prismaQuery((prisma) =>
+    runQuery((prisma) =>
       prisma.graphNode.findFirst({
         rejectOnNotFound: true,
         where: {
@@ -272,7 +268,7 @@ export function findVersionRootInternalId(
   versionId: string
 ): PrismaTask<string> {
   return pipe(
-    prismaQuery((prisma) =>
+    runQuery((prisma) =>
       prisma.graphNode.findFirst({
         rejectOnNotFound: true,
         where: { graph: { versions: { some: { id: versionId } } } },
@@ -288,7 +284,7 @@ function findPinnedNodeInternalId(
   nodeId: string
 ): PrismaTask<string> {
   return pipe(
-    prismaQuery((prisma) =>
+    runQuery((prisma) =>
       prisma.graphNode.findFirst({
         rejectOnNotFound: true,
         where: {
