@@ -45,72 +45,84 @@ export const updateRecord = createCommand<{
     for (const datum of data) {
       switch (datum.type) {
         case 'TEXT':
-          aggregate.applyEvent({
-            type: 'TextFieldValueSet',
-            data: {
-              recordId: aggregate.id,
-              bucketId,
-              fieldId,
-              value: datum.value,
-            },
-          });
+          if (aggregate.entity.fields[fieldId].value != datum.value) {
+            aggregate.applyEvent({
+              type: 'TextFieldValueSet',
+              data: {
+                recordId: aggregate.id,
+                bucketId,
+                fieldId,
+                value: datum.value,
+              },
+            });
+          }
           break;
         case 'BOOLEAN':
-          aggregate.applyEvent({
-            type: 'BooleanFieldValueSet',
-            data: {
-              recordId: aggregate.id,
-              bucketId,
-              fieldId,
-              value: datum.value,
-            },
-          });
+          if (aggregate.entity.fields[fieldId].value != datum.value) {
+            aggregate.applyEvent({
+              type: 'BooleanFieldValueSet',
+              data: {
+                recordId: aggregate.id,
+                bucketId,
+                fieldId,
+                value: datum.value,
+              },
+            });
+          }
           break;
         case 'INT':
-          aggregate.applyEvent({
-            type: 'IntFieldValueSet',
-            data: {
-              recordId: aggregate.id,
-              bucketId,
-              fieldId,
-              value: datum.value,
-            },
-          });
+          if (aggregate.entity.fields[fieldId].value != datum.value) {
+            aggregate.applyEvent({
+              type: 'IntFieldValueSet',
+              data: {
+                recordId: aggregate.id,
+                bucketId,
+                fieldId,
+                value: datum.value,
+              },
+            });
+          }
           break;
         case 'FLOAT':
-          aggregate.applyEvent({
-            type: 'FloatFieldValueSet',
-            data: {
-              recordId: aggregate.id,
-              bucketId,
-              fieldId,
-              value: datum.value,
-            },
-          });
+          if (aggregate.entity.fields[fieldId].value != datum.value) {
+            aggregate.applyEvent({
+              type: 'FloatFieldValueSet',
+              data: {
+                recordId: aggregate.id,
+                bucketId,
+                fieldId,
+                value: datum.value,
+              },
+            });
+          }
           break;
         case 'DATE':
-          aggregate.applyEvent({
-            type: 'DateFieldValueSet',
-            data: {
-              recordId: aggregate.id,
-              bucketId,
-              fieldId,
-              value: datum.value
-                ? formatISO(datum.value, { representation: 'date' })
-                : null,
-            },
-          });
+          if (aggregate.entity.fields[fieldId].value != datum.value) {
+            aggregate.applyEvent({
+              type: 'DateFieldValueSet',
+              data: {
+                recordId: aggregate.id,
+                bucketId,
+                fieldId,
+                value: datum.value
+                  ? formatISO(datum.value, { representation: 'date' })
+                  : null,
+              },
+            });
+          }
           break;
         case 'DATE_TIME':
-          aggregate.applyEvent({
-            type: 'DateTimeFieldValueSet',
-            data: {
-              recordId: aggregate.id,
-              bucketId,
-              fieldId,
-              value: datum.value ? formatISO(datum.value) : null,
-            },
-          });
+          if (aggregate.entity.fields[fieldId].value != datum.value) {
+            aggregate.applyEvent({
+              type: 'DateTimeFieldValueSet',
+              data: {
+                recordId: aggregate.id,
+                bucketId,
+                fieldId,
+                value: datum.value ? formatISO(datum.value) : null,
+              },
+            });
+          }
           break;
       }
     }

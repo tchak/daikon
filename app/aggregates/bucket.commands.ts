@@ -46,19 +46,19 @@ type UpdateBucket = {
 export const updateBucket = createCommand<UpdateBucket>(
   ({ bucketId }) => bucketId,
   ({ name, color, description }, aggregate) => {
-    if (name) {
+    if (name && aggregate.entity.name != name) {
       aggregate.applyEvent({
         type: 'BucketNameSet',
         data: { bucketId: aggregate.id, name },
       });
     }
-    if (description) {
+    if (description && aggregate.entity.description != description) {
       aggregate.applyEvent({
         type: 'BucketDescriptionSet',
         data: { bucketId: aggregate.id, description },
       });
     }
-    if (color) {
+    if (color && aggregate.entity.color != color) {
       aggregate.applyEvent({
         type: 'BucketColorSet',
         data: { bucketId: aggregate.id, color },
@@ -136,6 +136,31 @@ export const updateField = createCommand<{
   }
 );
 
+export const deleteField = createCommand<{ bucketId: string; fieldId: string }>(
+  ({ bucketId }) => bucketId,
+  ({ fieldId }, aggregate) => {
+    aggregate.applyEvent({
+      type: 'FieldDeleted',
+      data: { bucketId: aggregate.id, fieldId },
+    });
+  }
+);
+
+export const createView = createCommand<{ bucketId: string; name: string }>(
+  ({ bucketId }) => bucketId,
+  ({ name }, aggregate) => {
+    aggregate.applyEvent({
+      type: 'ViewCreated',
+      data: {
+        bucketId: aggregate.id,
+        viewId: uuid(),
+        type: 'GRID',
+        name,
+      },
+    });
+  }
+);
+
 export const updateView = createCommand<{
   bucketId: string;
   viewId: string;
@@ -168,7 +193,7 @@ export const updateView = createCommand<{
   }
 );
 
-export const hideField = createCommand<{
+export const hideFieldInView = createCommand<{
   bucketId: string;
   viewId: string;
   fieldId: string;
@@ -176,24 +201,30 @@ export const hideField = createCommand<{
 }>(
   ({ bucketId }) => bucketId,
   ({ viewId, fieldId, hidden }, aggregate) => {
-    aggregate.applyEvent({
-      type: 'FieldHiddenSet',
-      data: {
-        bucketId: aggregate.id,
-        viewId,
-        fieldId,
-        hidden,
-      },
-    });
+    const field = aggregate.entity.fields[aggregate.entity.version].find(
+      (field) => field.id == fieldId
+    );
+    const view = aggregate.entity.views.find((view) => view.id == viewId);
+    if (field && !!view?.hidden[field?.id] != hidden) {
+      aggregate.applyEvent({
+        type: 'FieldHiddenSet',
+        data: {
+          bucketId: aggregate.id,
+          viewId,
+          fieldId,
+          hidden,
+        },
+      });
+    }
   }
 );
 
-export const deleteField = createCommand<{ bucketId: string; fieldId: string }>(
+export const deleteView = createCommand<{ bucketId: string; viewId: string }>(
   ({ bucketId }) => bucketId,
-  ({ fieldId }, aggregate) => {
+  ({ viewId }, aggregate) => {
     aggregate.applyEvent({
-      type: 'FieldDeleted',
-      data: { bucketId: aggregate.id, fieldId },
+      type: 'ViewDeleted',
+      data: { bucketId: aggregate.id, viewId },
     });
   }
 );

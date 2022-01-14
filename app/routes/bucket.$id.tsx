@@ -18,12 +18,14 @@ import * as Bucket from '~/models/bucket';
 type LoaderData = Awaited<ReturnType<typeof Bucket.getDashboard>>;
 
 export const loader: LoaderFunction = async ({ request, params }) => {
+  const url = new URL(request.url);
+  const viewId = url.searchParams.get('view') ?? undefined;
   const bucketId = z.string().uuid().parse(params.id);
   const user = await authenticator.isAuthenticated(request, {
     failureRedirect: '/signin',
   });
 
-  return Bucket.getDashboard(bucketId, user.id);
+  return Bucket.getDashboard(bucketId, viewId, user.id);
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -41,7 +43,7 @@ export default function BucketRoute() {
   const columns = useTableColumns({
     fields: bucket.fields.filter(({ hidden }) => !hidden),
     bucketId: bucket.id,
-    viewId: '1',
+    viewId: bucket.view.id,
   });
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
 
@@ -50,10 +52,10 @@ export default function BucketRoute() {
       <Header name={bucket.name} color={bucket.color} />
 
       <div className="flex items-center p-2 border-b border-gray-300">
-        <ViewTab bucketId={bucket.id} view={{ id: '1', name: 'Grid View' }} />
+        <ViewTab bucketId={bucket.id} view={bucket.view} />
         <HideFieldsButton
           bucketId={bucket.id}
-          viewId=""
+          viewId={bucket.view.id}
           fields={bucket.fields}
         />
         <DeleteRowsButton selectedRows={selectedRows} />

@@ -1,3 +1,5 @@
+import { string, z } from 'zod';
+
 import { prisma, Prisma } from '~/util/db.server';
 import { Fields } from '~/aggregates/bucket.projection';
 import type { ColorName } from '~/util/color';
@@ -6,7 +8,14 @@ export function findOne(id: string, userId: string) {
   return prisma.bucket.findFirst({
     rejectOnNotFound: true,
     where: findByUser({ id, userId }),
-    include: { schemas: { orderBy: { version: 'desc' }, take: 1 } },
+    include: {
+      schemas: { orderBy: { version: 'desc' }, take: 1 },
+      views: {
+        orderBy: { createdAt: 'asc' },
+        where: { deletedAt: null },
+        select: { id: true, name: true },
+      },
+    },
   });
 }
 
@@ -16,14 +25,34 @@ export function findMany(userId: string) {
   });
 }
 
-export async function getDashboard(id: string, userId: string) {
+export async function getDashboard(
+  id: string,
+  viewId: undefined | string,
+  userId: string
+) {
   const bucket = await findOne(id, userId);
   const fields = Fields.parse(bucket.schemas[0].fields);
+  const { hiddenFields, ...view } = await prisma.bucketView.findFirst({
+    rejectOnNotFound: true,
+    where: {
+      bucketId: bucket.id,
+      deletedAt: null,
+      id: viewId ?? bucket.views[0].id,
+    },
+    select: { id: true, name: true, hiddenFields: true },
+  });
+  const hidden = z.record(z.string().uuid(), z.boolean()).parse(hiddenFields);
 
   return {
     ...bucket,
     color: bucket.color as ColorName,
-    fields: Object.values(fields).map((field) => ({ ...field, hidden: false })),
+    view,
+    fields: Object.values(fields)
+      .filter((field) => !field.deletedAt)
+      .map((field) => ({
+        ...field,
+        hidden: !!hidden[field.id],
+      })),
   };
 }
 

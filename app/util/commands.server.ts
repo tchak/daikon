@@ -25,13 +25,23 @@ const RegisterUser = z.object({
 });
 const CreateOrganization = z.object({
   actionType: z.literal(Actions.CreateOrganization),
-  name: z.string(),
+  name: z.string().nonempty(),
 });
 const CreateBucket = z.object({
   actionType: z.literal(Actions.CreateBucket),
   organizationId: z.string().uuid(),
   name: z.string().nonempty(),
   color: z.string().nonempty(),
+});
+const RenameBucket = z.object({
+  actionType: z.literal(Actions.RenameBucket),
+  bucketId: z.string().uuid(),
+  name: z.string().nonempty(),
+});
+const SetBucketDescription = z.object({
+  actionType: z.literal(Actions.SetBucketDescription),
+  bucketId: z.string().uuid(),
+  description: z.string(),
 });
 const DeleteBucket = z.object({
   actionType: z.literal(Actions.DeleteBucket),
@@ -52,12 +62,17 @@ const SetFieldDescription = z.object({
   actionType: z.literal(Actions.SetFieldDescription),
   bucketId: z.string().uuid(),
   fieldId: z.string().uuid(),
-  description: z.string().nonempty(),
+  description: z.string(),
 });
 const DeleteField = z.object({
   actionType: z.literal(Actions.DeleteField),
   bucketId: z.string().uuid(),
   fieldId: z.string().uuid(),
+});
+const CreateView = z.object({
+  actionType: z.literal(Actions.CreateView),
+  bucketId: z.string().uuid(),
+  name: z.string().nonempty(),
 });
 const HideField = z.object({
   actionType: z.literal(Actions.HideField),
@@ -76,20 +91,29 @@ const SetViewDescription = z.object({
   actionType: z.literal(Actions.SetViewDescription),
   bucketId: z.string().uuid(),
   viewId: z.string().uuid(),
-  description: z.string().nonempty(),
+  description: z.string(),
+});
+const DeleteView = z.object({
+  actionType: z.literal(Actions.DeleteView),
+  bucketId: z.string().uuid(),
+  viewId: z.string().uuid(),
 });
 const Action = z.union([
   RegisterUser,
   CreateOrganization,
   CreateBucket,
+  RenameBucket,
+  SetBucketDescription,
   DeleteBucket,
   CreateField,
   RenameField,
   SetFieldDescription,
   DeleteField,
+  CreateView,
   HideField,
   RenameView,
   SetViewDescription,
+  DeleteView,
 ]);
 
 function getEventStore(db: DB, subscriptions = true) {
@@ -143,6 +167,9 @@ export async function executeCommand(form: FormData, actor?: string) {
         });
       case 'CreateBucket':
         return Bucket.createBucket(eventStore.scope())(data, { actor });
+      case 'RenameBucket':
+      case 'SetBucketDescription':
+        return Bucket.updateBucket(eventStore.scope())(data, { actor });
       case 'DeleteBucket':
         return Bucket.deleteBucket(eventStore.scope())(data, { actor });
       case 'CreateField':
@@ -152,11 +179,15 @@ export async function executeCommand(form: FormData, actor?: string) {
         return Bucket.updateField(eventStore.scope())(data, { actor });
       case 'DeleteField':
         return Bucket.deleteField(eventStore.scope())(data, { actor });
+      case 'CreateView':
+        return Bucket.createView(eventStore.scope())(data, { actor });
       case 'HideField':
-        return Bucket.hideField(eventStore.scope())(data, { actor });
+        return Bucket.hideFieldInView(eventStore.scope())(data, { actor });
       case 'RenameView':
       case 'SetViewDescription':
         return Bucket.updateView(eventStore.scope())(data, { actor });
+      case 'DeleteView':
+        return Bucket.deleteView(eventStore.scope())(data, { actor });
     }
   });
 }
