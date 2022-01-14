@@ -1,4 +1,4 @@
-import type { MetaFunction, LoaderFunction } from 'remix';
+import type { MetaFunction, LoaderFunction, ActionFunction } from 'remix';
 import { useLoaderData, useTransition, Form, useFetcher } from 'remix';
 import { Link } from 'react-router-dom';
 import { TrashIcon, PlusCircleIcon } from '@heroicons/react/outline';
@@ -8,47 +8,62 @@ import { ReactNode, useState, useCallback } from 'react';
 import { usePopper } from 'react-popper';
 import clsx from 'clsx';
 
-import { query, FindGraphsDocument, FindGraphsQuery } from '~/graphql.server';
+import { authenticator } from '~/util/auth.server';
+import { executeCommand } from '~/util/commands.server';
 import { Header, Main } from '~/components/DefaultLayout';
-import { bgColor } from '~/utils';
-import { ActionType, action } from '~/actions';
+import { getColor, ColorName } from '~/util/color';
+import * as Actions from '~/actions';
+import * as Organization from '~/models/organization';
 
-type Graph = FindGraphsQuery['graphs'][0];
+type LoaderData = Awaited<ReturnType<typeof Organization.findMany>>;
+type Bucket = LoaderData[0]['buckets'][0];
 
 export const meta: MetaFunction = () => {
-  return { title: 'Graphs' };
+  return { title: 'Buckets' };
 };
-export const loader: LoaderFunction = async () => {
-  const { graphs } = await query(FindGraphsDocument);
-  return graphs;
+export const loader: LoaderFunction = async ({ request }) => {
+  const user = await authenticator.isAuthenticated(request, {
+    failureRedirect: '/signin',
+  });
+  return Organization.findMany(user.id);
 };
-export { action };
+export const action: ActionFunction = async ({ request }) => {
+  const user = await authenticator.isAuthenticated(request, {
+    failureRedirect: '/signin',
+  });
+  const form = await request.formData();
+  const aggregate = await executeCommand(form, user.id);
+
+  return { aggregateId: aggregate.id };
+};
 
 export default function IndexRoute() {
-  const graphs = useLoaderData<Graph[]>();
+  const organizations = useLoaderData<LoaderData>();
 
   return (
     <>
-      <Header>Graphs</Header>
+      <Header>Buckets</Header>
       <Main>
         <ul>
-          <li className="mb-6">
-            <OrganizationCard graphs={graphs} />
-          </li>
+          {organizations.map((organization) => (
+            <li key={organization.id} className="mb-6">
+              <OrganizationCard organization={organization} />
+            </li>
+          ))}
         </ul>
       </Main>
     </>
   );
 }
 
-function OrganizationCard({ graphs }: { graphs: Graph[] }) {
+function OrganizationCard({ organization }: { organization: LoaderData[0] }) {
   const pendingForm = useTransition().submission;
 
   return (
     <div>
       <ul className="mt-3 grid grid-cols-1 gap-5 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {graphs.map((graph) => (
-          <GraphCard key={graph.id} graph={graph} />
+        {organization.buckets.map((bucket) => (
+          <BucketCard key={bucket.id} bucket={bucket} />
         ))}
         <li className="col-span-1 flex shadow-sm rounded-md">
           <div className="flex-shrink-0 flex items-center justify-center w-16 text-white text-sm font-medium rounded-l-md bg-gray-400">
@@ -60,15 +75,21 @@ function OrganizationCard({ graphs }: { graphs: Graph[] }) {
                 <input
                   type="hidden"
                   name="actionType"
-                  defaultValue={ActionType.CreateGraph}
+                  defaultValue={Actions.CreateBucket}
                 />
-                <input type="hidden" name="name" defaultValue="New Graph" />
+                <input type="hidden" name="name" defaultValue="New Bucket" />
+                <input type="hidden" name="color" defaultValue="blue" />
+                <input
+                  type="hidden"
+                  name="organizationId"
+                  defaultValue={organization.id}
+                />
                 <button
                   type="submit"
                   disabled={!!pendingForm}
                   className="text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                 >
-                  Add a graph
+                  Create Bucket
                 </button>
               </Form>
             </div>
@@ -79,36 +100,39 @@ function OrganizationCard({ graphs }: { graphs: Graph[] }) {
   );
 }
 
-function GraphCard({ graph }: { graph: Graph }) {
+function BucketCard({ bucket }: { bucket: Bucket }) {
   return (
     <li className="col-span-1 flex shadow-sm rounded-md">
       <div
         className={clsx(
-          bgColor(graph.color),
+          getColor(bucket.color as ColorName),
           'flex-shrink-0 flex items-center justify-center w-16 text-white text-sm font-medium rounded-l-md'
         )}
       />
       <div className="flex-1 flex items-center justify-between border-t border-r border-b border-gray-200 bg-white rounded-r-md">
         <div className="flex-1 px-4 py-4 text-sm truncate">
-          <Link to={`graph/${graph.id}`} className="text-gray-900 font-medium">
-            {graph.root.name}
+          <Link
+            to={`bucket/${bucket.id}`}
+            className="text-gray-900 font-medium"
+          >
+            {bucket.name}
           </Link>
         </div>
-        <GraphMenu graph={graph} />
+        <BucketMenu bucket={bucket} />
       </div>
     </li>
   );
 }
 
-function GraphMenu({ graph }: { graph: Graph }) {
+function BucketMenu({ bucket }: { bucket: Bucket }) {
   const fetcher = useFetcher();
-  const deleteGraph = useCallback(
+  const deleteBucket = useCallback(
     () =>
       fetcher.submit(
-        { actionType: ActionType.DeleteGraph, id: graph.id },
-        { method: 'delete', replace: true }
+        { actionType: Actions.DeleteBucket, bucketId: bucket.id },
+        { action: '/?index', method: 'post', replace: true }
       ),
-    [graph.id, fetcher]
+    [bucket.id, fetcher]
   );
   const [menuButtonElement, setMenuButtonElement] =
     useState<HTMLButtonElement>();
@@ -123,7 +147,7 @@ function GraphMenu({ graph }: { graph: Graph }) {
         ref={(el: HTMLButtonElement) => setMenuButtonElement(el)}
         className="w-8 h-8 bg-white inline-flex items-center justify-center text-gray-400 rounded-full bg-transparent hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
       >
-        <span className="sr-only">Open graph menu</span>
+        <span className="sr-only">Open Bucket menu</span>
         <DotsVerticalIcon className="w-5 h-5" aria-hidden="true" />
       </Menu.Button>
       <Menu.Items
@@ -132,9 +156,9 @@ function GraphMenu({ graph }: { graph: Graph }) {
         style={styles.popper}
         {...attributes.popper}
       >
-        <MenuItem onClick={deleteGraph}>
+        <MenuItem onClick={deleteBucket}>
           <TrashIcon className="h-5 w-5 mr-2" />
-          Delete graph
+          Delete Bucket
         </MenuItem>
       </Menu.Items>
     </Menu>

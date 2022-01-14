@@ -1,28 +1,30 @@
 import 'reflect-metadata';
-import { buildSchemaSync } from 'type-graphql';
+import { buildSchemaSync, Query, Resolver } from 'type-graphql';
 import { createClient } from '@urql/core';
 import { executeExchange } from '@urql/exchange-execute';
 import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
 import { Schema } from 'zod';
 
-export * from '~/graphql/queries';
+// export * from '~/graphql/queries';
 
-import {
-  QueryResolver,
-  GraphResolver,
-  VersionResolver,
-  ViewResolver,
-  MutationResolver,
-} from '~/graphql';
+// import {
+//   QueryResolver,
+//   GraphResolver,
+//   VersionResolver,
+//   ViewResolver,
+//   MutationResolver,
+// } from '~/graphql';
+
+@Resolver()
+export class QueryResolver {
+  @Query(() => String)
+  async hello(): Promise<string> {
+    return 'Hello World';
+  }
+}
 
 export const schema = buildSchemaSync({
-  resolvers: [
-    GraphResolver,
-    VersionResolver,
-    ViewResolver,
-    QueryResolver,
-    MutationResolver,
-  ],
+  resolvers: [QueryResolver],
   emitSchemaFile: { path: 'schema.graphql' },
   dateScalarMode: 'isoDate',
 });

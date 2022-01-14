@@ -5,8 +5,6 @@ import { DatabaseIcon } from '@heroicons/react/solid';
 import { NavLink, Link } from 'react-router-dom';
 import clsx from 'clsx';
 
-import { defaultInitials } from '~/utils';
-
 export function Header({ children }: { children: ReactNode }) {
   return (
     <header className="bg-white shadow-sm">
@@ -108,7 +106,7 @@ function ProfileInline({ profile }: { profile: Profile }) {
         <div className="flex-shrink-0">
           <div className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-gray-500">
             <span className="text-sm font-medium leading-none text-white">
-              {defaultInitials(profile.name)}
+              {profile.name}
             </span>
           </div>
         </div>
@@ -149,7 +147,7 @@ function ProfileDropdown({ profile }: { profile: Profile }) {
               <span className="sr-only">Open user menu</span>
               <div className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-gray-500">
                 <span className="text-sm font-medium leading-none text-white">
-                  {defaultInitials(profile.name)}
+                  {profile.name}
                 </span>
               </div>
             </Menu.Button>

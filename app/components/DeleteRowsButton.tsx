@@ -1,7 +1,7 @@
 import { useFetcher } from 'remix';
 import { TrashIcon } from '@heroicons/react/outline';
 
-import { ActionType } from '~/actions';
+import * as Actions from '~/actions';
 
 export function DeleteRowsButton({ selectedRows }: { selectedRows: string[] }) {
   const fetcher = useFetcher();
@@ -11,7 +11,7 @@ export function DeleteRowsButton({ selectedRows }: { selectedRows: string[] }) {
   return (
     <div className="text-xs ml-2">
       <fetcher.Form method="post" replace>
-        <input type="hidden" name="actionType" value={ActionType.DeleteRows} />
+        <input type="hidden" name="actionType" value={Actions.DeleteRecords} />
         {selectedRows.map((rowId) => (
           <input type="hidden" name="rowIds[]" value={rowId} key={rowId} />
         ))}

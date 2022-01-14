@@ -5,12 +5,14 @@ import { usePopper } from 'react-popper';
 import { EyeOffIcon } from '@heroicons/react/outline';
 import clsx from 'clsx';
 
-import { ActionType } from '~/actions';
+import * as Actions from '~/actions';
 
 export function HideFieldsButton({
+  bucketId,
   viewId,
   fields,
 }: {
+  bucketId: string;
   viewId: string;
   fields: ReadonlyArray<{ id: string; name: string; hidden: boolean }>;
 }) {
@@ -50,7 +52,7 @@ export function HideFieldsButton({
             key={field.id}
             className="px-2 py-1 text-sm text-gray-700 flex items-center"
           >
-            <Toggle viewId={viewId} field={field} />
+            <Toggle bucketId={bucketId} viewId={viewId} field={field} />
           </li>
         ))}
       </Popover.Panel>
@@ -59,9 +61,11 @@ export function HideFieldsButton({
 }
 
 function Toggle({
+  bucketId,
   viewId,
   field,
 }: {
+  bucketId: string;
   viewId: string;
   field: { id: string; name: string; hidden: boolean };
 }) {
@@ -69,9 +73,10 @@ function Toggle({
   const toggle = () =>
     fetcher.submit(
       {
-        actionType: ActionType.HideField,
+        actionType: Actions.HideField,
+        bucketId,
         viewId,
-        nodeId: field.id,
+        fieldId: field.id,
         hidden: field.hidden ? 'false' : 'true',
       },
       { method: 'post', replace: true }

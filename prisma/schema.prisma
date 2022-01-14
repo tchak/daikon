@@ -11,148 +11,139 @@ generator client {
   previewFeatures = ["interactiveTransactions", "referentialIntegrity", "fullTextSearch"]
 }
 
-model Graph {
-  id        String         @id @default(uuid()) @db.Uuid
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @default(now()) @updatedAt
-  color     String         @default("blue")
-  versions  GraphVersion[]
-  views     GraphView[]
-  rootId    String         @unique @db.Uuid
-  root      GraphNode      @relation(fields: [rootId], references: [internalId], onDelete: Cascade)
+model User {
+  id          String       @id @db.Uuid
+  createdAt   DateTime     @map("created_at")
+  updatedAt   DateTime     @map("updated_at")
+  deletedAt   DateTime?    @map("deleted_at")
+  email       String
+  memberships Membership[]
+
+  @@unique(email)
+  @@map("users")
 }
 
-model GraphVersion {
-  id        String      @id @default(uuid()) @db.Uuid
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @default(now()) @updatedAt
-  lockedAt  DateTime?
-  graphId   String      @db.Uuid
-  graph     Graph       @relation(fields: [graphId], references: [id], onDelete: Cascade)
-  edges     GraphEdge[]
-  rows      Row[]
-
-  @@index(graphId)
-}
-
-enum NodeType {
-  ROOT
-  TEXT
-  NUMBER
-  SELECT
-  BOOLEAN
-  DATE
-  DATE_TIME
-  FILE
-  BLOCK
-}
-
-enum NodeCardinality {
-  ONE
-  MANY
-}
-
-model GraphNode {
-  internalId  String          @id @default(uuid()) @db.Uuid
-  id          String          @default(uuid()) @db.Uuid
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @default(now()) @updatedAt
-  type        NodeType
-  cardinality NodeCardinality @default(ONE)
-  nullable    Boolean         @default(false)
-  options     Json            @default("{}")
+model Organization {
+  id          String    @id @db.Uuid
+  createdAt   DateTime  @map("created_at")
+  updatedAt   DateTime  @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
   name        String
   description String?
-  lefts       GraphEdge[]     @relation("left")
-  rights      GraphEdge[]     @relation("right")
-  graph       Graph?
-  rows        Row[]
 
-  @@index(id)
+  buckets     Bucket[]
+  memberships Membership[]
+
+  @@map("organizations")
 }
 
-model GraphEdge {
-  id        String       @id @default(uuid()) @db.Uuid
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @default(now()) @updatedAt
-  position  Int          @default(0)
-  versionId String       @db.Uuid
-  version   GraphVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
-  leftId    String       @db.Uuid
-  left      GraphNode    @relation("left", fields: [leftId], references: [internalId], onDelete: Cascade)
-  rightId   String       @db.Uuid
-  right     GraphNode    @relation("right", fields: [rightId], references: [internalId], onDelete: Cascade)
+model Membership {
+  id             BigInt       @id @default(autoincrement())
+  userId         String       @map("user_id") @db.Uuid
+  organizationId String       @map("organization_id") @db.Uuid
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           String
 
-  @@unique([versionId, leftId, position])
-  @@unique([versionId, leftId, rightId])
-  @@index([versionId, leftId])
-  @@index([versionId, rightId])
-  @@index(versionId)
+  @@unique([userId, organizationId, role])
+  @@map("memberships")
 }
 
-enum ViewType {
-  TABLE
-  FORM
+model Bucket {
+  id             String         @id @db.Uuid
+  createdAt      DateTime       @map("created_at")
+  updatedAt      DateTime       @map("updated_at")
+  deletedAt      DateTime?      @map("deleted_at")
+  name           String
+  color          String
+  description    String?
+  organizationId String         @map("organization_id") @db.Uuid
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  schemas        BucketSchema[]
+  views          BucketView[]
+
+  @@index(organizationId)
+  @@map("buckets")
 }
 
-model GraphView {
-  id          String   @id @default(uuid()) @db.Uuid
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
-  type        ViewType @default(TABLE)
-  name        String
-  description String?
-  graphId     String   @db.Uuid
-  graph       Graph    @relation(fields: [graphId], references: [id], onDelete: Cascade)
-  hidden      String[]
-  filters     Json     @default("{}")
-  sort        Json     @default("{}")
+model BucketSchema {
+  id        String    @id @default(uuid()) @db.Uuid
+  createdAt DateTime  @default(now()) @map("created_at")
+  lockedAt  DateTime? @map("locked_at")
+  version   Int       @default(0)
+  bucketId  String    @map("bucket_id") @db.Uuid
+  bucket    Bucket    @relation(fields: [bucketId], references: [id], onDelete: Cascade)
+  fields    Json      @default("{}")
+  records   Record[]
 
-  @@index([graphId])
+  @@unique([bucketId, version])
+  @@index(bucketId)
+  @@map("bucket_schemas")
 }
 
-model Row {
-  id            String       @id @default(uuid()) @db.Uuid
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  data          Json         @default("{}")
-  versionId     String       @db.Uuid
-  version       GraphVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
-  parentId      String?      @db.Uuid
-  parent        Row?         @relation("parent", fields: [parentId], references: [id], onDelete: Cascade)
-  parentFieldId String       @db.Uuid
-  parentField   GraphNode?   @relation(fields: [parentFieldId], references: [internalId], onDelete: Cascade)
-  rows          Row[]        @relation("parent")
+model BucketView {
+  id           String    @id @db.Uuid
+  createdAt    DateTime  @map("created_at")
+  updatedAt    DateTime  @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+  type         String
+  name         String
+  description  String?
+  bucketId     String    @map("bucket_id") @db.Uuid
+  bucket       Bucket    @relation(fields: [bucketId], references: [id], onDelete: Cascade)
+  hiddenFields Json      @default("{}") @map("hidden_fields")
+  filters      Json      @default("{}")
+  sort         Json      @default("{}")
 
-  @@index([parentId, parentFieldId])
+  @@index(bucketId)
+  @@map("bucket_views")
 }
 
-enum EventType {
-  FIELD_CREATED
-  FIELD_NAME_CHANGED
-  FIELD_TYPE_CHANGED
-  FIELD_DELETED
-  VERSION_CREATED
-  VERSION_LOCKED
-  VERSION_UNLOCKED
-  VERSION_DELETED
-  VIEW_CREATED
-  VIEW_NAME_CHANGED
-  VIEW_DELETED
-  VIEW_FIELD_HIDDEN
-  VIEW_FIELD_SHOWN
-  ROW_CREATED
-  ROW_DELETED
-  CELL_UPDATED
+model Record {
+  id        String       @id @db.Uuid
+  createdAt DateTime     @map("created_at")
+  updatedAt DateTime     @map("updated_at")
+  deletedAt DateTime?    @map("deleted_at")
+  schemaId  String       @map("schema_id") @db.Uuid
+  schema    BucketSchema @relation(fields: [schemaId], references: [id], onDelete: Cascade)
+  path      String[]
+  data      Json         @default("{}")
+
+
+  @@index(schemaId)
+  @@index(path)
+  @@map("records")
 }
 
 model Event {
-  id        String    @id @default(uuid()) @db.Uuid
-  type      EventType
-  version   Int       @default(1)
-  payload   Json      @default("{}")
-  createdAt DateTime  @default(now())
-  requestId String?   @db.Uuid
+  id        BigInt    @id @default(autoincrement())
+  eventId   String    @map("event_id") @db.Uuid
+  eventType String    @map("event_type")
+  metadata  Json
+  data      Json
+  createdAt DateTime  @default(now()) @map("created_at")
+  validAt   DateTime? @map("valid_at")
 
-  @@index(type)
+  streams EventInStream[]
+
+  @@unique([eventId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@index([validAt])
+  @@map("event_store_events")
+}
+
+model EventInStream {
+  id        BigInt   @id @default(autoincrement())
+  eventId   String   @map("event_id") @db.Uuid
+  stream    String
+  position  Int?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  event Event @relation(fields: [eventId], references: [eventId], onDelete: Cascade)
+
+  @@unique([stream, eventId])
+  @@unique([stream, position])
+  @@index([createdAt])
+  @@map("event_store_events_in_streams")
 }

@@ -108,3 +108,4 @@ dist
 /build
 /app/styles
 /.cache
+.DS_Store

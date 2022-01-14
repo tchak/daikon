@@ -32,7 +32,6 @@ export function NameForm({
         autoCapitalize="off"
         autoComplete="off"
         autoCorrect="off"
-        className=""
         onBlur={({ currentTarget: { form } }) => form?.requestSubmit()}
         onKeyDown={({ nativeEvent }) => {
           if (isEscKey(nativeEvent)) {

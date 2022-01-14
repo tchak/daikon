@@ -1,12 +1,12 @@
 import { useSearchParams } from 'react-router-dom';
 import { HomeIcon } from '@heroicons/react/solid';
 
-import { Breadcrumb } from '~/types';
+type Breadcrumb = { name: string; parent: { id: string; fieldId: string } };
 
 export function BreadcrumbsPanel({
   breadcrumbs,
 }: {
-  breadcrumbs: ReadonlyArray<Breadcrumb>;
+  breadcrumbs: Breadcrumb[];
 }) {
   const [params, setParams] = useSearchParams();
   const setCellId = (id: string | null) => {

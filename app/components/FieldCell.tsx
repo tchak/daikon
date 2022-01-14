@@ -1,15 +1,78 @@
 import { useFetcher } from 'remix';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import type { CellProps } from 'react-table';
+import type { Column, CellProps } from 'react-table';
 import clsx from 'clsx';
 import { ClipboardCopyIcon } from '@heroicons/react/outline';
 import useClipboard from 'react-use-clipboard';
 
-import { DataRow } from './GridView';
-import { ActionType } from '~/actions';
+import type { DataRow } from './GridView';
+import { AddFieldButton } from './AddFieldButton';
+import { FieldTab } from './FieldTab';
+import * as Actions from '~/actions';
 
-export function IdCell({ id }: { id: string }) {
+export function useTableColumns<T extends DataRow = DataRow>({
+  fields,
+  bucketId,
+  viewId,
+  parentId,
+}: {
+  fields: { id: string; name: string; type: string }[];
+  parentId?: string;
+  bucketId: string;
+  viewId: string;
+}): Column<T>[] {
+  const [selectedCell, setSelectedCell] = useState<string | null>(null);
+  return useMemo<Column<T>[]>(
+    () => [
+      {
+        Header: () => <span>ID</span>,
+        id: 'id',
+        accessor: (row: T) => row['id'],
+        Cell: ({ cell }: CellProps<DataRow>) => (
+          <IdCell id={cell.value as string} />
+        ),
+      },
+      ...fields.map((field) => ({
+        Header: () => (
+          <FieldTab
+            bucketId={bucketId}
+            viewId={viewId}
+            fieldId={field.id}
+            name={field.name}
+          />
+        ),
+        id: field.id,
+        accessor: (row: T) => row[field.id],
+        Cell: ({ cell }: CellProps<DataRow>) => (
+          <FieldCell
+            cell={cell}
+            fieldId={field.id}
+            fieldType={field.type}
+            selectedCell={selectedCell}
+            setSelectedCell={setSelectedCell}
+          />
+        ),
+      })),
+      {
+        Header: () => (
+          <AddFieldButton bucketId={bucketId} parentId={parentId} />
+        ),
+        id: 'add-column',
+        Cell: () => null,
+      },
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      fields.map(({ id, type, name }) => `${id}${type}${name}`).join(','),
+      bucketId,
+      selectedCell,
+    ]
+  );
+}
+
+function IdCell({ id }: { id: string }) {
   const [, setCopied] = useClipboard(id, { successDuration: 1000 });
   return (
     <button
@@ -23,18 +86,20 @@ export function IdCell({ id }: { id: string }) {
   );
 }
 
-export function FieldCell({
+function FieldCell({
   cell,
-  field,
+  fieldId,
+  fieldType,
   selectedCell,
   setSelectedCell,
 }: {
   cell: CellProps<DataRow>['cell'];
-  field: { id: string; __typename: string };
+  fieldId: string;
+  fieldType: string;
   selectedCell: string | null;
   setSelectedCell: (selectedCell: string) => void;
 }) {
-  const cellId = `${cell.row.id}:${field.id}`;
+  const cellId = `${cell.row.id}:${fieldId}`;
   const selection = useMemo(
     () => ({
       isSelected: selectedCell == cellId,
@@ -45,13 +110,20 @@ export function FieldCell({
     }),
     [cellId]
   );
-  switch (field.__typename) {
-    case 'BlockField':
-      return <BlockFieldCell cell={cell} leftId={field.id} />;
-    case 'BooleanField':
-      return <BooleanFieldCell cell={cell} field={field} />;
+  switch (fieldType) {
+    case 'BLOCK':
+      return <BlockFieldCell cell={cell} fieldId={fieldId} />;
+    case 'BOOLEAN':
+      return <BooleanFieldCell cell={cell} fieldId={fieldId} />;
     default:
-      return <TextFieldCell cell={cell} field={field} {...selection} />;
+      return (
+        <TextFieldCell
+          cell={cell}
+          fieldId={fieldId}
+          fieldType={fieldType}
+          {...selection}
+        />
+      );
   }
 }
 
@@ -59,10 +131,10 @@ function BlockFieldCell({
   cell: {
     row: { values },
   },
-  leftId,
+  fieldId,
 }: {
   cell: CellProps<DataRow>['cell'];
-  leftId: string;
+  fieldId: string;
 }) {
   const [params, setParams] = useSearchParams();
   return (
@@ -70,7 +142,7 @@ function BlockFieldCell({
       type="button"
       className="p-1 font-mono flex items-center rounded-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
       onClick={() => {
-        params.set('p', `${leftId}:${values['id']}`);
+        params.set('p', `${fieldId}:${values['id']}`);
         setParams(params);
       }}
     >
@@ -80,7 +152,8 @@ function BlockFieldCell({
 }
 
 function TextFieldCell({
-  field,
+  fieldId,
+  fieldType,
   cell,
   isSelected,
   isEditing,
@@ -89,7 +162,8 @@ function TextFieldCell({
   done,
 }: {
   cell: CellProps<DataRow>['cell'];
-  field: { id: string; __typename: string };
+  fieldId: string;
+  fieldType: string;
   isSelected: boolean;
   isEditing: boolean;
   select: () => void;
@@ -115,10 +189,10 @@ function TextFieldCell({
         const value = event.target.value;
         fetcher.submit(
           {
-            actionType: ActionType.UpdateCell,
+            actionType: Actions.UpdateRecord,
             rowId: cell.row.values['id'],
-            fieldId: field.id,
-            type: field.__typename.replace('Field', '').toUpperCase(),
+            fieldId,
+            type: fieldType,
             value,
           },
           { method: 'post', replace: true }
@@ -144,10 +218,10 @@ function TextFieldCell({
 
 function BooleanFieldCell({
   cell,
-  field,
+  fieldId,
 }: {
   cell: CellProps<DataRow>['cell'];
-  field: { id: string };
+  fieldId: string;
 }) {
   const fetcher = useFetcher();
   const checked =
@@ -163,9 +237,9 @@ function BooleanFieldCell({
         const value = event.target.checked;
         fetcher.submit(
           {
-            actionType: ActionType.UpdateCell,
+            actionType: Actions.UpdateRecord,
             rowId: cell.row.values['id'],
-            fieldId: field.id,
+            fieldId,
             type: 'BOOLEAN',
             value: value ? 'true' : 'false',
           },

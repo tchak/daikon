@@ -12,7 +12,7 @@ import { envelop, useLogger, useSchema, useTiming } from '@envelop/core';
 import { useDepthLimit } from '@envelop/depth-limit';
 import { GraphQLError } from 'graphql';
 
-import { schema } from '~/graphql.server';
+import { schema } from '~/util/graphql.server';
 
 const getEnveloped = envelop({
   plugins: [

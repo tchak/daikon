@@ -4,7 +4,7 @@ import { Popover } from '@headlessui/react';
 import { usePopper } from 'react-popper';
 import { PlusCircleIcon } from '@heroicons/react/outline';
 
-import { ActionType } from '~/actions';
+import * as Actions from '~/actions';
 
 const fieldTypes = [
   { label: 'Text', type: 'TEXT' },
@@ -14,11 +14,11 @@ const fieldTypes = [
 ];
 
 export function AddFieldButton({
-  versionId,
-  leftId,
+  bucketId,
+  parentId,
 }: {
-  versionId: string;
-  leftId: string;
+  bucketId: string;
+  parentId?: string;
 }) {
   const fetcher = useFetcher();
   const [popoverButtonElement, setPopoverButtonElement] =
@@ -51,10 +51,10 @@ export function AddFieldButton({
           <input
             type="hidden"
             name="actionType"
-            defaultValue={ActionType.CreateField}
+            defaultValue={Actions.CreateField}
           />
-          <input type="hidden" name="versionId" defaultValue={versionId} />
-          <input type="hidden" name="leftId" defaultValue={leftId} />
+          <input type="hidden" name="bucketId" defaultValue={bucketId} />
+          <input type="hidden" name="parentId" defaultValue={parentId} />
           <fieldset
             className="flex flex-col"
             disabled={fetcher.state == 'submitting'}

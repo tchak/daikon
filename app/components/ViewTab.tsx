@@ -2,11 +2,16 @@ import { useFetcher } from 'remix';
 import { useState, FormEvent, useMemo } from 'react';
 import { PencilIcon, TrashIcon } from '@heroicons/react/outline';
 
-import { ActionType } from '~/actions';
 import { TabMenu, TabMenuItem } from './TabMenu';
 import { NameForm } from './NameForm';
+import * as Actions from '~/actions';
 
-export function ViewTab({ view }: { view: { id: string; name: string } }) {
+type View = {
+  id: string;
+  name: string;
+};
+
+export function ViewTab({ view, bucketId }: { bucketId: string; view: View }) {
   const [isEditing, setEditing] = useState(false);
   const fetcher = useFetcher();
   const updateName = (event: FormEvent<HTMLFormElement>) =>
@@ -31,12 +36,13 @@ export function ViewTab({ view }: { view: { id: string; name: string } }) {
             setEditing(false);
           }}
           onCancel={() => setEditing(false)}
-          data={{ actionType: ActionType.RenameView, viewId: view.id }}
+          data={{ actionType: Actions.RenameView, bucketId, viewId: view.id }}
         />
       ) : (
         <div>{name}</div>
       )}
       <ViewMenu
+        bucketId={bucketId}
         view={view}
         views={[]}
         rename={() => {
@@ -48,18 +54,20 @@ export function ViewTab({ view }: { view: { id: string; name: string } }) {
 }
 
 function ViewMenu({
+  bucketId,
   views,
   view,
   rename: renameView,
 }: {
-  views: { id: string; name: string }[];
-  view: { id: string; name: string };
+  bucketId: string;
+  views: View[];
+  view: View;
   rename: () => void;
 }) {
   const fetcher = useFetcher();
   const deleteView = () =>
     fetcher.submit(
-      { actionType: ActionType.DeleteView, viewId: view.id },
+      { actionType: Actions.DeleteView, bucketId, viewId: view.id },
       { method: 'post', replace: true }
     );
 

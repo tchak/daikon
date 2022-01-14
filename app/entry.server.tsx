@@ -1,3 +1,4 @@
+import { StrictMode } from 'react';
 import { renderToString } from 'react-dom/server';
 import type { EntryContext } from 'remix';
 import { RemixServer } from 'remix';
@@ -9,10 +10,12 @@ export default function handleRequest(
   remixContext: EntryContext
 ) {
   const markup = renderToString(
-    <RemixServer context={remixContext} url={request.url} />
+    <StrictMode>
+      <RemixServer context={remixContext} url={request.url} />
+    </StrictMode>
   );
 
-  responseHeaders.set('Content-Type', 'text/html');
+  responseHeaders.set('content-type', 'text/html');
 
   return new Response('<!DOCTYPE html>' + markup, {
     status: responseStatusCode,

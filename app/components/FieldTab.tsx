@@ -1,21 +1,20 @@
 import { useFetcher } from 'remix';
 import { useState, FormEvent, useMemo } from 'react';
 import { PencilIcon, TrashIcon, EyeOffIcon } from '@heroicons/react/outline';
+import truncate from 'truncate';
 
-import { truncate } from '~/utils';
-import { ActionType } from '~/actions';
+import * as Actions from '~/actions';
 import { TabMenu, TabMenuItem } from './TabMenu';
 import { NameForm } from './NameForm';
 
-export function FieldTab({
-  field,
-  versionId,
-  viewId,
-}: {
-  field: { id: string; name: string };
-  versionId: string;
+type FieldTabProps = {
+  bucketId: string;
   viewId: string;
-}) {
+  fieldId: string;
+  name: string;
+};
+
+export function FieldTab({ name: fieldName, ...props }: FieldTabProps) {
   const [isEditing, setEditing] = useState(false);
   const fetcher = useFetcher();
   const updateName = (event: FormEvent<HTMLFormElement>) =>
@@ -27,33 +26,30 @@ export function FieldTab({
     if (fetcher.type == 'actionSubmission' || fetcher.type == 'actionReload') {
       return fetcher.submission.formData.get('name') as string;
     }
-    return field.name;
-  }, [fetcher.type, field.id, field.name]);
+    return fieldName;
+  }, [fetcher.type, props.fieldId, fieldName]);
 
   return (
     <li className="flex items-center">
       <div className="flex items-center">
         {isEditing ? (
           <NameForm
-            name={field.name}
+            name={fieldName}
             onSubmit={(event) => {
               updateName(event);
               setEditing(false);
             }}
             onCancel={() => setEditing(false)}
             data={{
-              actionType: ActionType.RenameField,
-              versionId,
-              nodeId: field.id,
+              actionType: Actions.RenameField,
+              ...props,
             }}
           />
         ) : (
-          <div title={name}>{truncate(15)(name)}</div>
+          <div title={name}>{truncate(name, 15)}</div>
         )}
         <FieldMenu
-          versionId={versionId}
-          viewId={viewId}
-          nodeId={field.id}
+          {...props}
           rename={() => {
             setTimeout(() => setEditing(true), 50);
           }}
@@ -64,25 +60,31 @@ export function FieldTab({
 }
 
 function FieldMenu({
-  versionId,
+  bucketId,
   viewId,
-  nodeId,
+  fieldId,
   rename: renameField,
 }: {
-  versionId: string;
+  bucketId: string;
   viewId: string;
-  nodeId: string;
+  fieldId: string;
   rename: () => void;
 }) {
   const fetcher = useFetcher();
   const hideField = () =>
     fetcher.submit(
-      { actionType: ActionType.HideField, viewId, nodeId, hidden: 'true' },
+      {
+        actionType: Actions.HideField,
+        bucketId,
+        viewId,
+        fieldId,
+        hidden: 'true',
+      },
       { method: 'post', replace: true }
     );
   const deleteField = () =>
     fetcher.submit(
-      { actionType: ActionType.DeleteField, versionId, nodeId },
+      { actionType: Actions.DeleteField, bucketId, fieldId },
       { method: 'post', replace: true }
     );
 

@@ -52,14 +52,14 @@ export function GridView<T extends DataRow = DataRow>({
     ]);
   });
   const { selectedRowIds } = state as UseRowSelectState<DataRow>;
-  useEffect(() => {
-    if (onSelect) {
-      const ids = Object.keys(selectedRowIds)
-        .filter((index) => data[Number(index)])
-        .map((index) => data[Number(index)].id as string);
-      onSelect(ids);
-    }
-  }, [data, selectedRowIds]);
+  // useEffect(() => {
+  //   if (onSelect) {
+  //     const ids = Object.keys(selectedRowIds)
+  //       .filter((index) => data[Number(index)])
+  //       .map((index) => data[Number(index)].id as string);
+  //     onSelect(ids);
+  //   }
+  // }, [data, selectedRowIds]);
 
   return (
     <table {...getTableProps()} className="divide-y divide-gray-200 text-sm">

@@ -1,7 +1,7 @@
 import { useFetcher } from 'remix';
 import { PlusCircleIcon } from '@heroicons/react/outline';
 
-import { ActionType } from '~/actions';
+import * as Actions from '~/actions';
 
 export function AddRowButton({
   versionId,
@@ -17,7 +17,7 @@ export function AddRowButton({
       <input
         type="hidden"
         name="actionType"
-        defaultValue={ActionType.CreateRow}
+        defaultValue={Actions.CreateRecord}
       />
       <input type="hidden" name="versionId" defaultValue={versionId} />
       {parent ? (
