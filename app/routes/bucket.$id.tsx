@@ -8,9 +8,10 @@ import { authenticator } from '~/util/auth.server';
 import { GridView } from '~/components/GridView';
 import { useTableColumns } from '~/components/FieldCell';
 import { ViewTab } from '~/components/ViewTab';
-import { AddRowButton } from '~/components/AddRowButton';
+import { AddRecordButton } from '~/components/AddRecordButton';
 import { HideFieldsButton } from '~/components/HideFieldsButton';
-import { DeleteRowsButton } from '~/components/DeleteRowsButton';
+import { DeleteRecordsButton } from '~/components/DeleteRecordsButton';
+import { BreadcrumbsPanel } from '~/components/BreadcrumbsPanel';
 import { getColor, ColorName } from '~/util/color';
 import { executeCommand } from '~/util/commands.server';
 import * as Bucket from '~/models/bucket';
@@ -43,12 +44,12 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function BucketRoute() {
   const bucket = useLoaderData<LoaderData>();
-  const columns = useTableColumns({
+  const columns = useTableColumns<LoaderData['records'][0]>({
     fields: bucket.fields.filter(({ hidden }) => !hidden),
     bucketId: bucket.id,
     viewId: bucket.view.id,
   });
-  const [selectedRows, setSelectedRows] = useState<string[]>([]);
+  const [selected, onSelect] = useState<string[]>([]);
 
   return (
     <div className="flex flex-col h-screen">
@@ -61,35 +62,24 @@ export default function BucketRoute() {
           viewId={bucket.view.id}
           fields={bucket.fields}
         />
-        <DeleteRowsButton selectedRows={selectedRows} />
+        <DeleteRecordsButton bucketId={bucket.id} selected={selected} />
       </div>
 
-      {/* {bucket.breadcrumbs.length > 1 ? (
+      {bucket.breadcrumbs.length > 1 ? (
         <div className="p-2 border-b border-gray-300">
           <BreadcrumbsPanel breadcrumbs={bucket.breadcrumbs} />
         </div>
-      ) : null} */}
+      ) : null}
 
       <div className="flex-grow overflow-y-scroll">
-        <GridView
-          columns={columns}
-          data={[]}
-          onSelect={(rowIds) => setSelectedRows(rowIds)}
-        />
+        <GridView columns={columns} data={bucket.records} onSelect={onSelect} />
       </div>
 
-      {/* <div className="p-2 border-t border-gray-300">
-        {bucket.parentId || bucket.breadcrumbs.length == 1 ? (
-          <AddRowButton
-            bucketId={bucket.id}
-            parent={
-              bucket.parentId
-                ? { id: bucket.parentId, fieldId: bucket.leftId }
-                : undefined
-            }
-          />
+      <div className="p-2 border-t border-gray-300">
+        {bucket.breadcrumbs.length == 1 ? (
+          <AddRecordButton bucketId={bucket.id} />
         ) : null}
-      </div> */}
+      </div>
     </div>
   );
 }

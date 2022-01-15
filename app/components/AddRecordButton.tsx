@@ -3,12 +3,12 @@ import { PlusCircleIcon } from '@heroicons/react/outline';
 
 import * as Actions from '~/actions';
 
-export function AddRowButton({
-  versionId,
+export function AddRecordButton({
+  bucketId,
   parent,
 }: {
-  versionId: string;
-  parent?: { id: string; fieldId: string };
+  bucketId: string;
+  parent?: { fieldId: string; recordId: string };
 }) {
   const fetcher = useFetcher();
 
@@ -19,10 +19,14 @@ export function AddRowButton({
         name="actionType"
         defaultValue={Actions.CreateRecord}
       />
-      <input type="hidden" name="versionId" defaultValue={versionId} />
+      <input type="hidden" name="bucketId" defaultValue={bucketId} />
       {parent ? (
         <>
-          <input type="hidden" name="parent[id]" defaultValue={parent.id} />
+          <input
+            type="hidden"
+            name="parent[recordId]"
+            defaultValue={parent.recordId}
+          />
           <input
             type="hidden"
             name="parent[fieldId]"

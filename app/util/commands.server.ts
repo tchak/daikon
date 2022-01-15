@@ -4,6 +4,7 @@ import { prisma, DB } from './db.server';
 import * as User from '~/aggregates/user.commands';
 import * as Organization from '~/aggregates/organization.commands';
 import * as Bucket from '~/aggregates/bucket.commands';
+import * as Record from '~/aggregates/record.commands';
 import { UserProjection } from '~/aggregates/user.projection';
 import { OrganizationProjection } from '~/aggregates/organization.projection';
 import { BucketProjection } from '~/aggregates/bucket.projection';
@@ -98,6 +99,20 @@ const DeleteView = z.object({
   bucketId: z.string().uuid(),
   viewId: z.string().uuid(),
 });
+const CreateRecord = z.object({
+  actionType: z.literal(Actions.CreateRecord),
+  bucketId: z.string().uuid(),
+});
+const DeleteRecord = z.object({
+  actionType: z.literal(Actions.DeleteRecord),
+  bucketId: z.string().uuid(),
+  recordId: z.string().uuid(),
+});
+const DeleteRecords = z.object({
+  actionType: z.literal(Actions.DeleteRecords),
+  bucketId: z.string().uuid(),
+  recordIds: z.string().transform((recordIds) => recordIds.split(',')),
+});
 const Action = z.union([
   RegisterUser,
   CreateOrganization,
@@ -114,6 +129,9 @@ const Action = z.union([
   RenameView,
   SetViewDescription,
   DeleteView,
+  CreateRecord,
+  DeleteRecord,
+  DeleteRecords,
 ]);
 
 function getEventStore(db: DB, subscriptions = true) {
@@ -191,6 +209,24 @@ export async function executeCommand(form: FormData, actor?: string) {
         return Bucket.updateView(eventStore.scope())(data, { actor });
       case 'DeleteView':
         return Bucket.deleteView(eventStore.scope())(data, { actor });
+      case 'CreateRecord':
+        return Record.createRecord(eventStore.scope())(data, { actor });
+      case 'DeleteRecord':
+        return Record.deleteRecord(eventStore.scope())(data, { actor });
+      case 'DeleteRecords':
+        return (async () => {
+          const [recordId, ...recordIds] = data.recordIds;
+          for (const recordId of recordIds) {
+            await Record.deleteRecord(eventStore.scope())(
+              { recordId, bucketId: data.bucketId },
+              { actor }
+            );
+          }
+          return Record.deleteRecord(eventStore.scope())(
+            { recordId, bucketId: data.bucketId },
+            { actor }
+          );
+        })();
     }
   });
 }

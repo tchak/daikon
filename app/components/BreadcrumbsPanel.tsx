@@ -1,7 +1,10 @@
 import { useSearchParams } from 'react-router-dom';
 import { HomeIcon } from '@heroicons/react/solid';
 
-type Breadcrumb = { name: string; parent: { id: string; fieldId: string } };
+type Breadcrumb = {
+  name: string;
+  parent?: { recordId: string; fieldId: string };
+};
 
 export function BreadcrumbsPanel({
   breadcrumbs,
@@ -62,11 +65,15 @@ function BreadcrumbSlot({
         <button
           onClick={() =>
             onClick(
-              parent.id ? `${parent.fieldId}:${parent.id}` : parent.fieldId
+              parent.recordId
+                ? `${parent.fieldId}:${parent.recordId}`
+                : parent.fieldId
             )
           }
           data-link={`${
-            parent.id ? `${parent.fieldId}:${parent.id}` : parent.fieldId
+            parent.recordId
+              ? `${parent.fieldId}:${parent.recordId}`
+              : parent.fieldId
           }`}
           className="ml-2 text-sm font-medium text-gray-500 hover:text-gray-700"
         >

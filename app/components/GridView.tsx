@@ -7,7 +7,7 @@ import {
   UseRowSelectState,
 } from 'react-table';
 
-export type DataRow = Record<string, unknown>;
+export type DataRow = { id: string; data: Record<string, unknown> };
 
 export function GridView<T extends DataRow = DataRow>({
   columns,
@@ -15,7 +15,7 @@ export function GridView<T extends DataRow = DataRow>({
   onSelect,
 }: {
   columns: Column<T>[];
-  data: readonly T[];
+  data: T[];
   onSelect?: (rowIds: string[]) => void;
 }) {
   const {
@@ -52,14 +52,14 @@ export function GridView<T extends DataRow = DataRow>({
     ]);
   });
   const { selectedRowIds } = state as UseRowSelectState<DataRow>;
-  // useEffect(() => {
-  //   if (onSelect) {
-  //     const ids = Object.keys(selectedRowIds)
-  //       .filter((index) => data[Number(index)])
-  //       .map((index) => data[Number(index)].id as string);
-  //     onSelect(ids);
-  //   }
-  // }, [data, selectedRowIds]);
+  useEffect(() => {
+    if (onSelect) {
+      const ids = Object.keys(selectedRowIds)
+        .filter((index) => data[Number(index)])
+        .map((index) => data[Number(index)].id as string);
+      onSelect(ids);
+    }
+  }, [selectedRowIds]);
 
   return (
     <table {...getTableProps()} className="divide-y divide-gray-200 text-sm">

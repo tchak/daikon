@@ -1,5 +1,6 @@
 import { prisma, Prisma } from '~/util/db.server';
 import { Fields, ViewFields } from '~/aggregates/bucket.projection';
+import { Data } from '~/aggregates/record.projection';
 import type { ColorName } from '~/util/color';
 
 type FindOne = {
@@ -9,7 +10,7 @@ type FindOne = {
 };
 
 export async function findOne({ bucketId, userId, viewId }: FindOne) {
-  const bucket = await prisma.bucket.findFirst({
+  const { schemas, ...bucket } = await prisma.bucket.findFirst({
     rejectOnNotFound: true,
     where: findByUser({ id: bucketId, userId }),
     select: {
@@ -20,7 +21,8 @@ export async function findOne({ bucketId, userId, viewId }: FindOne) {
       schemas: {
         take: 1,
         orderBy: { version: 'desc' },
-        select: { fields: true },
+        where: { lockedAt: null },
+        select: { fields: true, version: true },
       },
       views: {
         take: 10,
@@ -31,7 +33,8 @@ export async function findOne({ bucketId, userId, viewId }: FindOne) {
     },
   });
 
-  const fields = Fields.parse(bucket.schemas[0].fields);
+  const schema = schemas[0];
+  const fields = Fields.parse(schema.fields);
   const { fields: viewFields, ...view } = await prisma.view.findFirst({
     rejectOnNotFound: true,
     where: {
@@ -43,9 +46,17 @@ export async function findOne({ bucketId, userId, viewId }: FindOne) {
   });
   const parsedViewFields = ViewFields.parse(viewFields);
 
+  const records = await prisma.record.findMany({
+    where: { schema: { bucketId }, deletedAt: null },
+    take: 1000,
+    orderBy: { createdAt: 'asc' },
+    select: { id: true, data: true },
+  });
+
   return {
     ...bucket,
     color: bucket.color as ColorName,
+    version: schema.version,
     view,
     fields: Object.values(fields)
       .filter((field) => !field.deletedAt)
@@ -53,6 +64,11 @@ export async function findOne({ bucketId, userId, viewId }: FindOne) {
         ...field,
         hidden: !!parsedViewFields[field.id]?.hidden,
       })),
+    breadcrumbs: [{ name: bucket.name }],
+    records: records.map((record) => ({
+      ...record,
+      data: Data.parse(record.data),
+    })),
   };
 }
 

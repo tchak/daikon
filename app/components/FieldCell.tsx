@@ -43,7 +43,7 @@ export function useTableColumns<T extends DataRow = DataRow>({
           />
         ),
         id: field.id,
-        accessor: (row: T) => row[field.id],
+        accessor: (row: T) => row.data[field.id],
         Cell: ({ cell }: CellProps<DataRow>) => (
           <FieldCell
             cell={cell}
