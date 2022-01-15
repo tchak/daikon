@@ -1,11 +1,11 @@
 import { prisma, Prisma } from '~/util/db.server';
-import { Fields, HiddenFields } from '~/aggregates/bucket.projection';
+import { Fields, ViewFields } from '~/aggregates/bucket.projection';
 import type { ColorName } from '~/util/color';
 
 type FindOne = {
   bucketId: string;
   userId: string;
-  viewId?: string;
+  viewId?: string | null;
 };
 
 export async function findOne({ bucketId, userId, viewId }: FindOne) {
@@ -32,16 +32,16 @@ export async function findOne({ bucketId, userId, viewId }: FindOne) {
   });
 
   const fields = Fields.parse(bucket.schemas[0].fields);
-  const { hiddenFields, ...view } = await prisma.bucketView.findFirst({
+  const { fields: viewFields, ...view } = await prisma.view.findFirst({
     rejectOnNotFound: true,
     where: {
       bucketId: bucket.id,
       deletedAt: null,
       id: viewId ?? bucket.views[0].id,
     },
-    select: { id: true, name: true, hiddenFields: true },
+    select: { id: true, name: true, fields: true },
   });
-  const hidden = HiddenFields.parse(hiddenFields);
+  const parsedViewFields = ViewFields.parse(viewFields);
 
   return {
     ...bucket,
@@ -51,7 +51,7 @@ export async function findOne({ bucketId, userId, viewId }: FindOne) {
       .filter((field) => !field.deletedAt)
       .map((field) => ({
         ...field,
-        hidden: !!hidden[field.id],
+        hidden: !!parsedViewFields[field.id]?.hidden,
       })),
   };
 }

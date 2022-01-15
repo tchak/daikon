@@ -39,13 +39,13 @@ export function BucketProjection(
       });
     }),
     eventStore.subscribe(['BucketSchemaLocked'], async (event) => {
-      const schema = await eventStore.db.bucketSchema.findFirst({
+      const schema = await eventStore.db.schema.findFirst({
         rejectOnNotFound: true,
         where: { bucketId: event.data.bucketId, lockedAt: null },
         select: { id: true, version: true, fields: true },
       });
       const fields = Fields.parse(schema.fields);
-      await eventStore.db.bucketSchema.update({
+      await eventStore.db.schema.update({
         where: { id: schema.id },
         data: {
           lockedAt: event.metadata.timestamp,
@@ -56,7 +56,7 @@ export function BucketProjection(
           ),
         },
       });
-      await eventStore.db.bucketSchema.create({
+      await eventStore.db.schema.create({
         data: {
           version: schema.version + 1,
           bucketId: event.data.bucketId,
@@ -65,7 +65,7 @@ export function BucketProjection(
       });
     }),
     eventStore.subscribe(['FieldCreated'], async (event) => {
-      const schema = await eventStore.db.bucketSchema.findFirst({
+      const schema = await eventStore.db.schema.findFirst({
         rejectOnNotFound: true,
         where: { bucketId: event.data.bucketId, lockedAt: null },
         select: { id: true, fields: true },
@@ -77,7 +77,7 @@ export function BucketProjection(
         type: event.data.type,
         createdAt: event.metadata.timestamp,
       };
-      await eventStore.db.bucketSchema.update({
+      await eventStore.db.schema.update({
         where: { id: schema.id },
         data: { fields },
       });
@@ -85,7 +85,7 @@ export function BucketProjection(
     eventStore.subscribe(
       ['FieldNameSet', 'FieldDescriptionSet'],
       async (event) => {
-        const schema = await eventStore.db.bucketSchema.findFirst({
+        const schema = await eventStore.db.schema.findFirst({
           rejectOnNotFound: true,
           where: { bucketId: event.data.bucketId, lockedAt: null },
           select: { id: true, fields: true },
@@ -96,53 +96,53 @@ export function BucketProjection(
         } else {
           fields[event.data.fieldId].description = event.data.description;
         }
-        await eventStore.db.bucketSchema.update({
+        await eventStore.db.schema.update({
           where: { id: schema.id },
           data: { fields },
         });
       }
     ),
     eventStore.subscribe(['FieldDeleted'], async (event) => {
-      const schema = await eventStore.db.bucketSchema.findFirst({
+      const schema = await eventStore.db.schema.findFirst({
         rejectOnNotFound: true,
         where: { bucketId: event.data.bucketId, lockedAt: null },
         select: { id: true, fields: true },
       });
       const fields = Fields.parse(schema.fields);
       fields[event.data.fieldId].deletedAt = event.metadata.timestamp;
-      await eventStore.db.bucketSchema.update({
+      await eventStore.db.schema.update({
         where: { id: schema.id },
         data: { fields },
       });
     }),
     eventStore.subscribe(['FieldRestored'], async (event) => {
-      const schema = await eventStore.db.bucketSchema.findFirst({
+      const schema = await eventStore.db.schema.findFirst({
         rejectOnNotFound: true,
         where: { bucketId: event.data.bucketId, lockedAt: null },
         select: { id: true, fields: true },
       });
       const fields = Fields.parse(schema.fields);
       delete fields[event.data.fieldId].deletedAt;
-      await eventStore.db.bucketSchema.update({
+      await eventStore.db.schema.update({
         where: { id: schema.id },
         data: { fields },
       });
     }),
     eventStore.subscribe(['FieldDestroyed'], async (event) => {
-      const schema = await eventStore.db.bucketSchema.findFirst({
+      const schema = await eventStore.db.schema.findFirst({
         rejectOnNotFound: true,
         where: { bucketId: event.data.bucketId, lockedAt: null },
         select: { id: true, fields: true },
       });
       const fields = Fields.parse(schema.fields);
       delete fields[event.data.fieldId];
-      await eventStore.db.bucketSchema.update({
+      await eventStore.db.schema.update({
         where: { id: schema.id },
         data: { fields },
       });
     }),
     eventStore.subscribe(['ViewCreated'], async (event) => {
-      await eventStore.db.bucketView.create({
+      await eventStore.db.view.create({
         data: {
           id: event.data.viewId,
           bucketId: event.data.bucketId,
@@ -154,30 +154,30 @@ export function BucketProjection(
       });
     }),
     eventStore.subscribe(['ViewDeleted'], async (event) => {
-      await eventStore.db.bucketView.update({
+      await eventStore.db.view.update({
         where: { id: event.data.viewId },
         data: { deletedAt: event.metadata.timestamp },
       });
     }),
     eventStore.subscribe(['ViewRestored'], async (event) => {
-      await eventStore.db.bucketView.update({
+      await eventStore.db.view.update({
         where: { id: event.data.viewId },
         data: { deletedAt: null },
       });
     }),
     eventStore.subscribe(['ViewDestroyed'], async (event) => {
-      await eventStore.db.bucketView.delete({
+      await eventStore.db.view.delete({
         where: { id: event.data.viewId },
       });
     }),
     eventStore.subscribe(['ViewNameSet'], async (event) => {
-      await eventStore.db.bucketView.update({
+      await eventStore.db.view.update({
         where: { id: event.data.viewId },
         data: { name: event.data.name, updatedAt: event.metadata.timestamp },
       });
     }),
     eventStore.subscribe(['ViewDescriptionSet'], async (event) => {
-      await eventStore.db.bucketView.update({
+      await eventStore.db.view.update({
         where: { id: event.data.viewId },
         data: {
           description: event.data.description,
@@ -186,15 +186,16 @@ export function BucketProjection(
       });
     }),
     eventStore.subscribe(['FieldHiddenSet'], async (event) => {
-      const view = await eventStore.db.bucketView.findUnique({
+      const view = await eventStore.db.view.findUnique({
         rejectOnNotFound: true,
         where: { id: event.data.viewId },
       });
-      const hiddenFields = HiddenFields.parse(view.hiddenFields);
-      hiddenFields[event.data.fieldId] = event.data.hidden;
-      await eventStore.db.bucketView.update({
+      const fields = ViewFields.parse(view.fields);
+      fields[event.data.fieldId] ||= {};
+      fields[event.data.fieldId].hidden = event.data.hidden;
+      await eventStore.db.view.update({
         where: { id: event.data.viewId },
-        data: { hiddenFields, updatedAt: event.metadata.timestamp },
+        data: { fields, updatedAt: event.metadata.timestamp },
       });
     }),
   ];
@@ -213,4 +214,7 @@ export const Fields = z.record(
   })
 );
 
-export const HiddenFields = z.record(z.string().uuid(), z.boolean());
+export const ViewFields = z.record(
+  z.string().uuid(),
+  z.object({ hidden: z.boolean().optional() })
+);

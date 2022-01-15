@@ -22,7 +22,7 @@ const ID = z.string().uuid();
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const url = new URL(request.url);
-  const viewId = ID.optional().parse(url.searchParams.get('view'));
+  const viewId = ID.nullish().parse(url.searchParams.get('view'));
   const bucketId = ID.parse(params.id);
   const user = await authenticator.isAuthenticated(request, {
     failureRedirect: '/signin',

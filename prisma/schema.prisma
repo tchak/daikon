@@ -50,23 +50,23 @@ model Membership {
 }
 
 model Bucket {
-  id             String         @id @db.Uuid
-  createdAt      DateTime       @map("created_at")
-  updatedAt      DateTime       @map("updated_at")
-  deletedAt      DateTime?      @map("deleted_at")
+  id             String       @id @db.Uuid
+  createdAt      DateTime     @map("created_at")
+  updatedAt      DateTime     @map("updated_at")
+  deletedAt      DateTime?    @map("deleted_at")
   name           String
   color          String
   description    String?
-  organizationId String         @map("organization_id") @db.Uuid
-  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  schemas        BucketSchema[]
-  views          BucketView[]
+  organizationId String       @map("organization_id") @db.Uuid
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  schemas        Schema[]
+  views          View[]
 
   @@index(organizationId)
   @@map("buckets")
 }
 
-model BucketSchema {
+model Schema {
   id        String    @id @default(uuid()) @db.Uuid
   createdAt DateTime  @default(now()) @map("created_at")
   lockedAt  DateTime? @map("locked_at")
@@ -78,36 +78,36 @@ model BucketSchema {
 
   @@unique([bucketId, version])
   @@index(bucketId)
-  @@map("bucket_schemas")
+  @@map("schemas")
 }
 
-model BucketView {
-  id           String    @id @db.Uuid
-  createdAt    DateTime  @map("created_at")
-  updatedAt    DateTime  @map("updated_at")
-  deletedAt    DateTime? @map("deleted_at")
-  type         String
-  name         String
-  description  String?
-  bucketId     String    @map("bucket_id") @db.Uuid
-  bucket       Bucket    @relation(fields: [bucketId], references: [id], onDelete: Cascade)
-  hiddenFields Json      @default("{}") @map("hidden_fields")
-  filters      Json      @default("{}")
-  sort         Json      @default("{}")
+model View {
+  id          String    @id @db.Uuid
+  createdAt   DateTime  @map("created_at")
+  updatedAt   DateTime  @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  type        String
+  name        String
+  description String?
+  bucketId    String    @map("bucket_id") @db.Uuid
+  bucket      Bucket    @relation(fields: [bucketId], references: [id], onDelete: Cascade)
+  fields      Json      @default("{}")
+  filters     Json      @default("{}")
+  sort        Json      @default("{}")
 
   @@index(bucketId)
-  @@map("bucket_views")
+  @@map("views")
 }
 
 model Record {
-  id        String       @id @db.Uuid
-  createdAt DateTime     @map("created_at")
-  updatedAt DateTime     @map("updated_at")
-  deletedAt DateTime?    @map("deleted_at")
-  schemaId  String       @map("schema_id") @db.Uuid
-  schema    BucketSchema @relation(fields: [schemaId], references: [id], onDelete: Cascade)
+  id        String    @id @db.Uuid
+  createdAt DateTime  @map("created_at")
+  updatedAt DateTime  @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  schemaId  String    @map("schema_id") @db.Uuid
+  schema    Schema    @relation(fields: [schemaId], references: [id], onDelete: Cascade)
   path      String[]
-  data      Json         @default("{}")
+  data      Json      @default("{}")
 
 
   @@index(schemaId)

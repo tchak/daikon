@@ -9,7 +9,7 @@ export function RecordProjection(
 ) {
   const unsubscribe = [
     eventStore.subscribe(['RecordCreated'], async (event) => {
-      const schema = await eventStore.db.bucketSchema.findFirst({
+      const schema = await eventStore.db.schema.findFirst({
         rejectOnNotFound: true,
         where: { bucketId: event.data.bucketId, lockedAt: null },
         select: { id: true, version: true, fields: true },
