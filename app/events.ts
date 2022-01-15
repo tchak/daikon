@@ -9,7 +9,7 @@ const Role = z.enum(['Owner', 'Member', 'Editor', 'ReadOnly']);
 
 export const Metadata = z.object({
   timestamp: z.string(),
-  actor: z.literal('anonymous').or(z.string().uuid()),
+  actor: z.enum(['anonymous', 'system']).or(z.string().uuid()),
 });
 export type Metadata = z.infer<typeof Metadata>;
 

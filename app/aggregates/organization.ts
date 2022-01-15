@@ -19,25 +19,29 @@ import {
   metadata,
 } from '~/events';
 
-export const Member = z.object({
+const MemberEntity = z.object({
   userId: z.string().uuid(),
   role: z.string(),
 });
-type Member = z.infer<typeof Member>;
+type MemberEntity = z.infer<typeof MemberEntity>;
 
-export const Organization = z.object({
+const OrganizationEntity = z.object({
   id: z.string().uuid(),
   name: z.string(),
   deletedAt: z.string().nullish(),
-  members: Member.array(),
+  members: MemberEntity.array(),
 });
-export type Organization = z.infer<typeof Organization>;
+type OrganizationEntity = z.infer<typeof OrganizationEntity>;
 
 export function createCommand<Command>(
   aggregateId: (command: Command) => string,
   callback: (
     command: Command,
-    aggregate: AggregateRoot<Organization, OrganizationEventsMap, Metadata>
+    aggregate: AggregateRoot<
+      OrganizationEntity,
+      OrganizationEventsMap,
+      Metadata
+    >
   ) => Promise<void> | void
 ) {
   return <Context>(
@@ -54,10 +58,11 @@ export function createCommand<Command>(
       );
 }
 
-const applyEvent: ApplyEvent<Organization, OrganizationEventsMap, Metadata> = (
-  organizationEvent,
-  organization
-) => {
+const applyEvent: ApplyEvent<
+  OrganizationEntity,
+  OrganizationEventsMap,
+  Metadata
+> = (organizationEvent, organization) => {
   const event = OrganizationEvent.parse(organizationEvent);
   switch (event.eventType) {
     case 'OrganizationCreated':
@@ -125,13 +130,13 @@ const applyEvent: ApplyEvent<Organization, OrganizationEventsMap, Metadata> = (
   }
 };
 
-function isOwner(organization: Organization, userId: string): boolean {
+function isOwner(organization: OrganizationEntity, userId: string): boolean {
   return !!organization.members.find((member) =>
     isMember(member, userId, 'Owner')
   );
 }
 
-function isMember(member: Member, userId: string, role: string) {
+function isMember(member: MemberEntity, userId: string, role: string) {
   return member.userId == userId && member.role == role;
 }
 

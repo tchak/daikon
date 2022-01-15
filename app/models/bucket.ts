@@ -1,36 +1,36 @@
-import { string, z } from 'zod';
-
 import { prisma, Prisma } from '~/util/db.server';
-import { Fields } from '~/aggregates/bucket.projection';
+import { Fields, HiddenFields } from '~/aggregates/bucket.projection';
 import type { ColorName } from '~/util/color';
 
-export function findOne(id: string, userId: string) {
-  return prisma.bucket.findFirst({
+type FindOne = {
+  bucketId: string;
+  userId: string;
+  viewId?: string;
+};
+
+export async function findOne({ bucketId, userId, viewId }: FindOne) {
+  const bucket = await prisma.bucket.findFirst({
     rejectOnNotFound: true,
-    where: findByUser({ id, userId }),
-    include: {
-      schemas: { orderBy: { version: 'desc' }, take: 1 },
+    where: findByUser({ id: bucketId, userId }),
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      color: true,
+      schemas: {
+        take: 1,
+        orderBy: { version: 'desc' },
+        select: { fields: true },
+      },
       views: {
+        take: 10,
         orderBy: { createdAt: 'asc' },
         where: { deletedAt: null },
         select: { id: true, name: true },
       },
     },
   });
-}
 
-export function findMany(userId: string) {
-  return prisma.bucket.findMany({
-    where: findByUser({ userId }),
-  });
-}
-
-export async function getDashboard(
-  id: string,
-  viewId: undefined | string,
-  userId: string
-) {
-  const bucket = await findOne(id, userId);
   const fields = Fields.parse(bucket.schemas[0].fields);
   const { hiddenFields, ...view } = await prisma.bucketView.findFirst({
     rejectOnNotFound: true,
@@ -41,7 +41,7 @@ export async function getDashboard(
     },
     select: { id: true, name: true, hiddenFields: true },
   });
-  const hidden = z.record(z.string().uuid(), z.boolean()).parse(hiddenFields);
+  const hidden = HiddenFields.parse(hiddenFields);
 
   return {
     ...bucket,
@@ -56,17 +56,35 @@ export async function getDashboard(
   };
 }
 
-const findByUser = ({
-  userId,
-  role = 'Owner',
-  id,
-  deleted,
-}: {
+export type FindOneData = Awaited<ReturnType<typeof findOne>>;
+
+type FindMany = {
+  userId: string;
+};
+
+export function findMany({ userId }: FindMany) {
+  return prisma.bucket.findMany({
+    where: findByUser({ userId }),
+    select: {
+      id: true,
+      name: true,
+      color: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+}
+
+export type FindManyData = Awaited<ReturnType<typeof findMany>>;
+
+type FindByUser = {
   userId: string;
   role?: string;
   id?: string;
   deleted?: boolean;
-}) =>
+};
+
+const findByUser = ({ userId, role = 'Owner', id, deleted }: FindByUser) =>
   Prisma.validator<Prisma.BucketWhereInput>()({
     id,
     deletedAt: deleted ? { not: null } : null,

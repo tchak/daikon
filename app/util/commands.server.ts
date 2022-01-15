@@ -162,9 +162,12 @@ export async function executeCommand(form: FormData, actor?: string) {
       case 'RegisterUser':
         return await User.createUser(eventStore.scope())(data, { actor });
       case 'CreateOrganization':
-        return Organization.createOrganization(eventStore.scope())(data, {
-          actor,
-        });
+        return Organization.createOrganization(eventStore.scope())(
+          { ...data, userId: String(actor) },
+          {
+            actor,
+          }
+        );
       case 'CreateBucket':
         return Bucket.createBucket(eventStore.scope())(data, { actor });
       case 'RenameBucket':

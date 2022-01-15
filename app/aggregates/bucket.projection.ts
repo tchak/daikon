@@ -213,4 +213,4 @@ export const Fields = z.record(
   })
 );
 
-const HiddenFields = z.record(z.string().uuid(), z.boolean());
+export const HiddenFields = z.record(z.string().uuid(), z.boolean());

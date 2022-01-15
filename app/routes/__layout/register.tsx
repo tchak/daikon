@@ -29,8 +29,8 @@ export const action: ActionFunction = async ({ request }) => {
   const session = await getSession(request.headers.get('cookie'));
   const form = await request.formData();
 
-  const user = await executeCommand(form);
-  session.set(authenticator.sessionKey, user);
+  const aggregate = await executeCommand(form);
+  session.set(authenticator.sessionKey, { id: aggregate.id });
 
   return redirect('/', {
     headers: { 'set-cookie': await commitSession(session) },

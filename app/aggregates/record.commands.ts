@@ -3,127 +3,126 @@ import { formatISO } from 'date-fns';
 
 import { createCommand } from './record';
 
-export const createRecord = createCommand<{ bucketId: string }>(
+type CreateRecord = {
+  bucketId: string;
+};
+
+export const createRecord = createCommand<CreateRecord>(
   () => uuid(),
   async ({ bucketId }, aggregate) => {
     aggregate.applyEvent({
       type: 'RecordCreated',
-      data: { recordId: aggregate.id, bucketId, parentId: null },
+      data: { bucketId, recordId: aggregate.id, parentId: null },
     });
   }
 );
 
-export const deleteRecord = createCommand<{
+type DeleteRecord = {
   bucketId: string;
   recordId: string;
-}>(
+};
+
+export const deleteRecord = createCommand<DeleteRecord>(
   ({ recordId }) => recordId,
   async ({ bucketId }, aggregate) => {
     aggregate.applyEvent({
       type: 'RecordDeleted',
-      data: { recordId: aggregate.id, bucketId },
+      data: { bucketId, recordId: aggregate.id },
     });
   }
 );
 
-export const updateRecord = createCommand<{
+type Data =
+  | {
+      id: string;
+      type: 'TEXT';
+      value: string | null;
+    }
+  | { id: string; type: 'BOOLEAN'; value: boolean }
+  | { id: string; type: 'INT' | 'FLOAT'; value: number | null }
+  | { id: string; type: 'DATE' | 'DATE_TIME'; value: Date | null };
+
+type UpdateRecord = {
   bucketId: string;
   recordId: string;
-  fieldId: string;
-  data: (
-    | {
-        type: 'TEXT';
-        value: string | null;
-      }
-    | { type: 'BOOLEAN'; value: boolean }
-    | { type: 'INT' | 'FLOAT'; value: number | null }
-    | { type: 'DATE' | 'DATE_TIME'; value: Date | null }
-  )[];
-}>(
+  data: Data[];
+};
+
+export const updateRecord = createCommand<UpdateRecord>(
   ({ recordId }) => recordId,
-  ({ bucketId, fieldId, data }, aggregate) => {
+  ({ bucketId, data }, aggregate) => {
     for (const datum of data) {
-      switch (datum.type) {
-        case 'TEXT':
-          if (aggregate.entity.fields[fieldId].value != datum.value) {
+      if (aggregate.entity.data[datum.id].value != datum.value) {
+        switch (datum.type) {
+          case 'TEXT':
             aggregate.applyEvent({
               type: 'TextFieldValueSet',
               data: {
-                recordId: aggregate.id,
                 bucketId,
-                fieldId,
+                recordId: aggregate.id,
+                fieldId: datum.id,
                 value: datum.value,
               },
             });
-          }
-          break;
-        case 'BOOLEAN':
-          if (aggregate.entity.fields[fieldId].value != datum.value) {
+            break;
+          case 'BOOLEAN':
             aggregate.applyEvent({
               type: 'BooleanFieldValueSet',
               data: {
-                recordId: aggregate.id,
                 bucketId,
-                fieldId,
+                recordId: aggregate.id,
+                fieldId: datum.id,
                 value: datum.value,
               },
             });
-          }
-          break;
-        case 'INT':
-          if (aggregate.entity.fields[fieldId].value != datum.value) {
+            break;
+          case 'INT':
             aggregate.applyEvent({
               type: 'IntFieldValueSet',
               data: {
-                recordId: aggregate.id,
                 bucketId,
-                fieldId,
+                recordId: aggregate.id,
+                fieldId: datum.id,
                 value: datum.value,
               },
             });
-          }
-          break;
-        case 'FLOAT':
-          if (aggregate.entity.fields[fieldId].value != datum.value) {
+            break;
+          case 'FLOAT':
             aggregate.applyEvent({
               type: 'FloatFieldValueSet',
               data: {
-                recordId: aggregate.id,
                 bucketId,
-                fieldId,
+                recordId: aggregate.id,
+                fieldId: datum.id,
                 value: datum.value,
               },
             });
-          }
-          break;
-        case 'DATE':
-          if (aggregate.entity.fields[fieldId].value != datum.value) {
+            break;
+          case 'DATE':
             aggregate.applyEvent({
               type: 'DateFieldValueSet',
               data: {
-                recordId: aggregate.id,
                 bucketId,
-                fieldId,
+                recordId: aggregate.id,
+                fieldId: datum.id,
                 value: datum.value
                   ? formatISO(datum.value, { representation: 'date' })
                   : null,
               },
             });
-          }
-          break;
-        case 'DATE_TIME':
-          if (aggregate.entity.fields[fieldId].value != datum.value) {
+            break;
+          case 'DATE_TIME':
             aggregate.applyEvent({
               type: 'DateTimeFieldValueSet',
               data: {
-                recordId: aggregate.id,
                 bucketId,
-                fieldId,
+                recordId: aggregate.id,
+                fieldId: datum.id,
                 value: datum.value ? formatISO(datum.value) : null,
               },
             });
-          }
-          break;
+            break;
+        }
       }
     }
   }

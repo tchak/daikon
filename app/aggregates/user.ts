@@ -9,18 +9,18 @@ import type {
 import { createAggregate, withAggregate } from '~/util/aggregate-root';
 import { Metadata, UserEvent, UserEventsMap, metadata } from '~/events';
 
-export const User = z.object({
+const UserEntity = z.object({
   id: z.string().uuid(),
   email: z.string().email(),
   deletedAt: z.string().nullish(),
 });
-export type User = z.infer<typeof User>;
+type UserEntity = z.infer<typeof UserEntity>;
 
 export function createCommand<Command>(
   aggregateId: (command: Command) => string,
   callback: (
     command: Command,
-    aggregate: AggregateRoot<User, UserEventsMap, Metadata>
+    aggregate: AggregateRoot<UserEntity, UserEventsMap, Metadata>
   ) => Promise<void> | void
 ) {
   return <Context>(eventStore: EventStore<Context, UserEventsMap, Metadata>) =>
@@ -35,7 +35,7 @@ export function createCommand<Command>(
       );
 }
 
-const applyEvent: ApplyEvent<User, UserEventsMap, Metadata> = (
+const applyEvent: ApplyEvent<UserEntity, UserEventsMap, Metadata> = (
   userEvent,
   user
 ) => {

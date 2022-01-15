@@ -11,26 +11,25 @@ import type {
 import { createAggregate, withAggregate } from '~/util/aggregate-root';
 import { Metadata, RecordEvent, RecordEventsMap, metadata } from '~/events';
 
-export const Record = z.object({
+const FieldEntity = z.union([
+  z.object({ value: z.string().nullable() }),
+  z.object({ value: z.number().nullable() }),
+  z.object({ value: z.date().nullable() }),
+  z.object({ value: z.boolean() }),
+]);
+
+const RecordEntity = z.object({
   id: z.string().uuid(),
-  fields: z.record(
-    z.string().uuid(),
-    z.union([
-      z.object({ value: z.string().nullable() }),
-      z.object({ value: z.number().nullable() }),
-      z.object({ value: z.date().nullable() }),
-      z.object({ value: z.boolean() }),
-    ])
-  ),
+  data: z.record(z.string().uuid(), FieldEntity),
   deletedAt: z.string().nullish(),
 });
-export type Record = z.infer<typeof Record>;
+type RecordEntity = z.infer<typeof RecordEntity>;
 
 export function createCommand<Command>(
   aggregateId: (command: Command) => string,
   callback: (
     command: Command,
-    aggregate: AggregateRoot<Record, RecordEventsMap, Metadata>
+    aggregate: AggregateRoot<RecordEntity, RecordEventsMap, Metadata>
   ) => Promise<void> | void
 ) {
   return <Context>(
@@ -47,7 +46,7 @@ export function createCommand<Command>(
       );
 }
 
-const applyEvent: ApplyEvent<Record, RecordEventsMap, Metadata> = (
+const applyEvent: ApplyEvent<RecordEntity, RecordEventsMap, Metadata> = (
   recordEvent,
   record
 ) => {
@@ -56,7 +55,7 @@ const applyEvent: ApplyEvent<Record, RecordEventsMap, Metadata> = (
     case 'RecordCreated':
       return {
         id: event.data.recordId,
-        fields: {},
+        data: {},
       };
     case 'RecordDeleted':
       invariant(record && !record.deletedAt, 'Record not found');
@@ -73,7 +72,7 @@ const applyEvent: ApplyEvent<Record, RecordEventsMap, Metadata> = (
     case 'FloatFieldValueSet':
       invariant(record && !record.deletedAt, 'Record not found');
       return produce(record, (record) => {
-        record.fields[event.data.fieldId] = {
+        record.data[event.data.fieldId] = {
           value: event.data.value,
         };
       });
@@ -81,7 +80,7 @@ const applyEvent: ApplyEvent<Record, RecordEventsMap, Metadata> = (
     case 'DateTimeFieldValueSet':
       invariant(record && !record.deletedAt, 'Record not found');
       return produce(record, (record) => {
-        record.fields[event.data.fieldId] = {
+        record.data[event.data.fieldId] = {
           value: event.data.value ? parseISO(event.data.value) : null,
         };
       });

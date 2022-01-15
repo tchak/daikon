@@ -10,16 +10,16 @@ import type {
 import { createAggregate, withAggregate } from '~/util/aggregate-root';
 import { Metadata, BucketEvent, BucketEventsMap, metadata } from '~/events';
 
-const Field = z.object({
+const FieldEntity = z.object({
   id: z.string().uuid(),
   name: z.string(),
   description: z.string().optional(),
   type: z.string(),
   deletedAt: z.string().nullish(),
 });
-type Field = z.infer<typeof Field>;
+type FieldEntity = z.infer<typeof FieldEntity>;
 
-const View = z.object({
+const ViewEntity = z.object({
   id: z.string().uuid(),
   name: z.string(),
   description: z.string().optional(),
@@ -27,25 +27,25 @@ const View = z.object({
   hidden: z.record(z.string().uuid(), z.boolean()),
   deletedAt: z.string().nullish(),
 });
-type View = z.infer<typeof View>;
+type ViewEntity = z.infer<typeof ViewEntity>;
 
-const Bucket = z.object({
+const BucketEntity = z.object({
   id: z.string().uuid(),
   version: z.number().int(),
   name: z.string(),
   color: z.string(),
   description: z.string().optional(),
   deletedAt: z.string().nullish(),
-  fields: z.record(z.number().int(), Field.array()),
-  views: View.array(),
+  fields: z.record(z.number().int(), FieldEntity.array()),
+  views: ViewEntity.array(),
 });
-type Bucket = z.infer<typeof Bucket>;
+type BucketEntity = z.infer<typeof BucketEntity>;
 
 export function createCommand<Command>(
   aggregateId: (command: Command) => string,
   callback: (
     command: Command,
-    aggregate: AggregateRoot<Bucket, BucketEventsMap, Metadata>
+    aggregate: AggregateRoot<BucketEntity, BucketEventsMap, Metadata>
   ) => Promise<void> | void
 ) {
   return <Context>(
@@ -62,7 +62,7 @@ export function createCommand<Command>(
       );
 }
 
-const applyEvent: ApplyEvent<Bucket, BucketEventsMap, Metadata> = (
+const applyEvent: ApplyEvent<BucketEntity, BucketEventsMap, Metadata> = (
   bucketEvent,
   bucket
 ) => {
@@ -180,7 +180,11 @@ const applyEvent: ApplyEvent<Bucket, BucketEventsMap, Metadata> = (
   }
 };
 
-function findView(bucket: Bucket, id: string, deleted = false): View {
+function findView(
+  bucket: BucketEntity,
+  id: string,
+  deleted = false
+): ViewEntity {
   const view = bucket.views.find((view) => view.id == id);
   if (deleted) {
     invariant(view?.deletedAt, 'View not found');
@@ -190,7 +194,11 @@ function findView(bucket: Bucket, id: string, deleted = false): View {
   return view;
 }
 
-function findField(bucket: Bucket, id: string, deleted = false): Field {
+function findField(
+  bucket: BucketEntity,
+  id: string,
+  deleted = false
+): FieldEntity {
   const field = bucket.fields[bucket.version].find((field) => field.id == id);
   if (deleted) {
     invariant(field?.deletedAt, 'Field not found');

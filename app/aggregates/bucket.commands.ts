@@ -67,7 +67,11 @@ export const updateBucket = createCommand<UpdateBucket>(
   }
 );
 
-export const deleteBucket = createCommand<{ bucketId: string }>(
+type DeleteBucket = {
+  bucketId: string;
+};
+
+export const deleteBucket = createCommand<DeleteBucket>(
   ({ bucketId }) => bucketId,
   (_, aggregate) => {
     aggregate.applyEvent({
@@ -77,7 +81,11 @@ export const deleteBucket = createCommand<{ bucketId: string }>(
   }
 );
 
-export const restoreBucket = createCommand<{ bucketId: string }>(
+type RestoreBucket = {
+  bucketId: string;
+};
+
+export const restoreBucket = createCommand<RestoreBucket>(
   ({ bucketId }) => bucketId,
   (_, aggregate) => {
     aggregate.applyEvent({
@@ -87,7 +95,12 @@ export const restoreBucket = createCommand<{ bucketId: string }>(
   }
 );
 
-export const createField = createCommand<{ bucketId: string; name: string }>(
+type CreateField = {
+  bucketId: string;
+  name: string;
+};
+
+export const createField = createCommand<CreateField>(
   ({ bucketId }) => bucketId,
   ({ name }, aggregate) => {
     aggregate.applyEvent({
@@ -102,12 +115,14 @@ export const createField = createCommand<{ bucketId: string; name: string }>(
   }
 );
 
-export const updateField = createCommand<{
+type UpdateField = {
   bucketId: string;
   fieldId: string;
   name?: string;
   description?: string;
-}>(
+};
+
+export const updateField = createCommand<UpdateField>(
   ({ bucketId }) => bucketId,
   ({ fieldId, name, description }, aggregate) => {
     const field = aggregate.entity.fields[aggregate.entity.version].find(
@@ -136,7 +151,12 @@ export const updateField = createCommand<{
   }
 );
 
-export const deleteField = createCommand<{ bucketId: string; fieldId: string }>(
+type DeleteField = {
+  bucketId: string;
+  fieldId: string;
+};
+
+export const deleteField = createCommand<DeleteField>(
   ({ bucketId }) => bucketId,
   ({ fieldId }, aggregate) => {
     aggregate.applyEvent({
@@ -146,7 +166,12 @@ export const deleteField = createCommand<{ bucketId: string; fieldId: string }>(
   }
 );
 
-export const createView = createCommand<{ bucketId: string; name: string }>(
+type CreateView = {
+  bucketId: string;
+  name: string;
+};
+
+export const createView = createCommand<CreateView>(
   ({ bucketId }) => bucketId,
   ({ name }, aggregate) => {
     aggregate.applyEvent({
@@ -161,12 +186,14 @@ export const createView = createCommand<{ bucketId: string; name: string }>(
   }
 );
 
-export const updateView = createCommand<{
+type UpdateView = {
   bucketId: string;
   viewId: string;
   name?: string;
   description?: string;
-}>(
+};
+
+export const updateView = createCommand<UpdateView>(
   ({ bucketId }) => bucketId,
   ({ viewId, name, description }, aggregate) => {
     const view = aggregate.entity.views.find((view) => view.id == viewId);
@@ -193,12 +220,14 @@ export const updateView = createCommand<{
   }
 );
 
-export const hideFieldInView = createCommand<{
+type HideFieldInView = {
   bucketId: string;
   viewId: string;
   fieldId: string;
   hidden: boolean;
-}>(
+};
+
+export const hideFieldInView = createCommand<HideFieldInView>(
   ({ bucketId }) => bucketId,
   ({ viewId, fieldId, hidden }, aggregate) => {
     const field = aggregate.entity.fields[aggregate.entity.version].find(
@@ -219,7 +248,12 @@ export const hideFieldInView = createCommand<{
   }
 );
 
-export const deleteView = createCommand<{ bucketId: string; viewId: string }>(
+type DeleteView = {
+  bucketId: string;
+  viewId: string;
+};
+
+export const deleteView = createCommand<DeleteView>(
   ({ bucketId }) => bucketId,
   ({ viewId }, aggregate) => {
     aggregate.applyEvent({

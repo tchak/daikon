@@ -23,6 +23,7 @@
   "dependencies": {
     "@envelop/core": "^1.7.1",
     "@envelop/depth-limit": "^1.2.1",
+    "@envelop/generic-auth": "^2.0.0",
     "@headlessui/react": "^1.4.3",
     "@heroicons/react": "^1.0.5",
     "@popperjs/core": "^2.11.0",

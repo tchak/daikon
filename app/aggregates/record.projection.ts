@@ -55,7 +55,7 @@ export function RecordProjection(
           rejectOnNotFound: true,
           where: { id: event.data.recordId },
         });
-        const data = RecordData.parse(record.data);
+        const data = Data.parse(record.data);
         data[event.data.fieldId] = {
           type: fieldType(event.eventType),
           value: event.data.value,
@@ -78,7 +78,7 @@ function fieldType(eventType: string) {
   return eventType.replace(/FieldValueSet$/, '').toUpperCase();
 }
 
-const RecordData = z.record(
+export const Data = z.record(
   z.string().uuid(),
   z.union([
     z.object({

@@ -527,6 +527,11 @@
     "@envelop/core" "^1.6.1"
     graphql-depth-limit "^1.1.0"
 
+"@envelop/generic-auth@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@envelop/generic-auth/-/generic-auth-2.0.0.tgz#548d39154746603fd72b7f7455e60cb74a7d5319"
+  integrity sha512-2LMHjX5U3JKuulb4qNIAQYdvv/jLH8WSCm8jDa/WXBVKunTba959H9tKlzWUfhT/5UKL27aE1lme94QdkNV8zQ==
+
 "@envelop/types@1.5.1":
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/@envelop/types/-/types-1.5.1.tgz#8a47ca9f6e78b40b176dac0dea6c5045f92c644d"

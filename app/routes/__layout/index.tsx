@@ -14,8 +14,9 @@ import { Header, Main } from '~/components/DefaultLayout';
 import { getColor, ColorName } from '~/util/color';
 import * as Actions from '~/actions';
 import * as Organization from '~/models/organization';
+import type { FindManyData } from '~/models/organization';
 
-type LoaderData = Awaited<ReturnType<typeof Organization.findMany>>;
+type LoaderData = FindManyData;
 type Bucket = LoaderData[0]['buckets'][0];
 
 export const meta: MetaFunction = () => {
@@ -25,7 +26,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const user = await authenticator.isAuthenticated(request, {
     failureRedirect: '/signin',
   });
-  return Organization.findMany(user.id);
+  return Organization.findMany({ userId: user.id });
 };
 export const action: ActionFunction = async ({ request }) => {
   const user = await authenticator.isAuthenticated(request, {

@@ -14,18 +14,21 @@ import { DeleteRowsButton } from '~/components/DeleteRowsButton';
 import { getColor, ColorName } from '~/util/color';
 import { executeCommand } from '~/util/commands.server';
 import * as Bucket from '~/models/bucket';
+import type { FindOneData } from '~/models/bucket';
 
-type LoaderData = Awaited<ReturnType<typeof Bucket.getDashboard>>;
+type LoaderData = FindOneData;
+
+const ID = z.string().uuid();
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const url = new URL(request.url);
-  const viewId = url.searchParams.get('view') ?? undefined;
-  const bucketId = z.string().uuid().parse(params.id);
+  const viewId = ID.optional().parse(url.searchParams.get('view'));
+  const bucketId = ID.parse(params.id);
   const user = await authenticator.isAuthenticated(request, {
     failureRedirect: '/signin',
   });
 
-  return Bucket.getDashboard(bucketId, viewId, user.id);
+  return Bucket.findOne({ bucketId, viewId, userId: user.id });
 };
 
 export const action: ActionFunction = async ({ request }) => {

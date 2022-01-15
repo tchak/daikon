@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import type { LoaderFunction, ActionFunction } from 'remix';
-import { json } from 'remix';
+import { json, redirect } from 'remix';
 import {
   shouldRenderGraphiQL,
   getGraphQLParameters,
@@ -12,6 +12,7 @@ import { envelop, useLogger, useSchema, useTiming } from '@envelop/core';
 import { useDepthLimit } from '@envelop/depth-limit';
 import { GraphQLError } from 'graphql';
 
+import { authenticator, User } from '~/util/auth.server';
 import { schema } from '~/util/graphql.server';
 
 const getEnveloped = envelop({
@@ -35,16 +36,18 @@ async function remixToHelixRequest(request: Request): Promise<HelixRequest> {
   };
 }
 
-async function processHelixRequest(request: HelixRequest) {
+async function processHelixRequest(request: HelixRequest, user: User | null) {
   if (shouldRenderGraphiQL(request)) {
-    const html = renderGraphiQL({
-      endpoint: '/graphql',
-    });
+    if (!user) {
+      return redirect('/signin');
+    }
+    const html = renderGraphiQL({ endpoint: '/graphql' });
     return new Response(html, { headers: { 'content-type': 'text/html' } });
   } else {
-    const { parse, validate, contextFactory, execute, schema } = getEnveloped(
-      {}
-    );
+    const { parse, validate, contextFactory, execute, schema } = getEnveloped({
+      request,
+      user,
+    });
     const { operationName, query, variables } = getGraphQLParameters(request);
     const result = await processRequest({
       operationName,
@@ -79,7 +82,8 @@ async function processHelixRequest(request: HelixRequest) {
 }
 
 async function graphqlRequest(request: Request) {
-  return processHelixRequest(await remixToHelixRequest(request));
+  const user = await authenticator.isAuthenticated(request);
+  return processHelixRequest(await remixToHelixRequest(request), user);
 }
 
 export const loader: LoaderFunction = ({ request }) => graphqlRequest(request);

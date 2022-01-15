@@ -13,15 +13,67 @@ import {
 } from 'graphql';
 import { GraphQLDateTime as DateTime } from 'graphql-scalars';
 
-import { findOne, findMany } from '~/models/bucket';
+import * as Bucket from '~/models/bucket';
+import * as Record from '~/models/record';
+import type { User } from '~/models/user';
 
-type Context = { userId: string };
+type Context = { user: User };
 
 const nonNull = <T extends GraphQLType>(t: T) => new GraphQLNonNull(t);
 const list = <T extends GraphQLType>(t: T) => new GraphQLList(t);
 const nonNullList = <T extends GraphQLType>(t: T) => nonNull(list(nonNull(t)));
 
-const Bucket = new GraphQLObjectType<{ id: string; name: string }, Context>({
+const FieldType = new GraphQLObjectType<
+  Record.FindOneData['data'] & { id: string },
+  Context
+>({
+  name: 'Field',
+  fields: {
+    id: { type: nonNull(ID) },
+    type: { type: nonNull(Str) },
+    value: {
+      type: Str,
+      resolve(value) {
+        value ? String(value) : null;
+      },
+    },
+    updatedAt: { type: nonNull(DateTime) },
+  },
+});
+
+const RecordType = new GraphQLObjectType<Record.FindOneData, Context>({
+  name: 'Record',
+  fields: {
+    id: { type: nonNull(ID) },
+    data: {
+      type: nonNullList(FieldType),
+      resolve({ data }) {
+        return Object.entries(data).map(([id, field]) => ({ id, ...field }));
+      },
+    },
+    createdAt: { type: nonNull(DateTime) },
+    updatedAt: { type: nonNull(DateTime) },
+  },
+});
+
+const BucketFullType = new GraphQLObjectType<Bucket.FindOneData, Context>({
+  name: 'BucketFull',
+  fields: {
+    id: { type: nonNull(ID) },
+    name: { type: nonNull(Str) },
+    color: { type: nonNull(Str) },
+    createdAt: { type: nonNull(DateTime) },
+    updatedAt: { type: nonNull(DateTime) },
+    records: {
+      type: nonNullList(RecordType),
+      resolve({ id }, _, context) {
+        return Record.findMany({ bucketId: id, userId: context.user.id });
+      },
+    },
+  },
+});
+
+const BucketType = new GraphQLObjectType<Bucket.FindManyData[0], Context>({
   name: 'Bucket',
   fields: {
     id: { type: nonNull(ID) },
@@ -37,21 +89,21 @@ export const schema = new GraphQLSchema({
     name: 'Query',
     fields: {
       getBucket: {
-        type: nonNull(Bucket),
+        type: nonNull(BucketFullType),
         args: {
           bucketId: { type: nonNull(ID) },
         },
         resolve(_, { bucketId }, context) {
-          return findOne(bucketId, context.userId);
+          return Bucket.findOne({ bucketId, userId: context.user.id });
         },
       },
       listBuckets: {
-        type: nonNullList(Bucket),
+        type: nonNullList(BucketType),
         args: {
           order: { type: Str },
         },
         resolve(_, args, context) {
-          return findMany(context.userId);
+          return Bucket.findMany({ userId: context.user.id });
         },
       },
     },
