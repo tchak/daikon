@@ -1,6 +1,5 @@
 import type { MetaFunction, LoaderFunction, ActionFunction } from 'remix';
-import { useLoaderData, useTransition, Form, useFetcher } from 'remix';
-import { Link } from 'react-router-dom';
+import { useLoaderData, useTransition, Form, useFetcher, Link } from 'remix';
 import { TrashIcon, PlusCircleIcon } from '@heroicons/react/outline';
 import { DotsVerticalIcon } from '@heroicons/react/solid';
 import { Menu } from '@headlessui/react';

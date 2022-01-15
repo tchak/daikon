@@ -7,9 +7,9 @@ import {
   LiveReload,
   useCatch,
   ScrollRestoration,
+  Outlet,
 } from 'remix';
 import { ReactNode } from 'react';
-import { Outlet } from 'react-router-dom';
 
 import tailwind from './styles/tailwind.css';
 import { Progress } from './components/Progress';

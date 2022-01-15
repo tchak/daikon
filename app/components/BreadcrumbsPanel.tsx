@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'remix';
 import { HomeIcon } from '@heroicons/react/solid';
 
 type Breadcrumb = {

@@ -1,6 +1,5 @@
-import { useFetcher } from 'remix';
+import { useFetcher, useSearchParams } from 'remix';
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import type { Column, CellProps } from 'react-table';
 import clsx from 'clsx';
 import { ClipboardCopyIcon } from '@heroicons/react/outline';

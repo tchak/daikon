@@ -2,7 +2,7 @@ import { Fragment, ReactNode } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { BellIcon, MenuIcon, XIcon } from '@heroicons/react/outline';
 import { DatabaseIcon } from '@heroicons/react/solid';
-import { NavLink, Link } from 'react-router-dom';
+import { NavLink, Link } from 'remix';
 import clsx from 'clsx';
 
 export function Header({ children }: { children: ReactNode }) {
