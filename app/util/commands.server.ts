@@ -5,6 +5,9 @@ import * as User from '~/aggregates/user.commands';
 import * as Organization from '~/aggregates/organization.commands';
 import * as Bucket from '~/aggregates/bucket.commands';
 import * as Record from '~/aggregates/record.commands';
+
+import * as BucketPolicy from '~/aggregates/bucket.policy';
+
 import { UserProjection } from '~/aggregates/user.projection';
 import { OrganizationProjection } from '~/aggregates/organization.projection';
 import { BucketProjection } from '~/aggregates/bucket.projection';
@@ -149,16 +152,16 @@ function getEventStore(db: DB, subscriptions = true) {
     eventStore.subscribe(['OrganizationCreated'], (event) =>
       eventStore.link(
         [event.eventId],
-        `Organization${event.data.organizationId}`
+        `Organization$${event.data.organizationId}`
       )
     );
     eventStore.subscribe(
       ['UserAddedToOrganization', 'UserRemovedFromOrganization'],
       async (event) => {
-        await eventStore.link([event.eventId], `User${event.data.userId}`);
+        await eventStore.link([event.eventId], `User$${event.data.userId}`);
         await eventStore.link(
           [event.eventId],
-          `Organization${event.data.organizationId}`
+          `Organization$${event.data.organizationId}`
         );
       }
     );
@@ -176,15 +179,25 @@ export async function executeCommand(form: FormData, actor?: string) {
 
   return prisma.$transaction(async (db) => {
     const eventStore = getEventStore(db);
+
+    switch (data.actionType) {
+      case 'CreateBucket':
+        await BucketPolicy.createBucket(data, actor)(eventStore.scope());
+        break;
+      case 'RegisterUser':
+      case 'CreateOrganization':
+        break;
+      default:
+        await BucketPolicy.updateBucket(data, actor)(eventStore.scope());
+    }
+
     switch (data.actionType) {
       case 'RegisterUser':
-        return await User.createUser(eventStore.scope())(data, { actor });
+        return User.createUser(eventStore.scope())(data, { actor });
       case 'CreateOrganization':
         return Organization.createOrganization(eventStore.scope())(
           { ...data, userId: String(actor) },
-          {
-            actor,
-          }
+          { actor }
         );
       case 'CreateBucket':
         return Bucket.createBucket(eventStore.scope())(data, { actor });

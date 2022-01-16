@@ -16,6 +16,7 @@ import {
   Metadata,
   OrganizationEvent,
   OrganizationEventsMap,
+  BucketEventsMap,
   metadata,
 } from '~/events';
 
@@ -140,16 +141,82 @@ function isMember(member: MemberEntity, userId: string, role: string) {
   return member.userId == userId && member.role == role;
 }
 
-export const authorized = (organizationId: string, userId: string) =>
-  createProjection<boolean, OrganizationEventsMap, Metadata>(
-    `Organization$${organizationId}`,
-    () => false
-  )
-    .when('OrganizationCreated', (_, event) => event.metadata.actor == userId)
-    .when('UserAddedToOrganization', (state, event) =>
-      event.data.userId == userId ? true : state
-    )
-    .when('UserRemovedFromOrganization', (state, event) =>
-      event.data.userId == userId ? false : state
-    )
-    .when('OrganizationDeleted', () => false);
+const getOrganizationAuthorization = (
+  organizationId: string,
+  userId: string,
+  role: string
+) =>
+  createProjection<
+    { deleted?: boolean; authorized?: boolean },
+    OrganizationEventsMap,
+    Metadata
+  >(`Organization$${organizationId}`, () => ({}))
+    .when('UserAddedToOrganization', (state, event) => ({
+      ...state,
+      authorized:
+        event.data.userId == userId && event.data.role == role
+          ? true
+          : state.authorized,
+    }))
+    .when('UserRemovedFromOrganization', (state, event) => ({
+      ...state,
+      authorized:
+        event.data.userId == userId && event.data.role == role
+          ? false
+          : state.authorized,
+    }))
+    .when('OrganizationDeleted', (state) => ({ ...state, deleted: true }))
+    .when('OrganizationRestored', (state) => ({ ...state, deleted: false }));
+
+const getBucketOrganization = (bucketId: string) =>
+  createProjection<
+    { deleted?: boolean; organizationId?: string },
+    BucketEventsMap,
+    Metadata
+  >(`Bucket$${bucketId}`, () => ({}))
+    .when('BucketCreated', (_, event) => ({
+      organizationId: event.data.organizationId,
+    }))
+    .when('BucketDeleted', (state) => ({ ...state, deleted: true }))
+    .when('BucketRestored', (state) => ({ ...state, deleted: false }));
+
+export const isAuthorizedOrganization = async <Context>(
+  eventStore: EventStore<Context, OrganizationEventsMap, Metadata>,
+  organizationId: string,
+  userId: string,
+  role: string
+): Promise<boolean> => {
+  const { deleted, authorized } = await getOrganizationAuthorization(
+    organizationId,
+    userId,
+    role
+  ).run(eventStore.scope());
+  if (deleted || !authorized) {
+    return false;
+  }
+  return true;
+};
+
+export const isAuthorizedBucket = async <Context>(
+  eventStore: EventStore<
+    Context,
+    BucketEventsMap & OrganizationEventsMap,
+    Metadata
+  >,
+  bucketId: string,
+  userId: string,
+  role: string
+): Promise<boolean> => {
+  const { deleted, organizationId } = await getBucketOrganization(bucketId).run(
+    eventStore.scope()
+  );
+  if (deleted || !organizationId) {
+    return false;
+  }
+  return isAuthorizedOrganization(
+    eventStore.scope(),
+    organizationId,
+    userId,
+    role
+  );
+};
