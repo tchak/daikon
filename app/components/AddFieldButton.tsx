@@ -9,8 +9,8 @@ import * as Actions from '~/actions';
 const fieldTypes = [
   { label: 'Text', type: 'TEXT' },
   { label: 'Checkbox', type: 'BOOLEAN' },
-  { label: 'Number', type: 'NUMBER' },
-  { label: 'Block', type: 'BLOCK' },
+  { label: 'Number', type: 'INT' },
+  { label: 'Date', type: 'DATE' },
 ];
 
 export function AddFieldButton({

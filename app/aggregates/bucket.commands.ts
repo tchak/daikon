@@ -98,17 +98,18 @@ export const restoreBucket = createCommand<RestoreBucket>(
 type CreateField = {
   bucketId: string;
   name: string;
+  type: 'TEXT' | 'BOOLEAN' | 'INT' | 'FLOAT' | 'DATE' | 'DATE_TIME';
 };
 
 export const createField = createCommand<CreateField>(
   ({ bucketId }) => bucketId,
-  ({ name }, aggregate) => {
+  ({ name, type }, aggregate) => {
     aggregate.applyEvent({
       type: 'FieldCreated',
       data: {
         bucketId: aggregate.id,
         fieldId: uuid(),
-        type: 'TEXT',
+        type,
         name,
       },
     });
@@ -118,6 +119,7 @@ export const createField = createCommand<CreateField>(
 type UpdateField = {
   bucketId: string;
   fieldId: string;
+  type?: 'TEXT' | 'BOOLEAN' | 'INT' | 'FLOAT' | 'DATE' | 'DATE_TIME';
   name?: string;
   description?: string;
 };

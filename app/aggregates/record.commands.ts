@@ -52,7 +52,7 @@ export const updateRecord = createCommand<UpdateRecord>(
   ({ recordId }) => recordId,
   ({ bucketId, data }, aggregate) => {
     for (const datum of data) {
-      if (aggregate.entity.data[datum.id].value != datum.value) {
+      if (aggregate.entity.data[datum.id]?.value != datum.value) {
         switch (datum.type) {
           case 'TEXT':
             aggregate.applyEvent({

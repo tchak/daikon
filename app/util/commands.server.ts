@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { parseISO } from 'date-fns';
 
 import { hash } from '~/util/argon2.server';
 import { prisma, DB } from './db.server';
@@ -57,6 +58,7 @@ const CreateField = z.object({
   actionType: z.literal(Actions.CreateField),
   bucketId: z.string().uuid(),
   name: z.string().nonempty(),
+  type: z.enum(['TEXT', 'BOOLEAN', 'INT', 'FLOAT', 'DATE', 'DATE_TIME']),
 });
 const RenameField = z.object({
   actionType: z.literal(Actions.RenameField),
@@ -108,6 +110,53 @@ const CreateRecord = z.object({
   actionType: z.literal(Actions.CreateRecord),
   bucketId: z.string().uuid(),
 });
+const UpdateRecordData = z.object({
+  actionType: z.literal(Actions.UpdateRecord),
+  bucketId: z.string().uuid(),
+  recordId: z.string().uuid(),
+  fieldId: z.string().uuid(),
+});
+const UpdateRecord = z
+  .union([
+    UpdateRecordData.extend({
+      type: z.literal('TEXT'),
+      value: z.string().nullable(),
+    }),
+    UpdateRecordData.extend({
+      type: z.literal('BOOLEAN'),
+      value: z
+        .string()
+        .nullable()
+        .transform((value) => value == 'true'),
+    }),
+    UpdateRecordData.extend({
+      type: z.literal('INT'),
+      value: z
+        .string()
+        .nullable()
+        .transform((value) => (value ? parseInt(value) : null)),
+    }),
+    UpdateRecordData.extend({
+      type: z.literal('FLOAT'),
+      value: z
+        .string()
+        .nullable()
+        .transform((value) => (value ? parseFloat(value) : null)),
+    }),
+    UpdateRecordData.extend({
+      type: z.enum(['DATE', 'DATE_TIME']),
+      value: z
+        .string()
+        .nullable()
+        .transform((value) => (value ? parseISO(value) : null)),
+    }),
+  ])
+  .transform(({ actionType, bucketId, recordId, fieldId, ...data }) => ({
+    actionType,
+    bucketId,
+    recordId,
+    data: [{ id: fieldId, ...data }],
+  }));
 const DeleteRecord = z.object({
   actionType: z.literal(Actions.DeleteRecord),
   bucketId: z.string().uuid(),
@@ -135,6 +184,7 @@ const Action = z.union([
   SetViewDescription,
   DeleteView,
   CreateRecord,
+  UpdateRecord,
   DeleteRecord,
   DeleteRecords,
 ]);
@@ -169,76 +219,78 @@ export function getEvents() {
 }
 
 export async function executeCommand(form: FormData, actor?: string) {
-  const data = Action.parse(Object.fromEntries(form));
+  const command = Action.parse(Object.fromEntries(form));
 
   return prisma.$transaction(async (db) => {
     const eventStore = getEventStore(db);
 
-    switch (data.actionType) {
+    switch (command.actionType) {
       case 'CreateBucket':
-        await BucketPolicy.createBucket(data, actor)(eventStore.scope());
+        await BucketPolicy.createBucket(command, actor)(eventStore.scope());
         break;
       case 'RegisterUser':
       case 'CreateOrganization':
         break;
       default:
-        await BucketPolicy.updateBucket(data, actor)(eventStore.scope());
+        await BucketPolicy.updateBucket(command, actor)(eventStore.scope());
     }
 
-    switch (data.actionType) {
+    switch (command.actionType) {
       case 'RegisterUser':
-        return User.createUser(eventStore.scope())(data, { actor }).then(
+        return User.createUser(eventStore.scope())(command, { actor }).then(
           async (aggregate) => {
             await eventStore.db.user.update({
               where: { id: aggregate.id },
-              data: { password: await hash(data.password) },
+              data: { password: await hash(command.password) },
             });
             return aggregate;
           }
         );
       case 'CreateOrganization':
         return Organization.createOrganization(eventStore.scope())(
-          { ...data, userId: String(actor) },
+          { ...command, userId: String(actor) },
           { actor }
         );
       case 'CreateBucket':
-        return Bucket.createBucket(eventStore.scope())(data, { actor });
+        return Bucket.createBucket(eventStore.scope())(command, { actor });
       case 'RenameBucket':
       case 'SetBucketDescription':
-        return Bucket.updateBucket(eventStore.scope())(data, { actor });
+        return Bucket.updateBucket(eventStore.scope())(command, { actor });
       case 'DeleteBucket':
-        return Bucket.deleteBucket(eventStore.scope())(data, { actor });
+        return Bucket.deleteBucket(eventStore.scope())(command, { actor });
       case 'CreateField':
-        return Bucket.createField(eventStore.scope())(data, { actor });
+        return Bucket.createField(eventStore.scope())(command, { actor });
       case 'RenameField':
       case 'SetFieldDescription':
-        return Bucket.updateField(eventStore.scope())(data, { actor });
+        return Bucket.updateField(eventStore.scope())(command, { actor });
       case 'DeleteField':
-        return Bucket.deleteField(eventStore.scope())(data, { actor });
+        return Bucket.deleteField(eventStore.scope())(command, { actor });
       case 'CreateView':
-        return Bucket.createView(eventStore.scope())(data, { actor });
+        return Bucket.createView(eventStore.scope())(command, { actor });
       case 'HideField':
-        return Bucket.hideFieldInView(eventStore.scope())(data, { actor });
+        return Bucket.hideFieldInView(eventStore.scope())(command, { actor });
       case 'RenameView':
       case 'SetViewDescription':
-        return Bucket.updateView(eventStore.scope())(data, { actor });
+        return Bucket.updateView(eventStore.scope())(command, { actor });
       case 'DeleteView':
-        return Bucket.deleteView(eventStore.scope())(data, { actor });
+        return Bucket.deleteView(eventStore.scope())(command, { actor });
       case 'CreateRecord':
-        return Record.createRecord(eventStore.scope())(data, { actor });
+        return Record.createRecord(eventStore.scope())(command, { actor });
+      case 'UpdateRecord':
+        return Record.updateRecord(eventStore.scope())(command, { actor });
       case 'DeleteRecord':
-        return Record.deleteRecord(eventStore.scope())(data, { actor });
+        return Record.deleteRecord(eventStore.scope())(command, { actor });
       case 'DeleteRecords':
         return (async () => {
-          const [recordId, ...recordIds] = data.recordIds;
+          const [recordId, ...recordIds] = command.recordIds;
           for (const recordId of recordIds) {
             await Record.deleteRecord(eventStore.scope())(
-              { recordId, bucketId: data.bucketId },
+              { recordId, bucketId: command.bucketId },
               { actor }
             );
           }
           return Record.deleteRecord(eventStore.scope())(
-            { recordId, bucketId: data.bucketId },
+            { recordId, bucketId: command.bucketId },
             { actor }
           );
         })();

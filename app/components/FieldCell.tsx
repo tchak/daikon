@@ -46,6 +46,7 @@ export function useTableColumns<T extends DataRow = DataRow>({
         Cell: ({ cell }: CellProps<DataRow>) => (
           <FieldCell
             cell={cell}
+            bucketId={bucketId}
             fieldId={field.id}
             fieldType={field.type}
             selectedCell={selectedCell}
@@ -87,12 +88,14 @@ function IdCell({ id }: { id: string }) {
 
 function FieldCell({
   cell,
+  bucketId,
   fieldId,
   fieldType,
   selectedCell,
   setSelectedCell,
 }: {
   cell: CellProps<DataRow>['cell'];
+  bucketId: string;
   fieldId: string;
   fieldType: string;
   selectedCell: string | null;
@@ -113,11 +116,14 @@ function FieldCell({
     case 'BLOCK':
       return <BlockFieldCell cell={cell} fieldId={fieldId} />;
     case 'BOOLEAN':
-      return <BooleanFieldCell cell={cell} fieldId={fieldId} />;
+      return (
+        <BooleanFieldCell cell={cell} bucketId={bucketId} fieldId={fieldId} />
+      );
     default:
       return (
         <TextFieldCell
           cell={cell}
+          bucketId={bucketId}
           fieldId={fieldId}
           fieldType={fieldType}
           {...selection}
@@ -153,6 +159,7 @@ function BlockFieldCell({
 function TextFieldCell({
   fieldId,
   fieldType,
+  bucketId,
   cell,
   isSelected,
   isEditing,
@@ -161,6 +168,7 @@ function TextFieldCell({
   done,
 }: {
   cell: CellProps<DataRow>['cell'];
+  bucketId: string;
   fieldId: string;
   fieldType: string;
   isSelected: boolean;
@@ -178,18 +186,19 @@ function TextFieldCell({
   const value =
     fetcher.type == 'actionSubmission' || fetcher.type == 'actionReload'
       ? fetcher.submission.formData.get('value')
-      : cell.value;
+      : cell.value?.value;
 
   return isEditing ? (
     <input
-      type="text"
+      type={fieldType == 'INT' ? 'number' : 'text'}
       autoFocus
       onBlur={(event) => {
         const value = event.target.value;
         fetcher.submit(
           {
             actionType: Actions.UpdateRecord,
-            rowId: cell.row.values['id'],
+            bucketId,
+            recordId: cell.row.values['id'],
             fieldId,
             type: fieldType,
             value,
@@ -209,7 +218,7 @@ function TextFieldCell({
       onDoubleClick={edit}
       tabIndex={0}
     >
-      {cell.value}
+      {cell.value?.value}
       {'\u00A0'}
     </div>
   );
@@ -217,16 +226,18 @@ function TextFieldCell({
 
 function BooleanFieldCell({
   cell,
+  bucketId,
   fieldId,
 }: {
   cell: CellProps<DataRow>['cell'];
+  bucketId: string;
   fieldId: string;
 }) {
   const fetcher = useFetcher();
   const checked =
     fetcher.type == 'actionSubmission' || fetcher.type == 'actionReload'
       ? fetcher.submission.formData.get('value') == 'true'
-      : cell.value == true;
+      : cell.value?.value == true;
   return (
     <input
       type="checkbox"
@@ -237,7 +248,8 @@ function BooleanFieldCell({
         fetcher.submit(
           {
             actionType: Actions.UpdateRecord,
-            rowId: cell.row.values['id'],
+            bucketId,
+            recordId: cell.row.values['id'],
             fieldId,
             type: 'BOOLEAN',
             value: value ? 'true' : 'false',
