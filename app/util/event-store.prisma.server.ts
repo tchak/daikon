@@ -226,6 +226,7 @@ async function readEvents<Events extends EventsMap, Metadata>(
     orderBy: { id: 'asc' },
     take,
     skip,
+    select: { eventId: true, eventType: true, data: true, metadata: true },
   });
   return events.map(
     (event) =>
