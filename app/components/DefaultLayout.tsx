@@ -94,7 +94,7 @@ export function DefaultLayout({
 }
 
 const profileLinks = [
-  ['Your Profile', '/profile'],
+  ['Account', '/account'],
   ['Settings', '/settings'],
   ['Sign out', '/signout'],
 ];
@@ -189,11 +189,12 @@ function ProfileDropdown({ profile }: { profile: Profile }) {
   );
 }
 
+const navigation: string[][] = [
+  ['Buckets', '/'],
+  ['About', '/about'],
+];
+
 function Navigation() {
-  const navigation: string[][] = [
-    ['Graphs', '/'],
-    ['About', '/about'],
-  ];
   return (
     <>
       {navigation.map(([title, to], index) => (
@@ -202,9 +203,10 @@ function Navigation() {
           to={to}
           end
           className={({ isActive }) =>
-            `text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium ${
-              isActive ? 'bg-gray-900 text-white' : ''
-            }`
+            clsx(
+              'text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium',
+              { 'bg-gray-900 text-white': isActive }
+            )
           }
         >
           {title}

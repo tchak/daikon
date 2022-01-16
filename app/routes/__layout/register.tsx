@@ -82,7 +82,7 @@ export default function RegisterRoute() {
           className="justify-between group"
         >
           <LockClosedIcon
-            className="-ml-1 h-5 w-5 text-blue-500 group-hover:text-blue-400"
+            className="-ml-1 h-5 w-5 text-green-500 group-hover:text-green-400"
             aria-hidden="true"
           />
           <span className="mr-5">

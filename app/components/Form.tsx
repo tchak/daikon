@@ -20,12 +20,12 @@ export function buttonClassName({
   className,
 }: ButtonClassNameProps) {
   return clsx(
-    'inline-flex items-center border shadow-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500',
+    'inline-flex items-center border shadow-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500',
     primary ? 'border-transparent text-white' : 'border-gray-300 text-gray-700',
     primary
       ? isActive
-        ? 'bg-blue-700'
-        : 'bg-blue-600 hover:bg-blue-700'
+        ? 'bg-green-700'
+        : 'bg-green-600 hover:bg-green-700'
       : isActive
       ? 'bg-gray-200 hover:bg-gray-50'
       : 'bg-white hover:bg-gray-50',
@@ -144,7 +144,7 @@ export function Input<Name = string>({
             {
               'pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500':
                 errorMessage,
-              'shadow-sm focus:ring-blue-500 focus:border-blue-500 border-gray-300':
+              'shadow-sm focus:ring-green-500 focus:border-green-500 border-gray-300':
                 !errorMessage,
             },
             className
@@ -211,7 +211,7 @@ function Checkbox<Name = string>({
             description: !!description,
             required: false,
           })}
-          className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
+          className="focus:ring-green-500 h-4 w-4 text-green-600 border-gray-300 rounded"
           {...props}
         />
       </div>
@@ -257,7 +257,7 @@ function Select<Name = string>({
         fallback={
           <select
             id={id}
-            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm rounded-md"
             aria-invalid={errorMessage ? 'true' : undefined}
             aria-errormessage={errorMessage ? `${id}-error` : undefined}
             aria-describedby={describedby({
