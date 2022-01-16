@@ -52,6 +52,14 @@ export default function SignInRoute() {
           errorMessage={data.errorMessage}
           required
         />
+        <Input
+          type="password"
+          label="Password"
+          name="password"
+          disabled={connecting}
+          errorMessage={data.errorMessage}
+          required
+        />
 
         <Button
           type="submit"

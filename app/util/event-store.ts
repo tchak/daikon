@@ -74,9 +74,11 @@ export class EventStore<DB, Events extends EventsMap, Metadata> {
     streamName: string
   ) {
     await this.#repository.appendToStream(events, streamName);
-    await this.#store.run(this.#repository.db, () =>
-      Promise.all(events.map((event) => this.#broker.publish(event)))
-    );
+    await this.#store.run(this.#repository.db, async () => {
+      for (const event of events) {
+        await this.#broker.publish(event);
+      }
+    });
   }
 
   async append<Name extends keyof Events>(

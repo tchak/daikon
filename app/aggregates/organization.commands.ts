@@ -10,10 +10,12 @@ export const createOrganization = createCommand<CreateOrganization>(
     aggregate.applyEvent({
       type: 'OrganizationCreated',
       data: { organizationId: aggregate.id, name },
+      metadata: { linkTo: `User$${userId}` },
     });
     aggregate.applyEvent({
       type: 'UserAddedToOrganization',
       data: { organizationId: aggregate.id, userId, role: 'Owner' },
+      metadata: { linkTo: `User$${userId}` },
     });
   }
 );

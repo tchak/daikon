@@ -7,8 +7,8 @@ type FindByEmail = {
 export function findByEmail({ email }: FindByEmail) {
   return prisma.user.findFirst({
     where: { email, deletedAt: null },
-    select: { id: true },
+    select: { id: true, password: true },
   });
 }
 
-export type User = NonNullable<Awaited<ReturnType<typeof findByEmail>>>;
+export type User = { id: string };

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { hash } from '~/util/argon2.server';
 import { prisma, DB } from './db.server';
 import * as User from '~/aggregates/user.commands';
 import * as Organization from '~/aggregates/organization.commands';
@@ -26,6 +27,7 @@ import { createPrismaEventStore } from './event-store.prisma.server';
 const RegisterUser = z.object({
   actionType: z.literal(Actions.RegisterUser),
   email: z.string().email(),
+  password: z.string().min(6),
 });
 const CreateOrganization = z.object({
   actionType: z.literal(Actions.CreateOrganization),
@@ -149,20 +151,12 @@ function getEventStore(db: DB, subscriptions = true) {
     BucketProjection(eventStore.scope());
     RecordProjection(eventStore.scope());
 
-    eventStore.subscribe(['OrganizationCreated'], (event) =>
-      eventStore.link(
-        [event.eventId],
-        `Organization$${event.data.organizationId}`
-      )
-    );
     eventStore.subscribe(
-      ['UserAddedToOrganization', 'UserRemovedFromOrganization'],
+      ['OrganizationCreated', 'UserAddedToOrganization'],
       async (event) => {
-        await eventStore.link([event.eventId], `User$${event.data.userId}`);
-        await eventStore.link(
-          [event.eventId],
-          `Organization$${event.data.organizationId}`
-        );
+        if (event.metadata.linkTo) {
+          await eventStore.link([event.eventId], event.metadata.linkTo);
+        }
       }
     );
   }
@@ -193,7 +187,15 @@ export async function executeCommand(form: FormData, actor?: string) {
 
     switch (data.actionType) {
       case 'RegisterUser':
-        return User.createUser(eventStore.scope())(data, { actor });
+        return User.createUser(eventStore.scope())(data, { actor }).then(
+          async (aggregate) => {
+            await eventStore.db.user.update({
+              where: { id: aggregate.id },
+              data: { password: await hash(data.password) },
+            });
+            return aggregate;
+          }
+        );
       case 'CreateOrganization':
         return Organization.createOrganization(eventStore.scope())(
           { ...data, userId: String(actor) },

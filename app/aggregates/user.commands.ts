@@ -18,7 +18,10 @@ export const createUser = createCommand<{ email: string }>(
         organizationId,
         name: 'Default Organization',
       },
-      metadata: { actor: aggregate.id },
+      metadata: {
+        actor: aggregate.id,
+        linkTo: `Organization$${organizationId}`,
+      },
     });
     aggregate.applyEvent({
       type: 'UserAddedToOrganization',
@@ -27,7 +30,10 @@ export const createUser = createCommand<{ email: string }>(
         organizationId,
         role: 'Owner',
       },
-      metadata: { actor: aggregate.id },
+      metadata: {
+        actor: aggregate.id,
+        linkTo: `Organization$${organizationId}`,
+      },
     });
   }
 );

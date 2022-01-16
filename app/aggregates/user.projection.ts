@@ -1,6 +1,9 @@
+import { v4 as uuid } from 'uuid';
+
 import type { DB } from '~/util/db.server';
 import type { EventStore } from '~/util/aggregate-root';
 import { UserEventsMap, Metadata } from '~/events';
+import { hash } from '~/util/argon2.server';
 
 export function UserProjection(
   eventStore: EventStore<DB, UserEventsMap, Metadata>
@@ -11,6 +14,7 @@ export function UserProjection(
         data: {
           id: event.data.userId,
           email: event.data.email,
+          password: await hash(uuid()),
           createdAt: event.metadata.timestamp,
           updatedAt: event.metadata.timestamp,
         },
