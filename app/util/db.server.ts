@@ -15,7 +15,7 @@ export type PrismaClientTransaction = Parameters<
 >[0];
 export type DB = PrismaClient | PrismaClientTransaction;
 
-const logThreshold = 30;
+const logThreshold = 10;
 
 function getClient() {
   const client = new PrismaClient({
